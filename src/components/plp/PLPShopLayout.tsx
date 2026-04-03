@@ -1,0 +1,42 @@
+"use client";
+
+import { useState } from "react";
+import FilterProducts from "./FilterProducts";
+import PLPMainColumn from "./PLPMainColumn";
+import type { ProductAggregation, ProductListSortKey } from "@/src/framework/graphql/queries/products";
+import type { PLPContentProduct } from "./types";
+
+type PLPShopLayoutProps = {
+  aggregations: ProductAggregation[];
+  products: PLPContentProduct[];
+  sortBy: ProductListSortKey;
+};
+
+export default function PLPShopLayout({
+  aggregations,
+  products,
+  sortBy,
+}: PLPShopLayoutProps) {
+  const [sortNavPending, setSortNavPending] = useState(false);
+  const [filterNavPending, setFilterNavPending] = useState(false);
+  const listLoading = sortNavPending || filterNavPending;
+
+  return (
+    <div className="container relative z-1 flex flex-wrap md:block">
+      <aside className="sidebar-content grow basis-full md:float-left md:w-[23%] md:min-h-[300px] lg-custom:pr-[2%]!">
+        <div className="sidebar-content">
+          <FilterProducts
+            aggregations={aggregations}
+            onPendingChange={setFilterNavPending}
+          />
+        </div>
+      </aside>
+      <PLPMainColumn
+        sortBy={sortBy}
+        products={products}
+        listLoading={listLoading}
+        onSortPendingChange={setSortNavPending}
+      />
+    </div>
+  );
+}

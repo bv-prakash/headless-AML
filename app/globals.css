@@ -1,26 +1,153 @@
 @import "tailwindcss";
+@import "../src/style/home.css";
+@import "../src/style/footer.css";
+@import "../src/style/icons.css";
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #000;
 }
 
-@theme inline {
+@font-face {
+  font-family: "proxima-nova";
+  src:
+    url("/assets/fonts/proxima-nova/proxima-nova-regular.woff2") format("woff2"),
+    url("/assets/fonts/proxima-nova/proxima-nova-regular.woff") format("woff"),
+    url("/assets/fonts/proxima-nova/proxima-nova-regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "proxima-nova";
+  src:
+    url("/assets/fonts/proxima-nova/proxima-nova-medium.woff2") format("woff2"),
+    url("/assets/fonts/proxima-nova/proxima-nova-medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "proxima-nova";
+  src:
+    url("/assets/fonts/proxima-nova/proxima-nova-semibold.woff2") format("woff2"),
+    url("/assets/fonts/proxima-nova/proxima-nova-semibold.woff") format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "proxima-nova";
+  src:
+    url("/assets/fonts/proxima-nova/proxima-nova-bold.woff2") format("woff2"),
+    url("/assets/fonts/proxima-nova/proxima-nova-bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-proxima-nova: "proxima-nova", sans-serif;
+  --color-theme-primary: #384c60;
+  --color-theme-secondary: #002941;
+  --color-light-green: #03a64a;
+  --color-light-red: #ea6161;
+  --color-aaa: #aaa;
+  --color-f0f0f0: #f0f0f0;
+  --color-d1d1d1: #d1d1d1;
+  --color-f5f5f5: #f5f5f5;
+  --color-form-element-input-placeholder: rgba(0,0,0,.5);
+  --color-dbdcda: #dbdcda;
+  --color-efebe3: #efebe3;
+  --color-focus-tab-nav: #68a8e0;
+  --spacing-theme-container-max-width: 1614px;
+  --spacing-theme-container-padding: 15px;
+  --breakpoint-lg-custom: 1200px;
+  --breakpoint-xl-custom: 1440px;
+
+}
+
+@utility container {
+  @apply mx-auto max-w-theme-container-max-width px-theme-container-padding;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #fff;
+    --foreground: #000;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "proxima-nova", sans-serif;
+
+  @apply text-base leading-[1.3] font-normal lg-custom:text-lg!;
 }
+
+
+h2 {
+  @apply text-xl leading-[1.1] mb-3 mt-0 font-semibold md:text-[26px] lg-custom:text-[32px]!;
+}
+
+/* Page loader (see `PageLoader` component) */
+.page-loader-spinner {
+  animation-duration: 0.85s;
+  animation-timing-function: cubic-bezier(0.4, 0.15, 0.6, 0.85);
+}
+
+/* PageBuilder */
+.pagebuilder-mobile-hidden {
+  @apply hidden md:block;
+}
+
+.pagebuilder-mobile-only {
+  @apply block md:hidden!;
+}
+
+/* Form elements */
+input[disabled] {
+  box-shadow: none;
+}
+
+input[type="checkbox"] {
+  @apply appearance-none border border-solid hover:border-theme-primary border-dbdcda rounded-none cursor-pointer h-4 w-4 relative;
+
+  &:checked {
+    @apply bg-theme-primary border-theme-primary;
+
+    &::after {
+      content: '';
+      @apply block absolute top-[2px] left-[5px] w-[4px] h-2 border-solid border-white border-0 border-r-2 border-b-2 rotate-45;
+    }
+  }
+
+  & ~ .label {
+    @apply cursor-pointer hover:text-theme-primary;
+  }
+}
+
+input[type="radio"] {
+  @apply appearance-none border border-solid hover:border-theme-primary border-dbdcda rounded-full cursor-pointer h-4 w-4 relative;
+
+  &:checked {
+    @apply border-theme-primary;
+
+    &::after {
+      content: '';
+      @apply block absolute top-0.5 left-0.5 h-2.5 w-2.5 rounded-full bg-theme-primary;
+    }
+  }
+
+  & ~ .label {
+    @apply cursor-pointer hover:text-theme-primary;
+  }
+}
+

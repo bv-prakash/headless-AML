@@ -1,0 +1,62 @@
+
+/* Footer */
+
+.footer-left-block .footer-left {
+    @apply lg:flex w-full;
+  }
+  .footer-left-block .footer-logo-address {
+    @apply flex items-center justify-between mb-7.5 lg:w-[250px] lg:block lg:mb-10;
+  }
+  
+  .footer-left-block .footer-logo-address .footer-address {
+    @apply  text-[8px] sm:text-[10px] text-right min-w-[135px] md:text-start md:min-w-auto leading-normal md:text-xs lg:mt-5.5;
+  }
+  
+  .footer-left-block .footer-links {
+    @apply hidden md:flex flex-wrap -mx-1.5 lg:w-[calc(100%-240px)] lg-custom:pl-10;
+  }
+  
+  .footer-left-block .footer-links .footer-links-column {
+    @apply w-full px-[7px] mb-5 md:w-1/5 md:mb-7.5 lg-custom:w-1/3 xl-custom:w-1/5;
+  }
+  
+  .footer-left-block .footer-links .footer-links-column .footer-title {
+    @apply mt-0 mb-[15px] text-sm font-bold md:mb-[25p];
+  }
+  
+  .footer-left-block .footer-links .footer-links-column .footer-title a {
+    @apply text-white hover:text-dbdcda transition-colors duration-300 ;
+  }
+  
+  .footer-left-block .footer-links .footer-links-column a {
+    @apply mb-[2px] block text-white/50 text-sm leading-[1.3] hover:text-dbdcda transition-colors duration-300 ;
+  }
+  
+  .footer-service-block .footer-service {
+    @apply text-sm leading-[1.4] sm:flex sm:flex-wrap md:text-xs ;
+  }
+  
+  .footer-service-block .footer-service .service-column {
+    @apply sm:px-[5px] sm:w-1/2;
+  }
+  
+  .footer-service-block .footer-service .service-column a {
+    @apply hover:text-theme-primary transition-colors duration-300;
+  }
+  
+  .footer-social-block .footer-social {
+    @apply list-none m-0 mt-5 p-0 lg:mt-0 ;
+  }
+  
+  .footer-social-block .footer-social li {
+    @apply inline-block m-0 mr-[5px] align-middle last:mr-0;
+  }
+  
+  .footer-social-block .footer-social li a {
+    @apply block hover:text-theme-primary transition-colors duration-300;
+  }
+  
+  .footer-social-block .footer-social li a:hover path,
+  .footer-social-block .footer-social li a:hover svg {
+    @apply fill-theme-primary transition-colors duration-300;
+  }
