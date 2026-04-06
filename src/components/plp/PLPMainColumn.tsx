@@ -2,6 +2,7 @@
 
 import PLPProductCard from "./PLPProductCard";
 import SortingProduct from "./SortingProduct";
+import Pagination from "./Pagination";
 import type { ProductListSortKey } from "@/src/framework/graphql/queries/products";
 import type { PLPContentProduct } from "./types";
 
@@ -10,6 +11,9 @@ type PLPMainColumnProps = {
   products: PLPContentProduct[];
   listLoading: boolean;
   onSortPendingChange?: (pending: boolean) => void;
+  currentPage: number;
+  totalPages: number;
+  onPagePendingChange?: (pending: boolean) => void;
 };
 
 export default function PLPMainColumn({
@@ -17,6 +21,9 @@ export default function PLPMainColumn({
   products,
   listLoading,
   onSortPendingChange,
+  currentPage,
+  totalPages,
+  onPagePendingChange,
 }: PLPMainColumnProps) {
   return (
     <div className="main-content mb-10 grow basis-auto w-full md:float-right md:w-[77%] md:min-h-[300px] md:pl-[2%]">
@@ -28,7 +35,7 @@ export default function PLPMainColumn({
       </div>
 
       <div className="product-list relative min-h-[240px]">
-        {listLoading ? (
+        {listLoading && (
           <div
             className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-[1px]"
             role="status"
@@ -41,7 +48,7 @@ export default function PLPMainColumn({
               aria-hidden
             />
           </div>
-        ) : null}
+        )}
 
         <ol
           className={`product-items grid grid-cols-2 gap-x-[15px] gap-y-5 sm:gap-y-[25px] md:gap-x-5 md:grid-cols-3 lg:grid-cols-4 ${
@@ -55,17 +62,26 @@ export default function PLPMainColumn({
             >
               <PLPProductCard
                 id={p.sku}
+                productId={p.productId}
                 href={p.href}
                 imageUrl={p.imageUrl}
                 name={p.name}
                 description={p.description}
+                productType={p.productType}
+                stockStatus={p.stockStatus}
               />
             </li>
           ))}
         </ol>
       </div>
 
-      <div className="product-list-toolbar">{/* pagination */}</div>
+      <div className="product-list-toolbar">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPendingChange={onPagePendingChange}
+        />
+      </div>
     </div>
   );
 }

@@ -15,13 +15,16 @@ export async function POST(req: NextRequest) {
   try {
     const body: unknown = await req.json();
     const storeCode = getActiveStoreCode();
+    const customerToken = req.headers.get("x-customer-token");
 
     const headers: HeadersInit = {
       "Content-Type": "application/json",
       Store: storeCode,
     };
 
-    if (config.commerce.apiKey) {
+    if (customerToken) {
+      headers.Authorization = `Bearer ${customerToken}`;
+    } else if (config.commerce.apiKey) {
       headers.Authorization = `Bearer ${config.commerce.apiKey}`;
     }
 

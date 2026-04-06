@@ -25,7 +25,7 @@ type SortingProductProps = {
 
 const defaultOptions: SortOption[] = [
   { value: "position", label: "Position" },
-  { value: "name", label: "Product Name" },
+  { value: "name", label: "Product Name" }
 ];
 
 const SortingProduct = ({

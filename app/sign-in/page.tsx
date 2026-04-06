@@ -1,21 +1,16 @@
-"use client";
+import type { Metadata } from "next";
+import AuthPageLayout from "@/src/components/auth/AuthPageLayout";
+import LoginForm from "@/src/components/auth/LoginForm";
 
-import loginBackgroundImage from "@/public/images/login-bg.jpg";
-function SignInPage() {
-    return (
-        <div
-            className="bg-cover bg-center h-screen w-full"
-            style={{ backgroundImage: `url(${loginBackgroundImage.src})` }}
-        >
-            <div className="container">
-                <div className="row">
-                    <div className="col-12">
-                        <h1>Sign In</h1>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+export const metadata: Metadata = {
+  title: "Login",
+  description: "Sign in to your American Lighting account.",
+};
+
+export default function SignInPage() {
+  return (
+    <AuthPageLayout title="Login">
+      <LoginForm />
+    </AuthPageLayout>
+  );
 }
-
-export default SignInPage;

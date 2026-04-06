@@ -7,7 +7,7 @@ const Home = async () => {
 
   const rawContent = decodePageBuilderHtmlBlocks(homePage?.content ?? "");
   return (
-    <div className="">
+    <div>
       {/* PageBuilder inline styles target #html-body, so we provide that wrapper */}
       <div
         id="html-body"

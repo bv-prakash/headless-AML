@@ -1,6 +1,6 @@
 "use client";
 
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 /**
@@ -19,6 +19,7 @@ export default function ToastContainerWithOffset() {
       pauseOnFocusLoss
       draggable
       pauseOnHover
+      transition={Slide}
     />
   );
 }

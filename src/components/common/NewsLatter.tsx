@@ -1,51 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { useMutation } from "@apollo/client/react";
+import { emailValidation } from "@/src/utils/validation";
 import {
   NEWSLETTER_SUBSCRIBE_MUTATION,
   type NewsletterSubscribeVariables,
   type NewsletterSubscribeResponse,
-} from "../../framework/graphql/mutations/newslatterSubscribe";
+} from "@/src/framework/graphql/mutations/newslatterSubscribe";
 
-type FormErrors = {
-  email?: string;
+type NewsletterFormValues = {
+  email: string;
 };
 
-function validateEmail(email: string): FormErrors {
-  if (!email) return { email: "Email is required" };
-  if (!email.includes("@") || !email.includes(".")) return { email: "Invalid email" };
-  return {};
-}
-
 const NewsLatter = () => {
-  const [email, setEmail] = useState("");
-  const [validationErrors, setValidationErrors] = useState<FormErrors>({});
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<NewsletterFormValues>({ mode: "onTouched" });
 
-  const [newsletterSubscribe, { loading }] = useMutation<
+  const [newsletterSubscribe] = useMutation<
     NewsletterSubscribeResponse,
     NewsletterSubscribeVariables
   >(NEWSLETTER_SUBSCRIBE_MUTATION);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const errors = validateEmail(email);
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      return;
-    }
-    setValidationErrors({});
-
+  const onSubmit = async (values: NewsletterFormValues) => {
     try {
       const { data } = await newsletterSubscribe({
-        variables: { email },
+        variables: { email: values.email.trim() },
       });
 
       if (data?.subscribeEmailToNewsletter?.status === "SUBSCRIBED") {
         toast.success("Email subscribed successfully");
-        setEmail("");
+        reset();
       }
     } catch (err: unknown) {
       const message =
@@ -60,8 +50,9 @@ const NewsLatter = () => {
         SUBSCRIBE TO OUR MAILING LIST
       </div>
       <form
-        className="form subscribe flex flex-nowrap gap items-baseline"
-        onSubmit={handleSubmit}
+        className="form subscribe flex flex-nowrap gap-2 items-baseline"
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
       >
         <div className="field newsletter mr-0 md:mr-[5px] w-full">
           <div className="control">
@@ -72,25 +63,31 @@ const NewsLatter = () => {
               type="email"
               id="newsletter"
               placeholder="Email address"
-              aria-required="true"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="text-base h-9 pl-3 w-full focus:outline-none focus:ring-0 focus:border-theme-primary px-5 bg-white text-black border border-solid border-aaa rounded-none leading-[1.3] placeholder:text-aaa"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "newsletter-email-error" : undefined}
+              {...register("email", {
+                required: "Email is required.",
+                pattern: emailValidation,
+              })}
+              className={`text-base h-9 pl-3 w-full focus:outline-none focus:ring-0 focus:border-theme-primary px-5 bg-white text-black border border-solid rounded-none leading-[1.3] placeholder:text-aaa ${
+                errors.email ? "border-red-500" : "border-aaa"
+              }`}
             />
-            {validationErrors.email && (
-              <p className="text-red-500 text-sm">{validationErrors.email}</p>
+            {errors.email && (
+              <p id="newsletter-email-error" className="text-red-500 text-sm mt-1" role="alert">
+                {errors.email.message}
+              </p>
             )}
           </div>
         </div>
         <div className="actions ml-2.5 w-auto lg:min-w-[120px]">
           <button
             type="submit"
-            disabled={loading}
+            disabled={isSubmitting}
             className="subscribe w-full cursor-pointer text-sm leading-normal px-2.5 py-1.5 h-9 border-3 border-solid border-theme-primary bg-theme-primary text-white font-bold align-middle hover:bg-transparent hover:border-white disabled:opacity-50"
             aria-label="Subscribe"
           >
-            <span>{loading ? "Sending…" : "JOIN"}</span>
+            <span>{isSubmitting ? "Sending…" : "JOIN"}</span>
           </button>
         </div>
       </form>

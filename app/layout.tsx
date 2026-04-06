@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Footer, Header } from "@/src/components";
-import ToastContainer from '@/src/components/common/ToastContainer';
+import ToastContainer from "@/src/components/common/ToastContainer";
 import Providers from "./Providers";
 
 export const metadata: Metadata = {
-  title: "Home | American Lighting",
+  title: {
+    template: "%s | American Lighting",
+    default: "Home | American Lighting",
+  },
   description: "American Lighting, Inc manufactures a wide range of lighting solutions for your residential, commercial and specialty lighting needs.",
 };
 

@@ -3,23 +3,31 @@
 import { useState } from "react";
 import FilterProducts from "./FilterProducts";
 import PLPMainColumn from "./PLPMainColumn";
-import type { ProductAggregation, ProductListSortKey } from "@/src/framework/graphql/queries/products";
+import type {
+  ProductAggregation,
+  ProductListSortKey,
+} from "@/src/framework/graphql/queries/products";
 import type { PLPContentProduct } from "./types";
 
 type PLPShopLayoutProps = {
   aggregations: ProductAggregation[];
   products: PLPContentProduct[];
   sortBy: ProductListSortKey;
+  currentPage: number;
+  totalPages: number;
 };
 
 export default function PLPShopLayout({
   aggregations,
   products,
   sortBy,
+  currentPage,
+  totalPages,
 }: PLPShopLayoutProps) {
   const [sortNavPending, setSortNavPending] = useState(false);
   const [filterNavPending, setFilterNavPending] = useState(false);
-  const listLoading = sortNavPending || filterNavPending;
+  const [pageNavPending, setPageNavPending] = useState(false);
+  const listLoading = sortNavPending || filterNavPending || pageNavPending;
 
   return (
     <div className="container relative z-1 flex flex-wrap md:block">
@@ -36,6 +44,9 @@ export default function PLPShopLayout({
         products={products}
         listLoading={listLoading}
         onSortPendingChange={setSortNavPending}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPagePendingChange={setPageNavPending}
       />
     </div>
   );

@@ -1,22 +1,20 @@
 import Breadcrums from "../common/Breadcrums";
 import PLPShopLayout from "./PLPShopLayout";
 import { getCategoryBreadcrumbs } from "@/src/framework/graphql/queries/breadcrumbs";
+import { stripHtml } from "@/src/utils/html";
 import type {
   ProductAggregation,
   ProductListSortKey,
 } from "@/src/framework/graphql/queries/products";
 import type { PLPContentProduct } from "./types";
 
-export type { PLPContentProduct } from "./types";
-
-const stripHtml = (html: string) =>
-  html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
-
 type PLPContentProps = {
   products: PLPContentProduct[];
   sortBy: ProductListSortKey;
   aggregations?: ProductAggregation[];
   categoryId: string;
+  currentPage: number;
+  totalPages: number;
 };
 
 const PLPContent = async ({
@@ -24,6 +22,8 @@ const PLPContent = async ({
   sortBy,
   aggregations = [],
   categoryId,
+  currentPage,
+  totalPages,
 }: PLPContentProps) => {
   const { name } = await getCategoryBreadcrumbs(categoryId);
 
@@ -44,6 +44,8 @@ const PLPContent = async ({
         aggregations={aggregations}
         products={items}
         sortBy={sortBy}
+        currentPage={currentPage}
+        totalPages={totalPages}
       />
     </>
   );

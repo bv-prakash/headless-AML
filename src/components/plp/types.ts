@@ -1,7 +1,12 @@
+import type { ProductStockStatus } from "@/src/framework/graphql/queries/products";
+
 export type PLPContentProduct = {
-  sku: string;
-  href: string;
-  imageUrl: string;
-  name: string;
-  description?: string;
+  readonly productId: number;
+  readonly sku: string;
+  readonly href: string;
+  readonly imageUrl: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly productType?: string;
+  readonly stockStatus: ProductStockStatus;
 };
