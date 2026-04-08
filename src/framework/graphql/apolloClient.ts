@@ -53,7 +53,20 @@ const authLink = setContext((_, { headers }) => {
 
 const apolloClient = new ApolloClient({
   link: ApolloLink.from([authLink, httpLink]),
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    typePolicies: {
+      Cart: { keyFields: false },
+      SimpleProduct: { keyFields: ["uid"] },
+      ConfigurableProduct: { keyFields: ["uid"] },
+      BundleProduct: { keyFields: ["uid"] },
+      DownloadableProduct: { keyFields: ["uid"] },
+      VirtualProduct: { keyFields: ["uid"] },
+      GroupedProduct: { keyFields: ["uid"] },
+      StoreConfig: { keyFields: [] },
+      CompareList: { keyFields: ["uid"] },
+      CategoryTree: { keyFields: ["id"] },
+    },
+  }),
   defaultOptions: {
     watchQuery: { fetchPolicy: "cache-first" },
     query: { fetchPolicy: "cache-first" },

@@ -13,6 +13,7 @@ import {
   type ProductAggregation,
 } from "@/src/framework/graphql/queries/products";
 import { getStoreConfig } from "@/src/framework/graphql/queries/storeConfig";
+import { parsePageParam } from "@/src/utils/params";
 
 type CategoryPageProps = {
   params: Promise<{ slug: string[] }>;
@@ -20,12 +21,6 @@ type CategoryPageProps = {
 };
 
 const DEFAULT_PAGE_SIZE = 12;
-
-function parsePageParam(raw: string | string[] | undefined): number {
-  const v = Array.isArray(raw) ? raw[0] : raw;
-  const n = parseInt(v ?? "", 10);
-  return isNaN(n) || n < 1 ? 1 : n;
-}
 
 const CategoryPage = async ({ params, searchParams }: CategoryPageProps) => {
   type SearchParamRecord = Record<string, string | string[] | undefined>;

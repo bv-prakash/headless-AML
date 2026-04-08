@@ -3,10 +3,7 @@
 import { ToastContainer, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-/**
- * Renders ToastContainer with top offset from StickyHeaderHeightContext
- * so toasts appear below the sticky header. Must be used inside StickyHeaderHeightProvider.
- */
+/** Global toast container rendered once in the root layout. */
 export default function ToastContainerWithOffset() {
   return (
     <ToastContainer

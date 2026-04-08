@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import Logo from "./Logo";
 import CategoryNav from "./CategoryNav";
 import SearchBar from "./SearchBar";
@@ -6,7 +7,8 @@ import HeaderAuth from "./HeaderAuth";
 import CompareIcon from "@/src/components/compare/CompareIcon";
 import WishlistIcon from "@/src/components/wishlist/WishlistIcon";
 import CartIcon from "@/src/components/plp/CartIcon";
-import Minicart from "@/src/components/plp/Minicart";
+
+const Minicart = dynamic(() => import("@/src/components/plp/Minicart"));
 
 function HeaderIconsPlaceholder() {
   return (
@@ -22,13 +24,13 @@ function HeaderIconsPlaceholder() {
 const Header = () => {
   return (
     <>
-      <header className="relative bg-white border-b-2 md:border-b-4 border-solid border-theme-primary w-full z-10">
-        <div className="container flex items-center md:py-[25px] md:px-[15px] xl:py-[35px]!">
+      <header className="relative max-md:py-5 bg-white border-b-2 md:border-b-4 border-solid border-theme-primary w-full z-10">
+        <div className="container flex items-center gap-y-5 flex-wrap md:py-[25px] md:px-[15px] xl:py-[35px]!">
           <Logo />
 
-          <div className="flex flex-1 items-center justify-end gap-5">
+          <div className="flex flex-1 items-center justify-end gap-5 flex-wrap">
             <CategoryNav />
-            <SearchBar />
+            <SearchBar className="max-md:w-full max-md:flex-1 max-md:order-1" />
             <ClientOnly fallback={<HeaderIconsPlaceholder />}>
               <CompareIcon />
               <WishlistIcon />

@@ -17,7 +17,6 @@ import {
   REMOVE_FROM_COMPARE_LIST_MUTATION,
   type CompareListQueryResponse,
   type CompareListQueryVariables,
-  type CompareListData,
   type RemoveFromCompareListResponse,
   type RemoveFromCompareListVariables,
 } from "@/src/framework/graphql/mutations/compareMutations";

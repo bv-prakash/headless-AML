@@ -2,6 +2,7 @@
 @import "../src/style/home.css";
 @import "../src/style/footer.css";
 @import "../src/style/icons.css";
+@import "../src/style/pdp.css";
 
 :root {
   --background: #ffffff;
@@ -89,7 +90,7 @@ body {
 
 h1,
 h2 {
-  @apply text-xl leading-[1.1] mb-3 mt-0 font-semibold md:text-[26px] lg-custom:text-[32px]!;
+  @apply text-xl leading-[1.1] mt-0 md:text-[26px] lg-custom:text-[32px]!;
 }
 
 /* Page loader (see `PageLoader` component) */

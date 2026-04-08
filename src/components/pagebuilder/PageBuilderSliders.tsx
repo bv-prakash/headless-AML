@@ -75,6 +75,8 @@ export default function PageBuilderSliders(options?: PageBuilderSliderOptions) {
     const root = document.getElementById(rootId);
     if (!root) return;
 
+    const swiperInstances: Swiper[] = [];
+
     const sliders = Array.from(root.querySelectorAll<HTMLElement>(selector));
     const responsiveLimit =
       (JSON.parse(responsiveLimitKey) as Array<{ mediaQuery: string; limit: number }>) ||
@@ -86,7 +88,6 @@ export default function PageBuilderSliders(options?: PageBuilderSliderOptions) {
         : sliders;
 
     targetSliders.forEach((slider) => {
-      // Prevent double-init
       if (slider.dataset.swiperInitialized === "true") return;
 
       const autoplayAttr = toBool(slider.getAttribute("data-autoplay"));
@@ -102,13 +103,11 @@ export default function PageBuilderSliders(options?: PageBuilderSliderOptions) {
       const paginationEnabled = pagination ?? dotsAttr ?? true;
       const navigationEnabled = navigation ?? arrowsAttr ?? false;
 
-      // Find PageBuilder slides
       const slideNodes = Array.from(
         slider.querySelectorAll<HTMLElement>('[data-content-type="slide"]'),
       );
       if (!slideNodes.length) return;
 
-      // Build Swiper DOM
       const container = document.createElement("div");
       container.className = "swiper";
 
@@ -142,20 +141,15 @@ export default function PageBuilderSliders(options?: PageBuilderSliderOptions) {
         container.appendChild(nextEl);
       }
 
-      // Replace PageBuilder slider content with Swiper container
       slider.innerHTML = "";
       slider.appendChild(container);
 
-      // Init Swiper
-      // eslint-disable-next-line no-new
-      new Swiper(container, {
+      const instance = new Swiper(container, {
         modules: [Autoplay, Navigation, Pagination],
         loop: loopEnabled,
         autoplay: autoplayEnabled
           ? { delay: autoplayDelay, disableOnInteraction: false }
           : false,
-        // Swiper modules expect params objects to exist when modules are enabled.
-        // Provide explicit `enabled` flags to avoid runtime `...reading 'enabled'` errors.
         pagination: paginationEnabled && paginationEl
           ? { enabled: true, el: paginationEl, clickable: true }
           : { enabled: false },
@@ -164,8 +158,15 @@ export default function PageBuilderSliders(options?: PageBuilderSliderOptions) {
           : { enabled: false },
       });
 
+      swiperInstances.push(instance);
       slider.dataset.swiperInitialized = "true";
     });
+
+    return () => {
+      swiperInstances.forEach((sw) => {
+        try { sw.destroy(true, true); } catch { /* already destroyed */ }
+      });
+    };
   }, [
     autoplay,
     autoplayDelayMs,

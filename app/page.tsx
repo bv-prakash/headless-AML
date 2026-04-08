@@ -1,7 +1,11 @@
+import dynamic from "next/dynamic";
 import { getHomePage } from "@/src/framework/graphql/queries";
 import ApplyBackgroundImages from "@/src/components/pagebuilder/ApplyBackgroundImages";
-import PageBuilderSliders from "@/src/components/pagebuilder/PageBuilderSliders";
 import { decodePageBuilderHtmlBlocks } from "@/src/utils/pagebuilder/decodePageBuilderHtmlBlocks";
+
+const PageBuilderSliders = dynamic(
+  () => import("@/src/components/pagebuilder/PageBuilderSliders"),
+);
 const Home = async () => {
   const homePage = await getHomePage();
 

@@ -1,21 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
-import Image from "next/image";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "@/src/store/hooks";
+import { selectMinicartProps } from "@/src/store/selectors";
 import {
   closeMinicart,
   setCart,
   clearCart,
 } from "@/src/store/slices/cartSlice";
 import { formatPrice } from "@/src/utils/format";
+import { isStaleCartError } from "@/src/utils/errors";
+import MinicartItem from "@/src/components/cart/MinicartItem";
 import {
   CART_QUERY,
   REMOVE_CART_ITEM_MUTATION,
   UPDATE_CART_ITEM_MUTATION,
+  type CartItem,
   type CartQueryResponse,
   type CartQueryVariables,
   type RemoveCartItemResponse,
@@ -24,38 +27,51 @@ import {
   type UpdateCartItemVariables,
 } from "@/src/framework/graphql/mutations/cartMutations";
 
+type ValidCartItem = CartItem & {
+  product: NonNullable<CartItem["product"]>;
+  prices: NonNullable<CartItem["prices"]>;
+};
+
 export default function Minicart() {
   const dispatch = useAppDispatch();
-  const isOpen = useAppSelector((state) => state.cart.open);
-  const cartId = useAppSelector((state) => state.cart.cartId);
-  const cart = useAppSelector((state) => state.cart.cart);
-  const totalQuantity = useAppSelector((state) => state.cart.totalQuantity);
-  const drawerRef = useRef<HTMLDivElement>(null);
+  const { open: isOpen, cartId, cart, totalQuantity } = useAppSelector(selectMinicartProps);
+
+  const [visible, setVisible] = useState(false);
+  const [sliding, setSliding] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setVisible(true);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setSliding(true));
+      });
+    } else {
+      setSliding(false);
+    }
+  }, [isOpen]);
+
+  const handleTransitionEnd = useCallback(() => {
+    if (!isOpen) {
+      setVisible(false);
+    }
+  }, [isOpen]);
 
   const { data, loading, error } = useQuery<CartQueryResponse, CartQueryVariables>(
     CART_QUERY,
     {
       variables: { cartId: cartId ?? "" },
-      skip: !cartId,
+      skip: !cartId || !isOpen,
       fetchPolicy: "cache-and-network",
     },
   );
 
   useEffect(() => {
-    if (data?.cart) {
-      dispatch(setCart(data.cart));
-    }
+    if (data?.cart) dispatch(setCart(data.cart));
   }, [data, dispatch]);
 
   useEffect(() => {
     if (!error) return;
-    const msg = error.message.toLowerCase();
-    if (
-      msg.includes("cannot perform operations on cart") ||
-      msg.includes("could not find a cart")
-    ) {
-      dispatch(clearCart());
-    }
+    if (isStaleCartError(error.message)) dispatch(clearCart());
   }, [error, dispatch]);
 
   const [removeItem, { loading: removing }] = useMutation<
@@ -89,11 +105,11 @@ export default function Minicart() {
   }, [isOpen, handleClose]);
 
   const handleRemove = useCallback(
-    async (itemId: string, productName: string) => {
+    async (itemUid: string, productName: string) => {
       if (!cartId) return;
       try {
         const { data: result } = await removeItem({
-          variables: { cartId, cartItemId: Number(itemId) },
+          variables: { cartId, cartItemUid: itemUid },
         });
         if (result?.removeItemFromCart?.cart) {
           dispatch(setCart(result.removeItemFromCart.cart));
@@ -107,11 +123,11 @@ export default function Minicart() {
   );
 
   const handleUpdateQty = useCallback(
-    async (itemId: string, newQty: number) => {
+    async (itemUid: string, newQty: number) => {
       if (!cartId || newQty < 1) return;
       try {
         const { data: result } = await updateItem({
-          variables: { cartId, cartItemId: Number(itemId), quantity: newQty },
+          variables: { cartId, cartItemUid: itemUid, quantity: newQty },
         });
         if (result?.updateCartItems?.cart) {
           dispatch(setCart(result.updateCartItems.cart));
@@ -123,17 +139,24 @@ export default function Minicart() {
     [cartId, updateItem, dispatch],
   );
 
-  const items = cart?.items ?? [];
+  const items = useMemo(
+    () => (cart?.items ?? []).filter(
+      (i): i is ValidCartItem => i.product != null && i.prices != null,
+    ),
+    [cart?.items],
+  );
   const subtotal = cart?.prices?.subtotal_excluding_tax;
   const grandTotal = cart?.prices?.grand_total;
   const isBusy = removing || updating;
+
+  if (!visible) return null;
 
   return (
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${
-          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ease-in-out ${
+          sliding ? "opacity-100" : "opacity-0"
         }`}
         onClick={handleClose}
         aria-hidden="true"
@@ -141,33 +164,28 @@ export default function Minicart() {
 
       {/* Drawer */}
       <div
-        ref={drawerRef}
         role="dialog"
         aria-modal="true"
         aria-label="Shopping cart"
-        className={`fixed top-0 right-0 z-50 h-full w-full max-w-[400px] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 z-50 h-full w-full max-w-[440px] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
+          sliding ? "translate-x-0" : "translate-x-full"
         }`}
+        onTransitionEnd={handleTransitionEnd}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-bold uppercase">
-            My Cart
-            {totalQuantity > 0 && (
-              <span className="text-sm font-normal text-gray-500 ml-2">
-                ({totalQuantity} {totalQuantity === 1 ? "item" : "items"})
-              </span>
-            )}
-          </h2>
+          {totalQuantity > 0 && (
+            <div className="text-base lg-custom:text-lg! font-bold uppercase">
+              {totalQuantity} {totalQuantity === 1 ? "item in cart" : "items in cart"}
+            </div>
+          )}
           <button
             type="button"
             onClick={handleClose}
-            className="text-gray-400 hover:text-black transition-colors cursor-pointer p-1"
+            className="text-black hover:text-theme-primary transition-colors cursor-pointer"
             aria-label="Close cart"
           >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 4l12 12M16 4L4 16" />
-            </svg>
+            <i className="icon-cross-icon text-[22px] leading-1" aria-hidden="true" />
           </button>
         </div>
 
@@ -196,85 +214,14 @@ export default function Minicart() {
           {items.length > 0 && (
             <ul className="space-y-4">
               {items.map((item) => (
-                <li
-                  key={item.id}
-                  className={`flex gap-3 pb-4 border-b border-gray-100 last:border-0 ${isBusy ? "opacity-60 pointer-events-none" : ""}`}
-                >
-                  {/* Product image */}
-                  <div className="w-[70px] h-[70px] shrink-0 border border-gray-200 rounded overflow-hidden">
-                    {item.product.small_image?.url ? (
-                      <Image
-                        src={item.product.small_image.url}
-                        alt={item.product.name}
-                        width={70}
-                        height={70}
-                        className="object-contain w-full h-full"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
-                        No img
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Details */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-black truncate">
-                      {item.product.name}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      SKU: {item.product.sku}
-                    </p>
-                    <p className="text-sm font-bold text-black mt-1">
-                      {formatPrice(
-                        item.prices.row_total.value,
-                        item.prices.row_total.currency,
-                      )}
-                    </p>
-
-                    {/* Qty controls */}
-                    <div className="flex items-center gap-2 mt-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleUpdateQty(item.id, item.quantity - 1)
-                        }
-                        disabled={item.quantity <= 1 || isBusy}
-                        className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
-                        aria-label="Decrease quantity"
-                      >
-                        −
-                      </button>
-                      <span className="text-sm font-medium min-w-[20px] text-center">
-                        {item.quantity}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleUpdateQty(item.id, item.quantity + 1)
-                        }
-                        disabled={isBusy}
-                        className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
-                        aria-label="Increase quantity"
-                      >
-                        +
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleRemove(item.id, item.product.name)}
-                        disabled={isBusy}
-                        className="ml-auto text-red-500 hover:text-red-700 transition-colors cursor-pointer disabled:opacity-40"
-                        aria-label={`Remove ${item.product.name}`}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                          <path d="M5.5 5.5A.5.5 0 016 6v6a.5.5 0 01-1 0V6a.5.5 0 01.5-.5zm2.5 0a.5.5 0 01.5.5v6a.5.5 0 01-1 0V6a.5.5 0 01.5-.5zm3 .5a.5.5 0 00-1 0v6a.5.5 0 001 0V6z" />
-                          <path fillRule="evenodd" d="M14.5 3a1 1 0 01-1 1H13v9a2 2 0 01-2 2H5a2 2 0 01-2-2V4h-.5a1 1 0 010-2H6a1 1 0 011-1h2a1 1 0 011 1h3.5a1 1 0 011 1zM4.118 4L4 4.059V13a1 1 0 001 1h6a1 1 0 001-1V4.059L11.882 4H4.118zM6 1.5a.5.5 0 01.5-.5h3a.5.5 0 010 1h-3a.5.5 0 01-.5-.5z" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </li>
+                <MinicartItem
+                  key={item.uid}
+                  item={item}
+                  isBusy={isBusy}
+                  onRemove={handleRemove}
+                  onUpdateQty={handleUpdateQty}
+                  onClose={handleClose}
+                />
               ))}
             </ul>
           )}
@@ -282,7 +229,7 @@ export default function Minicart() {
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="border-t border-gray-200 px-5 py-4 space-y-3">
+          <div className="border-t border-gray-200 px-5 py-4 space-y-5">
             {subtotal && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Subtotal</span>
@@ -292,9 +239,9 @@ export default function Minicart() {
               </div>
             )}
             {grandTotal && (
-              <div className="flex justify-between text-base font-bold">
+              <div className="flex justify-between font-bold">
                 <span>Grand Total</span>
-                <span>
+                <span className="text-[22px] leading-1 lg-custom:text-2xl! font-bold">
                   {formatPrice(grandTotal.value, grandTotal.currency)}
                 </span>
               </div>
@@ -306,13 +253,13 @@ export default function Minicart() {
             >
               Proceed to Checkout
             </Link>
-            <button
-              type="button"
+            <Link
+              href="/cart"
               onClick={handleClose}
-              className="block w-full text-center text-theme-primary underline hover:no-underline text-sm cursor-pointer py-1"
+              className="block w-full text-center text-theme-primary hover:underline text-sm uppercase font-semibold cursor-pointer py-1"
             >
-              Continue Shopping
-            </button>
+              view and edit cart
+            </Link>
           </div>
         )}
       </div>

@@ -16,14 +16,12 @@ type AuthState = {
   token: string | null;
   customer: CustomerInfo | null;
   isLoggedIn: boolean;
-  hydrated: boolean;
 };
 
 const initialState: AuthState = {
   token: null,
   customer: null,
   isLoggedIn: false,
-  hydrated: false,
 };
 
 const authSlice = createSlice({
@@ -49,7 +47,6 @@ const authSlice = createSlice({
       const token = getStoredValue(CUSTOMER_TOKEN_KEY);
       state.token = token;
       state.isLoggedIn = Boolean(token);
-      state.hydrated = true;
       if (!token) {
         state.customer = null;
       }

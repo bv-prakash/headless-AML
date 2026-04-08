@@ -32,40 +32,6 @@ export const ADD_TO_WISHLIST_MUTATION = gql`
       wishlist {
         id
         items_count
-        items_v2(currentPage: 1, pageSize: 8) {
-          items {
-            id
-            quantity
-            ... on BundleWishlistItem {
-              bundle_options {
-                values {
-                  id
-                  label
-                  quantity
-                }
-              }
-            }
-            product {
-              uid
-              name
-              sku
-              price_range {
-                minimum_price {
-                  regular_price {
-                    currency
-                    value
-                  }
-                }
-                maximum_price {
-                  regular_price {
-                    currency
-                    value
-                  }
-                }
-              }
-            }
-          }
-        }
       }
       user_errors {
         code

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMutation } from "@apollo/client/react";
@@ -10,6 +10,7 @@ import { logout } from "@/src/store/slices/authSlice";
 import { clearWishlist } from "@/src/store/slices/wishlistSlice";
 import { clearCart } from "@/src/store/slices/cartSlice";
 import { clearCompare } from "@/src/store/slices/compareSlice";
+import { useClickOutside } from "@/src/hooks/useClickOutside";
 import {
   REVOKE_CUSTOMER_TOKEN_MUTATION,
   type RevokeCustomerTokenResponse,
@@ -28,21 +29,8 @@ export default function HeaderAuth() {
     REVOKE_CUSTOMER_TOKEN_MUTATION,
   );
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setDropdownOpen(false);
-      }
-    }
-
-    if (dropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [dropdownOpen]);
+  const closeDropdown = useCallback(() => setDropdownOpen(false), []);
+  useClickOutside(dropdownRef, closeDropdown, dropdownOpen);
 
   const handleLogout = useCallback(async () => {
     setDropdownOpen(false);

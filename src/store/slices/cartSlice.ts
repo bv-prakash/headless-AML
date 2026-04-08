@@ -9,6 +9,7 @@ type CartState = {
   cart: CartData | null;
   open: boolean;
   hydrated: boolean;
+  quantities: Record<string, number>;
 };
 
 const initialState: CartState = {
@@ -17,6 +18,7 @@ const initialState: CartState = {
   cart: null,
   open: false,
   hydrated: false,
+  quantities: {},
 };
 
 const cartSlice = createSlice({
@@ -28,13 +30,16 @@ const cartSlice = createSlice({
       setStoredValue(CART_ID_KEY, action.payload);
     },
     setCart(state, action: PayloadAction<CartData>) {
-      state.cart = action.payload;
-      state.totalQuantity = action.payload.total_quantity;
-      setStoredValue(CART_COUNT_KEY, String(action.payload.total_quantity));
-    },
-    setCartCount(state, action: PayloadAction<number>) {
-      state.totalQuantity = action.payload;
-      setStoredValue(CART_COUNT_KEY, String(action.payload));
+      const cart = action.payload;
+      state.cart = cart as typeof state.cart;
+      state.totalQuantity = cart.total_quantity;
+      setStoredValue(CART_COUNT_KEY, String(cart.total_quantity));
+      const freshQuantities: Record<string, number> = {};
+      for (const item of cart.items) {
+        const key = `cart-${item.uid}`;
+        freshQuantities[key] = state.quantities[key] ?? item.quantity;
+      }
+      state.quantities = freshQuantities;
     },
     openMinicart(state) {
       state.open = true;
@@ -47,6 +52,7 @@ const cartSlice = createSlice({
       state.totalQuantity = 0;
       state.cart = null;
       state.open = false;
+      state.quantities = {};
       removeStoredValue(CART_ID_KEY);
       removeStoredValue(CART_COUNT_KEY);
     },
@@ -57,16 +63,19 @@ const cartSlice = createSlice({
       state.totalQuantity = isNaN(count) ? 0 : count;
       state.hydrated = true;
     },
+    setQuantity(state, action: PayloadAction<{ key: string; qty: number }>) {
+      state.quantities[action.payload.key] = action.payload.qty;
+    },
   },
 });
 
 export const {
   setCartId,
   setCart,
-  setCartCount,
   openMinicart,
   closeMinicart,
   clearCart,
   hydrateCart,
+  setQuantity,
 } = cartSlice.actions;
 export default cartSlice.reducer;

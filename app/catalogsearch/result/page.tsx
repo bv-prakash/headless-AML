@@ -12,6 +12,7 @@ import {
   parseProductListSortParam,
   type ProductAggregation,
 } from "@/src/framework/graphql/queries/products";
+import { parsePageParam } from "@/src/utils/params";
 
 type SearchPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -23,12 +24,6 @@ const SORT_MAP: Record<string, Record<string, string>> = {
   position: { position: "ASC" },
   name: { name: "ASC" },
 };
-
-function parsePageParam(raw: string | string[] | undefined): number {
-  const v = Array.isArray(raw) ? raw[0] : raw;
-  const n = parseInt(v ?? "", 10);
-  return isNaN(n) || n < 1 ? 1 : n;
-}
 
 function buildFilterInput(
   facets: Record<string, string[]>,

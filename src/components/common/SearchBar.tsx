@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLazyQuery } from "@apollo/client/react";
 import { stripHtml } from "@/src/utils/html";
+import { useClickOutside } from "@/src/hooks/useClickOutside";
 import {
   PRODUCT_SEARCH_QUERY,
   SEARCH_RESULTS_PAGE_SIZE,
@@ -15,7 +16,7 @@ import {
 const MIN_CHARS = 3;
 const DEBOUNCE_MS = 350;
 
-export default function SearchBar() {
+export default function SearchBar({ className }: { className?: string }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -45,18 +46,8 @@ export default function SearchBar() {
     [search],
   );
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(e.target as Node)
-      ) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const closeDropdown = useCallback(() => setOpen(false), []);
+  useClickOutside(wrapperRef, closeDropdown);
 
   useEffect(() => {
     return () => {
@@ -75,7 +66,7 @@ export default function SearchBar() {
   }, []);
 
   return (
-    <div ref={wrapperRef} className="relative flex-1 max-w-[420px]">
+    <div ref={wrapperRef} className={`relative flex-1 max-w-[420px] ${className ? className : ""}`}>
       {/* Input */}
       <div className="relative">
         <input
@@ -155,7 +146,7 @@ export default function SearchBar() {
                         onClick={handleResultClick}
                         className="font-semibold text-theme-primary hover:underline transition-colors"
                         >
-                        View all (+{totalCount})
+                        View all (+{remaining})
                         </Link>
                     )}
                 </div>

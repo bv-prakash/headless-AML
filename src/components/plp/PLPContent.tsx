@@ -1,4 +1,4 @@
-import Breadcrums from "../common/Breadcrums";
+import Breadcrumbs from "../common/Breadcrumbs";
 import PLPShopLayout from "./PLPShopLayout";
 import { getCategoryBreadcrumbs } from "@/src/framework/graphql/queries/breadcrumbs";
 import { stripHtml } from "@/src/utils/html";
@@ -38,7 +38,7 @@ const PLPContent = async ({
         <h1 className="text-xl leading-[1.1] mb-[5px] md:mb-2.5 mt-0 font-bold md:text-[26px] lg-custom:text-[32px]!">
           {name || "Products"}
         </h1>
-        <Breadcrums categoryId={categoryId} />
+        <Breadcrumbs categoryId={categoryId} />
       </div>
       <PLPShopLayout
         aggregations={aggregations}

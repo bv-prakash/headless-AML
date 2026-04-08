@@ -8,6 +8,7 @@ import {
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
+import { useClickOutside } from "@/src/hooks/useClickOutside";
 
 type NavItem = {
   readonly id: number;
@@ -190,15 +191,13 @@ export default function CategoryNavClient({ items }: CategoryNavClientProps) {
     setOpenId(null);
   }, []);
 
+  useClickOutside(navRef, closeAll);
+
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (navRef.current && !navRef.current.contains(e.target as Node)) {
-        closeAll();
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [closeAll]);
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
+  }, []);
 
   const handleMouseEnter = useCallback((catId: number) => {
     if (closeTimeoutRef.current) {
