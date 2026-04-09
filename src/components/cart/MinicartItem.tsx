@@ -7,6 +7,7 @@ import ConfigurableItemOptions from "@/src/components/cart/ConfigurableItemOptio
 import BundleItemOptions from "@/src/components/cart/BundleItemOptions";
 import DownloadableItemOptions from "@/src/components/cart/DownloadableItemOptions";
 import type { CartItem } from "@/src/framework/graphql/mutations/cartMutations";
+import { buildProductEditHref } from "@/src/utils/params";
 
 type ValidCartItem = CartItem & {
   product: NonNullable<CartItem["product"]>;
@@ -78,7 +79,11 @@ function MinicartItemInner({ item, isBusy, onRemove, onUpdateQty, onClose }: Min
 
           <div className="ml-auto flex items-center gap-3">
             <Link
-              href={`/${item.product.url_key}`}
+              href={buildProductEditHref(
+                item.product.url_key,
+                item.product.sku,
+                item.quantity,
+              )}
               onClick={onClose}
               className="text-black hover:text-theme-primary transition-colors"
               aria-label={`Edit ${item.product.name}`}

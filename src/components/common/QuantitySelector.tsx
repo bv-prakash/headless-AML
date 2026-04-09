@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/src/store/hooks";
+import { getResolvedCartQuantity } from "@/src/store/cartQuantity";
 import { setQuantity as setStoreQuantity } from "@/src/store/slices/cartSlice";
 
 type QuantitySelectorProps = {
@@ -30,6 +31,17 @@ const SIZE_CLASSES = {
   },
 } as const;
 
+function normalizeFallback(
+  n: number | undefined,
+  min: number,
+  max: number,
+): number {
+  if (n != null && Number.isFinite(n) && n >= min) {
+    return Math.min(max, Math.floor(n));
+  }
+  return min;
+}
+
 export default function QuantitySelector({
   itemKey,
   defaultValue = 1,
@@ -41,7 +53,16 @@ export default function QuantitySelector({
   className = "",
 }: QuantitySelectorProps) {
   const dispatch = useAppDispatch();
-  const qty = useAppSelector((s) => s.cart.quantities[itemKey] ?? defaultValue);
+  /** Redux only — do not fold `defaultValue` into the selector or prop updates won’t refresh the display. */
+  const resolved = useAppSelector((s) => getResolvedCartQuantity(s, itemKey));
+  const fallback = useMemo(
+    () => normalizeFallback(defaultValue, min, max),
+    [defaultValue, min, max],
+  );
+  const qty =
+    resolved != null && Number.isFinite(resolved) && resolved >= min
+      ? Math.min(max, Math.floor(resolved))
+      : fallback;
   const classes = SIZE_CLASSES[size];
   const canDecrement = qty > min && !disabled;
   const canIncrement = qty < max && !disabled;
@@ -89,7 +110,7 @@ export default function QuantitySelector({
       <input
         type="text"
         inputMode="numeric"
-        value={qty}
+        value={String(qty)}
         onChange={handleInputChange}
         disabled={disabled}
         className={`${classes.input} font-semibold text-center border-t border-b border-f0f0f0 bg-white disabled:opacity-40`}

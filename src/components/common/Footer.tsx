@@ -3,6 +3,7 @@ import {
   getFooterServiceCmsBlock,
   getFooterSocialCmsBlock,
 } from "@/src/framework/graphql";
+import { getStoreConfig } from "@/src/framework/graphql/queries/storeConfig";
 import { decodeHtmlEntities } from "@/src/utils/decodeHtmlEntities";
 import NewsLatter from "./NewsLatter";
 
@@ -11,12 +12,15 @@ const decodeMaybeEscapedHtml = (raw: string): string => {
 };
 
 const Footer = async () => {
-  const [footerLeftBlock, footerServiceBlock, footerSocialBlock] =
+  const [footerLeftBlock, footerServiceBlock, footerSocialBlock, storeConfig] =
     await Promise.all([
       getFooterLeftCmsBlock(),
       getFooterServiceCmsBlock(),
       getFooterSocialCmsBlock(),
+      getStoreConfig(),
     ]);
+
+  const copyrightHtml = storeConfig.copyright?.trim();
 
   return (
     <footer className="bg-theme-secondary text-white border-t-2 border-theme-primary md:border-t-4">
@@ -52,7 +56,17 @@ const Footer = async () => {
             ) : null}
           </div>
         </div>
-        <small className="copyright-text block text-xs mt-5 lg:mt-10">© 2026 American Lighting Inc. All Rights Reserved</small>
+        <small className="copyright-text block text-xs mt-5 lg:mt-10">
+          {copyrightHtml ? (
+            <span
+              dangerouslySetInnerHTML={{
+                __html: decodeMaybeEscapedHtml(copyrightHtml),
+              }}
+            />
+          ) : (
+            "© 2026 American Lighting Inc. All Rights Reserved"
+          )}
+        </small>
       </div>
     </footer>
   );

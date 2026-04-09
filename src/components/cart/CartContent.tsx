@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useQuery, useMutation } from "@apollo/client/react";
@@ -25,7 +25,10 @@ import {
   type RemoveCartItemVariables,
   type UpdateCartItemResponse,
   type UpdateCartItemVariables,
+  type CartData,
 } from "@/src/framework/graphql/mutations/cartMutations";
+import { buildProductEditHref } from "@/src/utils/params";
+import { writeCartQueryToCache } from "@/src/framework/graphql/writeCartQueryCache";
 
 type ValidCartItem = CartItem & {
   product: NonNullable<CartItem["product"]>;
@@ -35,6 +38,7 @@ type ValidCartItem = CartItem & {
 export default function CartContent() {
   const dispatch = useAppDispatch();
   const { cartId, cart, hydrated } = useAppSelector(selectCartPageProps);
+  const [clearing, setClearing] = useState(false);
 
   const { data, loading, error } = useQuery<CartQueryResponse, CartQueryVariables>(
     CART_QUERY,
@@ -57,12 +61,26 @@ export default function CartContent() {
   const [removeItem, { loading: removing }] = useMutation<
     RemoveCartItemResponse,
     RemoveCartItemVariables
-  >(REMOVE_CART_ITEM_MUTATION);
+  >(REMOVE_CART_ITEM_MUTATION, {
+    update(cache, result, { variables }) {
+      const id = variables?.cartId;
+      const cart = result.data?.removeItemFromCart?.cart;
+      if (!id || !cart) return;
+      writeCartQueryToCache(cache, id, cart);
+    },
+  });
 
   const [updateItem, { loading: updating }] = useMutation<
     UpdateCartItemResponse,
     UpdateCartItemVariables
-  >(UPDATE_CART_ITEM_MUTATION);
+  >(UPDATE_CART_ITEM_MUTATION, {
+    update(cache, result, { variables }) {
+      const id = variables?.cartId;
+      const cart = result.data?.updateCartItems?.cart;
+      if (!id || !cart) return;
+      writeCartQueryToCache(cache, id, cart);
+    },
+  });
 
   const handleRemove = useCallback(
     async (itemUid: string, productName: string) => {
@@ -102,9 +120,38 @@ export default function CartContent() {
   const items = (cart?.items ?? []).filter(
     (i): i is ValidCartItem => i.product != null && i.prices != null,
   );
+
+  const handleClearCart = useCallback(async () => {
+    if (!cartId || items.length === 0) return;
+    if (
+      !globalThis.confirm(
+        "Remove all items from your cart? This cannot be undone.",
+      )
+    ) {
+      return;
+    }
+    setClearing(true);
+    try {
+      let lastCart: CartData | null = null;
+      for (const item of items) {
+        const { data } = await removeItem({
+          variables: { cartId, cartItemUid: item.uid },
+        });
+        lastCart = data?.removeItemFromCart?.cart ?? null;
+      }
+      if (lastCart) {
+        dispatch(setCart(lastCart));
+      }
+      toast.success("All items were removed from your cart.");
+    } catch {
+      toast.error("Failed to clear the cart. Please try again.");
+    } finally {
+      setClearing(false);
+    }
+  }, [cartId, items, removeItem, dispatch]);
   const subtotal = cart?.prices?.subtotal_excluding_tax;
   const grandTotal = cart?.prices?.grand_total;
-  const isBusy = removing || updating;
+  const isBusy = removing || updating || clearing;
 
   if (!hydrated || (loading && !cart)) {
     return (
@@ -212,7 +259,11 @@ export default function CartContent() {
                   <td className="py-5 md:pr-7.5 align-middle">
                     <div className="flex items-center justify-center gap-3">
                       <Link
-                        href={`/${item.product.url_key}`}
+                        href={buildProductEditHref(
+                          item.product.url_key,
+                          item.product.sku,
+                          item.quantity,
+                        )}
                         className="text-black hover:text-theme-primary transition-colors"
                         aria-label={`Edit ${item.product.name}`}
                       >
@@ -270,7 +321,11 @@ export default function CartContent() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <Link
-                      href={`/${item.product.url_key}`}
+                      href={buildProductEditHref(
+                        item.product.url_key,
+                        item.product.sku,
+                        item.quantity,
+                      )}
                       className="text-black hover:text-theme-primary transition-colors"
                       aria-label={`Edit ${item.product.name}`}
                     >
@@ -304,7 +359,7 @@ export default function CartContent() {
           ))}
         </ul>
 
-        <div className="mt-6">
+        <div className="mt-6 flex justify-between flex-wrap items-center gap-3">
           <Link
             href="/"
             className="inline-flex items-center justify-center font-semibold h-9 md:h-10 px-4 text-base gap-2 border border-aaa bg-white text-gray-700 hover:bg-theme-primary hover:text-white hover:border-theme-primary transition-colors"
@@ -312,13 +367,22 @@ export default function CartContent() {
             <i className="icon-back-arrow text-sm leading-none before:font-bold" aria-hidden="true" />
             Continue Shopping
           </Link>
+          <button
+            type="button"
+            onClick={handleClearCart}
+            disabled={isBusy}
+            className="inline-flex items-center justify-center font-semibold h-9 md:h-10 px-4 text-base gap-2 border border-aaa bg-white text-gray-700 hover:bg-theme-primary hover:text-white hover:border-theme-primary transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i className="icon-trash text-base leading-none" aria-hidden="true" />
+            Clear Cart
+          </button>
         </div>
       </div>
 
       {/* Order summary sidebar */}
       <div className="w-full lg-custom:w-[380px] shrink-0">
         <div className="bg-f0f0f0  p-5 sticky top-5">
-          <div className="text-xl leading-[30px] md:text-2xlfont-normal uppercase mb-2.5 pb-2.5 border-b border-black">
+          <div className="text-xl leading-[30px] md:text-2xl font-normal uppercase mb-2.5 pb-2.5 border-b border-black">
             Order Summary
           </div>
 

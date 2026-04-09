@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type TransitionEvent,
+} from "react";
 import Link from "next/link";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
@@ -26,6 +32,7 @@ import {
   type UpdateCartItemResponse,
   type UpdateCartItemVariables,
 } from "@/src/framework/graphql/mutations/cartMutations";
+import { writeCartQueryToCache } from "@/src/framework/graphql/writeCartQueryCache";
 
 type ValidCartItem = CartItem & {
   product: NonNullable<CartItem["product"]>;
@@ -50,11 +57,15 @@ export default function Minicart() {
     }
   }, [isOpen]);
 
-  const handleTransitionEnd = useCallback(() => {
-    if (!isOpen) {
-      setVisible(false);
-    }
-  }, [isOpen]);
+  const handlePanelTransitionEnd = useCallback(
+    (e: TransitionEvent<HTMLDivElement>) => {
+      if (e.target !== e.currentTarget) return;
+      if (!isOpen) {
+        setVisible(false);
+      }
+    },
+    [isOpen],
+  );
 
   const { data, loading, error } = useQuery<CartQueryResponse, CartQueryVariables>(
     CART_QUERY,
@@ -77,12 +88,26 @@ export default function Minicart() {
   const [removeItem, { loading: removing }] = useMutation<
     RemoveCartItemResponse,
     RemoveCartItemVariables
-  >(REMOVE_CART_ITEM_MUTATION);
+  >(REMOVE_CART_ITEM_MUTATION, {
+    update(cache, result, { variables }) {
+      const id = variables?.cartId;
+      const cart = result.data?.removeItemFromCart?.cart;
+      if (!id || !cart) return;
+      writeCartQueryToCache(cache, id, cart);
+    },
+  });
 
   const [updateItem, { loading: updating }] = useMutation<
     UpdateCartItemResponse,
     UpdateCartItemVariables
-  >(UPDATE_CART_ITEM_MUTATION);
+  >(UPDATE_CART_ITEM_MUTATION, {
+    update(cache, result, { variables }) {
+      const id = variables?.cartId;
+      const cart = result.data?.updateCartItems?.cart;
+      if (!id || !cart) return;
+      writeCartQueryToCache(cache, id, cart);
+    },
+  });
 
   const handleClose = useCallback(() => {
     dispatch(closeMinicart());
@@ -162,15 +187,16 @@ export default function Minicart() {
         aria-hidden="true"
       />
 
-      {/* Drawer */}
+      {/* Slide-over from the right */}
       <div
+        id="minicart-dialog"
         role="dialog"
         aria-modal="true"
         aria-label="Shopping cart"
-        className={`fixed top-0 right-0 z-50 h-full w-full max-w-[440px] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 z-50 flex h-full w-full max-w-[440px] flex-col overflow-hidden rounded-l-xl bg-white shadow-2xl transition-transform duration-300 ease-out ${
           sliding ? "translate-x-0" : "translate-x-full"
         }`}
-        onTransitionEnd={handleTransitionEnd}
+        onTransitionEnd={handlePanelTransitionEnd}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
@@ -182,7 +208,7 @@ export default function Minicart() {
           <button
             type="button"
             onClick={handleClose}
-            className="text-black hover:text-theme-primary transition-colors cursor-pointer"
+            className="text-black flex hover:text-theme-primary transition-colors cursor-pointer"
             aria-label="Close cart"
           >
             <i className="icon-cross-icon text-[22px] leading-1" aria-hidden="true" />
@@ -190,7 +216,7 @@ export default function Minicart() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-5 py-4">
+        <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4">
           {loading && !cart && (
             <div className="flex items-center justify-center py-12">
               <div className="h-8 w-8 rounded-full border-[3px] border-gray-200 border-t-theme-primary animate-spin" />

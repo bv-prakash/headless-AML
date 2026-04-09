@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMutation } from "@apollo/client/react";
@@ -15,6 +15,7 @@ import {
   REVOKE_CUSTOMER_TOKEN_MUTATION,
   type RevokeCustomerTokenResponse,
 } from "@/src/framework/graphql/mutations/authMutations";
+import { resetApolloStoreAfterAuthChange } from "@/src/framework/graphql/invalidateCustomerSession";
 
 export default function HeaderAuth() {
   const dispatch = useAppDispatch();
@@ -32,6 +33,10 @@ export default function HeaderAuth() {
   const closeDropdown = useCallback(() => setDropdownOpen(false), []);
   useClickOutside(dropdownRef, closeDropdown, dropdownOpen);
 
+  useEffect(() => {
+    if (!isLoggedIn) setDropdownOpen(false);
+  }, [isLoggedIn]);
+
   const handleLogout = useCallback(async () => {
     setDropdownOpen(false);
     try {
@@ -43,6 +48,7 @@ export default function HeaderAuth() {
     dispatch(clearWishlist());
     dispatch(clearCart());
     dispatch(clearCompare());
+    resetApolloStoreAfterAuthChange();
     toast.success("You have been signed out.");
     router.push("/");
   }, [dispatch, revokeToken, router]);

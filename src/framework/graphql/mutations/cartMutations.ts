@@ -1,6 +1,7 @@
 import { gql } from "@apollo/client";
 
-const CART_BODY = `
+export const CART_BODY = `
+  id
   total_quantity
   items {
     uid
@@ -86,6 +87,24 @@ export const ADD_TO_CART_MUTATION = gql`
 export const CART_QUERY = gql`
   query Cart($cartId: String!) {
     cart(cart_id: $cartId) {
+      ${CART_BODY}
+    }
+  }
+`;
+
+/** Logged-in customer’s active cart (requires `X-Customer-Token`). */
+export const CUSTOMER_CART_QUERY = gql`
+  query CustomerCart {
+    customerCart {
+      ${CART_BODY}
+    }
+  }
+`;
+
+/** Merge guest cart into the customer cart after login (requires customer token). */
+export const MERGE_CARTS_MUTATION = gql`
+  mutation MergeCarts($source_cart_id: String!) {
+    mergeCarts(source_cart_id: $source_cart_id) {
       ${CART_BODY}
     }
   }
@@ -272,6 +291,8 @@ export type CartPrices = {
 };
 
 export type CartData = {
+  /** Masked cart id (returned by cart queries/mutations). */
+  readonly id?: string;
   readonly total_quantity: number;
   readonly items: readonly CartItem[];
   readonly prices: CartPrices;
@@ -295,6 +316,18 @@ export type CartQueryVariables = {
 
 export type CartQueryResponse = {
   cart: CartData;
+};
+
+export type CustomerCartQueryResponse = {
+  customerCart: CartData;
+};
+
+export type MergeCartsVariables = {
+  readonly source_cart_id: string;
+};
+
+export type MergeCartsResponse = {
+  mergeCarts: CartData;
 };
 
 export type RemoveCartItemVariables = {

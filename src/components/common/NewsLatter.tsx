@@ -63,6 +63,7 @@ const NewsLatter = () => {
               type="email"
               id="newsletter"
               placeholder="Email address"
+              autoComplete="email"
               aria-invalid={!!errors.email}
               aria-describedby={errors.email ? "newsletter-email-error" : undefined}
               {...register("email", {
@@ -72,6 +73,7 @@ const NewsLatter = () => {
               className={`text-base h-9 pl-3 w-full focus:outline-none focus:ring-0 focus:border-theme-primary px-5 bg-white text-black border border-solid rounded-none leading-[1.3] placeholder:text-aaa ${
                 errors.email ? "border-red-500" : "border-aaa"
               }`}
+              suppressHydrationWarning
             />
             {errors.email && (
               <p id="newsletter-email-error" className="text-red-500 text-sm mt-1" role="alert">

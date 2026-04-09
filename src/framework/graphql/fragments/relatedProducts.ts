@@ -1,6 +1,7 @@
 export const RELATED_PRODUCTS_FRAGMENT = `
   fragment RelatedProductsFields on ProductInterface {
     related_products {
+      __typename
       id
       uid
       name
@@ -31,6 +32,7 @@ export const RELATED_PRODUCTS_FRAGMENT = `
       stock_status
     }
     crosssell_products {
+      __typename
       id
       uid
       name

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { useAppSelector } from "@/src/store/hooks";
@@ -28,8 +29,12 @@ type ProductActionsProps = {
   readonly productName: string;
   readonly productType?: string;
   readonly stockStatus: string;
+  /** PDP URL (e.g. from `url_key`). Required on PLP to send configurable/bundle products to the product page. */
+  readonly productPageHref?: string;
   readonly overrideStyles?: string;
   readonly showQuantity?: boolean;
+  /** From `?qty=` when opening PDP from cart/minicart edit. */
+  readonly initialQty?: number;
 };
 
 export default function ProductActions({
@@ -38,15 +43,20 @@ export default function ProductActions({
   productName,
   productType,
   stockStatus,
+  productPageHref,
   overrideStyles,
   showQuantity = false,
+  initialQty,
 }: ProductActionsProps) {
+  const router = useRouter();
   const isOutOfStock = stockStatus === "OUT_OF_STOCK";
   const needsOptions = NEEDS_OPTIONS_TYPES.includes(productType ?? "");
   const isVirtual = productType === "VirtualProduct";
-  const quantity = useAppSelector((state) => state.cart.quantities[sku] ?? 1);
+  const quantity = useAppSelector(
+    (state) => state.cart.quantities[sku] ?? initialQty ?? 1,
+  );
 
-  const { execute, loading } = useAddToCart(productName);
+  const { execute, loading, prefetchCart } = useAddToCart(productName);
 
   const [addToCart] = useMutation<AddToCartResponse, AddToCartVariables>(
     ADD_TO_CART_MUTATION,
@@ -58,6 +68,10 @@ export default function ProductActions({
   const handleAddToCart = useCallback(() => {
     if (isOutOfStock) return;
     if (needsOptions) {
+      if (productPageHref) {
+        router.push(productPageHref);
+        return;
+      }
       toast.info("Please select product options on the product page.");
       return;
     }
@@ -70,7 +84,18 @@ export default function ProductActions({
       const { data } = await addToCart({ variables: { cartId, sku, quantity } });
       return data?.addSimpleProductsToCart?.cart;
     });
-  }, [isOutOfStock, needsOptions, isVirtual, sku, quantity, execute, addToCart, addVirtual]);
+  }, [
+    isOutOfStock,
+    needsOptions,
+    isVirtual,
+    sku,
+    quantity,
+    execute,
+    addToCart,
+    addVirtual,
+    productPageHref,
+    router,
+  ]);
 
   return (
     <div className={overrideStyles ?? ""}>
@@ -81,8 +106,10 @@ export default function ProductActions({
         productName={productName}
         isOutOfStock={isOutOfStock}
         loading={loading}
+        onPrefetchCart={prefetchCart}
         onAddToCart={handleAddToCart}
         showQuantity={showQuantity}
+        defaultQuantity={initialQty}
         variant="plp"
       />
     </div>

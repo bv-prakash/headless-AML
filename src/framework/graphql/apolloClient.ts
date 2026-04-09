@@ -6,9 +6,16 @@ import {
   InMemoryCache,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
+import { ErrorLink } from "@apollo/client/link/error";
+import { CombinedGraphQLErrors } from "@apollo/client/errors";
 import { getGraphqlEndpoint } from "@/src/framework/graphql/getGraphqlEndpoint";
+import { invalidateCustomerSession } from "@/src/framework/graphql/invalidateCustomerSession";
 import { CUSTOMER_TOKEN_KEY } from "@/src/constants/storageKeys";
 import { getStoredValue } from "@/src/utils/storage";
+import {
+  isStaleCartError,
+  messagesIndicateInvalidCustomerSession,
+} from "@/src/utils/errors";
 
 const IS_SERVER = typeof window === "undefined";
 
@@ -26,6 +33,28 @@ const httpLink = new HttpLink({
   ...(IS_SERVER
     ? { fetchOptions: { next: { revalidate: 300 } } as unknown as RequestInit }
     : {}),
+});
+
+const errorLink = new ErrorLink(({ error }) => {
+  if (IS_SERVER) return;
+  if (!getStoredValue(CUSTOMER_TOKEN_KEY)) return;
+
+  if (CombinedGraphQLErrors.is(error)) {
+    const combined = error.errors.map((e) => e.message).join(" ");
+    /** Cart / merge ACL errors often use `graphql-authorization` — not a dead session. */
+    if (isStaleCartError(combined)) return;
+    if (messagesIndicateInvalidCustomerSession(combined)) {
+      invalidateCustomerSession();
+    }
+    return;
+  }
+
+  if (error instanceof Error) {
+    if (isStaleCartError(error.message)) return;
+    if (messagesIndicateInvalidCustomerSession(error.message)) {
+      invalidateCustomerSession();
+    }
+  }
 });
 
 const authLink = setContext((_, { headers }) => {
@@ -52,7 +81,7 @@ const authLink = setContext((_, { headers }) => {
 });
 
 const apolloClient = new ApolloClient({
-  link: ApolloLink.from([authLink, httpLink]),
+  link: ApolloLink.from([errorLink, authLink, httpLink]),
   cache: new InMemoryCache({
     typePolicies: {
       Cart: { keyFields: false },

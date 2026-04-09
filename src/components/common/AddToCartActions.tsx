@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import QuantitySelector from "@/src/components/common/QuantitySelector";
 import Button from "@/src/components/common/Button";
 import { useAddToCompare } from "@/src/hooks/useAddToCompare";
@@ -13,12 +14,16 @@ type AddToCartActionsProps = {
   readonly isOutOfStock?: boolean;
   readonly disabled?: boolean;
   readonly loading?: boolean;
+  /** Warm guest cart (createEmptyCart) on hover/focus before click — shortens loading on first add. */
+  readonly onPrefetchCart?: () => void;
   readonly onAddToCart: () => void;
   readonly showQuantity?: boolean;
+  /** When Redux has no qty yet (e.g. `?qty=` from edit link). */
+  readonly defaultQuantity?: number;
   readonly variant?: "plp" | "pdp";
 };
 
-export default function AddToCartActions({
+function AddToCartActions({
   itemKey,
   sku,
   productId,
@@ -26,8 +31,10 @@ export default function AddToCartActions({
   isOutOfStock = false,
   disabled = false,
   loading = false,
+  onPrefetchCart,
   onAddToCart,
   showQuantity = true,
+  defaultQuantity,
   variant = "pdp",
 }: AddToCartActionsProps) {
   const { execute: addToCompare, loading: compareLoading } =
@@ -45,7 +52,9 @@ export default function AddToCartActions({
     >
       {showQuantity && !isOutOfStock && (
         <QuantitySelector
+          key={itemKey}
           itemKey={itemKey}
+          defaultValue={defaultQuantity}
           disabled={loading || disabled}
           size="lg"
         />
@@ -55,8 +64,11 @@ export default function AddToCartActions({
         variant={btnVariant}
         size={btnSize}
         onClick={onAddToCart}
+        onPointerEnter={onPrefetchCart}
+        onFocus={onPrefetchCart}
         disabled={isOutOfStock || disabled}
         loading={loading}
+        loadingLabel="Adding…"
         className={
           isPlp
             ? `flex-1 w-auto${isOutOfStock ? " cursor-not-allowed!" : ""}`
@@ -67,10 +79,15 @@ export default function AddToCartActions({
             ? `${productName} is out of stock`
             : `Add ${productName} to cart`
         }
-        title={isOutOfStock ? "Out of Stock" : "Add to Cart"}
+        aria-haspopup={isOutOfStock ? undefined : "dialog"}
+        title={
+          isOutOfStock
+            ? "Out of Stock"
+            : "Add to Cart — opens the shopping cart in a dialog"
+        }
       >
         {isOutOfStock && isPlp ? (
-          <span className="text-red-600">Out of Stock</span>
+          <span className="text-light-red">Out of Stock</span>
         ) : (
           <>
             <span className={isPlp ? "hidden md:inline" : ""}>
@@ -114,3 +131,5 @@ export default function AddToCartActions({
     </div>
   );
 }
+
+export default memo(AddToCartActions);

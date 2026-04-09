@@ -35,9 +35,17 @@ const cartSlice = createSlice({
       state.totalQuantity = cart.total_quantity;
       setStoredValue(CART_COUNT_KEY, String(cart.total_quantity));
       const freshQuantities: Record<string, number> = {};
+      const skuTotals: Record<string, number> = {};
       for (const item of cart.items) {
-        const key = `cart-${item.uid}`;
-        freshQuantities[key] = state.quantities[key] ?? item.quantity;
+        const uidKey = `cart-${item.uid}`;
+        freshQuantities[uidKey] = item.quantity;
+        const psku = item.product?.sku;
+        if (psku) {
+          skuTotals[psku] = (skuTotals[psku] ?? 0) + item.quantity;
+        }
+      }
+      for (const [sku, qty] of Object.entries(skuTotals)) {
+        freshQuantities[sku] = qty;
       }
       state.quantities = freshQuantities;
     },

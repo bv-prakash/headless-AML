@@ -24,6 +24,8 @@ export async function POST(req: NextRequest) {
 
     if (customerToken) {
       headers.Authorization = `Bearer ${customerToken}`;
+      // Some Magento / gateway setups expect this header in addition to Bearer
+      headers["X-Customer-Token"] = customerToken;
     } else if (config.commerce.apiKey) {
       headers.Authorization = `Bearer ${config.commerce.apiKey}`;
     }

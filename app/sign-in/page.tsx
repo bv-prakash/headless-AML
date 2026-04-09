@@ -1,6 +1,9 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import AuthPageLayout from "@/src/components/auth/AuthPageLayout";
 import LoginForm from "@/src/components/auth/LoginForm";
+import SignInGate from "@/src/components/auth/SignInGate";
+import PageLoader from "@/src/components/common/PageLoader";
 
 export const metadata: Metadata = {
   title: "Login",
@@ -10,7 +13,15 @@ export const metadata: Metadata = {
 export default function SignInPage() {
   return (
     <AuthPageLayout title="Login">
-      <LoginForm />
+      <Suspense
+        fallback={
+          <PageLoader label="Loading…" minHeightClassName="min-h-[200px]" />
+        }
+      >
+        <SignInGate>
+          <LoginForm />
+        </SignInGate>
+      </Suspense>
     </AuthPageLayout>
   );
 }

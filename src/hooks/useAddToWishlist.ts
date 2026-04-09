@@ -3,9 +3,9 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "@/src/store/hooks";
-import { logout } from "@/src/store/slices/authSlice";
-import { setWishlistCount, clearWishlist } from "@/src/store/slices/wishlistSlice";
-import { getErrorMessage, isAuthError } from "@/src/utils/errors";
+import { setWishlistCount } from "@/src/store/slices/wishlistSlice";
+import { invalidateCustomerSession } from "@/src/framework/graphql/invalidateCustomerSession";
+import { getErrorMessage, isCustomerSessionInvalidError } from "@/src/utils/errors";
 import {
   ADD_TO_WISHLIST_MUTATION,
   type AddToWishlistResponse,
@@ -65,15 +65,12 @@ export function useAddToWishlist(sku: string, productName: string) {
       toast.success(`${productName} added to wishlist.`);
     } catch (err) {
       if (!mountedRef.current) return;
-      const message = getErrorMessage(err, "Failed to add to wishlist.");
-      if (isAuthError(message)) {
-        dispatch(logout());
-        dispatch(clearWishlist());
-        toast.error("Please sign in to add items to your wishlist.");
+      if (isCustomerSessionInvalidError(err)) {
+        invalidateCustomerSession();
         router.push("/sign-in");
-      } else {
-        toast.error(message);
+        return;
       }
+      toast.error(getErrorMessage(err, "Failed to add to wishlist."));
     } finally {
       if (mountedRef.current) setLoading(false);
     }

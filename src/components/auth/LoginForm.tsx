@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
@@ -9,12 +9,17 @@ import Link from "next/link";
 import Button from "@/src/components/common/Button";
 import { emailValidation } from "@/src/utils/validation";
 import { useAppDispatch } from "@/src/store/hooks";
+import { store } from "@/src/store/store";
 import { login } from "@/src/store/slices/authSlice";
+import { applySyncedCart, syncCartAfterLogin } from "@/src/framework/cart/syncCartAfterLogin";
+import { CART_ID_KEY } from "@/src/constants/storageKeys";
+import { getStoredValue } from "@/src/utils/storage";
 import {
   GENERATE_CUSTOMER_TOKEN_MUTATION,
   type GenerateCustomerTokenResponse,
   type GenerateCustomerTokenVariables,
 } from "@/src/framework/graphql/mutations/authMutations";
+import { safeRedirectPath } from "@/src/utils/safeRedirectPath";
 
 type LoginFormValues = {
   email: string;
@@ -23,8 +28,13 @@ type LoginFormValues = {
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
   const [showPassword, setShowPassword] = useState(false);
+  const redirectAfterLogin = safeRedirectPath(
+    searchParams.get("redirect"),
+    "/",
+  );
 
   const {
     register,
@@ -50,8 +60,23 @@ export default function LoginForm() {
       }
 
       dispatch(login({ token }));
-      toast.success("Signed in successfully.");
-      router.push("/");
+
+      const guestCartId =
+        store.getState().cart.cartId ?? getStoredValue(CART_ID_KEY);
+
+      router.push(redirectAfterLogin);
+
+      void (async () => {
+        try {
+          const synced = await syncCartAfterLogin(guestCartId, dispatch);
+          if (synced) {
+            applySyncedCart(dispatch, synced);
+          }
+        } catch {
+          /* cart sync is best-effort; session is already valid */
+        }
+        toast.success("Signed in successfully.");
+      })();
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Login failed. Please try again.";

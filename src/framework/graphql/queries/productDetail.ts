@@ -133,6 +133,7 @@ export type GroupedProductItem = {
 // ── Related Products ───────────────────────────────────────
 
 export type RelatedProduct = {
+  readonly __typename?: string;
   readonly id: number;
   readonly uid?: string;
   readonly sku: string;

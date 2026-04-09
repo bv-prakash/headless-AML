@@ -55,6 +55,9 @@ const resolveLimit = (
   return limit;
 };
 
+/** Original `.pagebuilder-slider` innerHTML before Swiper replaces it — required to re-init after cleanup (Strict Mode, client navigations). */
+const sourceHtmlBySlider = new WeakMap<HTMLElement, string>();
+
 /**
  * Upgrades Magento PageBuilder `.pagebuilder-slider` markup into Swiper.
  * It preserves each slide's inner HTML and relies on other helpers (like ApplyBackgroundImages)
@@ -76,6 +79,7 @@ export default function PageBuilderSliders(options?: PageBuilderSliderOptions) {
     if (!root) return;
 
     const swiperInstances: Swiper[] = [];
+    const initializedRoots: HTMLElement[] = [];
 
     const sliders = Array.from(root.querySelectorAll<HTMLElement>(selector));
     const responsiveLimit =
@@ -88,7 +92,9 @@ export default function PageBuilderSliders(options?: PageBuilderSliderOptions) {
         : sliders;
 
     targetSliders.forEach((slider) => {
-      if (slider.dataset.swiperInitialized === "true") return;
+      if (!sourceHtmlBySlider.has(slider)) {
+        sourceHtmlBySlider.set(slider, slider.innerHTML);
+      }
 
       const autoplayAttr = toBool(slider.getAttribute("data-autoplay"));
       const autoplaySpeedAttr = toInt(slider.getAttribute("data-autoplay-speed"));
@@ -160,12 +166,24 @@ export default function PageBuilderSliders(options?: PageBuilderSliderOptions) {
 
       swiperInstances.push(instance);
       slider.dataset.swiperInitialized = "true";
+      initializedRoots.push(slider);
     });
 
     return () => {
       swiperInstances.forEach((sw) => {
-        try { sw.destroy(true, true); } catch { /* already destroyed */ }
+        try {
+          sw.destroy(true, true);
+        } catch {
+          /* already destroyed */
+        }
       });
+      for (const slider of initializedRoots) {
+        const raw = sourceHtmlBySlider.get(slider);
+        if (raw != null) {
+          slider.innerHTML = raw;
+        }
+        delete slider.dataset.swiperInitialized;
+      }
     };
   }, [
     autoplay,

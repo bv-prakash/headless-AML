@@ -9,6 +9,7 @@ import { hydrateAuth } from "@/src/store/slices/authSlice";
 import { hydrateCompare } from "@/src/store/slices/compareSlice";
 import { hydrateCart } from "@/src/store/slices/cartSlice";
 import { hydrateWishlist } from "@/src/store/slices/wishlistSlice";
+import GuestCartPrefetch from "@/src/components/cart/GuestCartPrefetch";
 
 function StoreHydrator({ children }: { children: ReactNode }) {
   useEffect(() => {
@@ -18,7 +19,12 @@ function StoreHydrator({ children }: { children: ReactNode }) {
     store.dispatch(hydrateWishlist());
   }, []);
 
-  return <>{children}</>;
+  return (
+    <>
+      <GuestCartPrefetch />
+      {children}
+    </>
+  );
 }
 
 export default function Providers({

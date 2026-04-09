@@ -8,6 +8,7 @@ export const PRODUCT_SEARCH_QUERY = gql`
     products(search: $search, pageSize: $pageSize) {
       total_count
       items {
+        uid
         sku
         name
         url_key
@@ -25,6 +26,7 @@ export const PRODUCT_SEARCH_QUERY = gql`
 export { SEARCH_RESULTS_PAGE_SIZE };
 
 export type SearchProductItem = {
+  readonly uid: string;
   readonly sku: string;
   readonly name: string;
   readonly url_key: string;

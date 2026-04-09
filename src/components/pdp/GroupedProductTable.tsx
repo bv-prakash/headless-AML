@@ -7,6 +7,11 @@ import { useAddToCart } from "@/src/hooks/useAddToCart";
 import { formatPrice } from "@/src/utils/format";
 import AddToCartActions from "@/src/components/common/AddToCartActions";
 import {
+  PDP_ADD_TO_CART_WRAP_CLASS,
+  PDP_OPTIONS_BLOCK_CLASS,
+  PDP_OPTION_LABEL_CLASS,
+} from "@/src/components/pdp/pdpAddToCartSection";
+import {
   ADD_GROUPED_TO_CART_MUTATION,
   type AddGroupedToCartResponse,
   type AddGroupedToCartVariables,
@@ -22,7 +27,7 @@ type GroupedProductTableProps = {
 
 export default function GroupedProductTable({ sku, productId, productName, items }: GroupedProductTableProps) {
   const sorted = useMemo(() => [...items].sort((a, b) => a.position - b.position), [items]);
-  const { execute, loading } = useAddToCart(productName);
+  const { execute, loading, prefetchCart } = useAddToCart(productName);
 
   const [quantities, setQuantities] = useState<Record<string, number>>(() => {
     const init: Record<string, number> = {};
@@ -69,76 +74,82 @@ export default function GroupedProductTable({ sku, productId, productName, items
   if (items.length === 0) return null;
 
   return (
-    <div className="grouped-product-table flex flex-col gap-4">
-      <h3 className="text-base font-bold uppercase text-gray-800">Products in this Group</h3>
+    <>
+      <div className={`grouped-product-table ${PDP_OPTIONS_BLOCK_CLASS}`}>
+        <div className={PDP_OPTION_LABEL_CLASS}>Products in this Group</div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="border-b-2 border-gray-200">
-              <th className="text-left py-2 pr-4 font-semibold text-gray-600">Product</th>
-              <th className="text-left py-2 pr-4 font-semibold text-gray-600">SKU</th>
-              <th className="text-right py-2 pr-4 font-semibold text-gray-600">Price</th>
-              <th className="text-center py-2 pr-4 font-semibold text-gray-600">Qty</th>
-              <th className="text-center py-2 font-semibold text-gray-600">Availability</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((item) => {
-              const price = item.product.price_range?.minimum_price?.final_price;
-              const isOutOfStock = item.product.stock_status === "OUT_OF_STOCK";
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-aaa">
+                <th className="text-left py-2 pr-4 font-bold uppercase text-black">Product</th>
+                <th className="text-left py-2 pr-4 font-bold uppercase text-black">SKU</th>
+                <th className="text-right py-2 pr-4 font-bold uppercase text-black">Price</th>
+                <th className="text-center py-2 pr-4 font-bold uppercase text-black">Qty</th>
+                <th className="text-center py-2 font-bold uppercase text-black">Availability</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map((item) => {
+                const price = item.product.price_range?.minimum_price?.final_price;
+                const isOutOfStock = item.product.stock_status === "OUT_OF_STOCK";
 
-              return (
-                <tr key={item.product.id} className="border-b border-gray-100">
-                  <td className="py-3 pr-4 font-medium text-gray-800">
-                    {item.product.name}
-                  </td>
-                  <td className="py-3 pr-4 text-gray-500">
-                    {item.product.sku}
-                  </td>
-                  <td className="py-3 pr-4 text-right font-semibold text-theme-secondary">
-                    {price?.value != null
-                      ? formatPrice(price.value, price.currency)
-                      : "—"}
-                  </td>
-                  <td className="py-3 pr-4 text-center">
-                    <input
-                      type="number"
-                      min={0}
-                      value={quantities[item.product.sku] ?? 0}
-                      onChange={(e) => handleQtyChange(item.product.sku, e.target.value)}
-                      disabled={isOutOfStock || loading}
-                      className="w-16 border border-gray-300 rounded-md px-2 py-1 text-center text-sm focus:border-theme-primary focus:outline-none disabled:opacity-50"
-                    />
-                  </td>
-                  <td className="py-3 text-center">
-                    <span
-                      className={`inline-block px-2 py-0.5 text-xs font-bold rounded ${
-                        isOutOfStock
-                          ? "bg-red-100 text-red-700"
-                          : "bg-green-100 text-green-700"
-                      }`}
-                    >
-                      {isOutOfStock ? "Out of Stock" : "In Stock"}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                return (
+                  <tr key={item.product.id} className="border-b border-gray-200">
+                    <td className="py-3 pr-4 font-medium text-black">
+                      {item.product.name}
+                    </td>
+                    <td className="py-3 pr-4 text-black/70">
+                      {item.product.sku}
+                    </td>
+                    <td className="py-3 pr-4 text-right font-bold text-theme-secondary">
+                      {price?.value != null
+                        ? formatPrice(price.value, price.currency)
+                        : "—"}
+                    </td>
+                    <td className="py-3 pr-4 text-center">
+                      <input
+                        type="number"
+                        min={0}
+                        value={quantities[item.product.sku] ?? 0}
+                        onChange={(e) => handleQtyChange(item.product.sku, e.target.value)}
+                        disabled={isOutOfStock || loading}
+                        className="w-16 border border-black bg-white px-2 py-2 text-center text-sm text-black focus:border-theme-primary focus:outline-none focus:ring-1 focus:ring-theme-primary disabled:opacity-50"
+                      />
+                    </td>
+                    <td className="py-3 text-center">
+                      <span
+                        className={`inline-block px-2 py-0.5 text-xs font-bold rounded ${
+                          isOutOfStock
+                            ? "bg-red-100 text-red-700"
+                            : "bg-green-100 text-green-700"
+                        }`}
+                      >
+                        {isOutOfStock ? "Out of Stock" : "In Stock"}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <AddToCartActions
-        itemKey={sku}
-        sku={sku}
-        productId={productId}
-        productName={productName}
-        disabled={selectedItems.length === 0}
-        loading={loading}
-        onAddToCart={handleAddToCart}
-        showQuantity={false}
-      />
-    </div>
+      <div className={PDP_ADD_TO_CART_WRAP_CLASS}>
+        <AddToCartActions
+          itemKey={sku}
+          sku={sku}
+          productId={productId}
+          productName={productName}
+          disabled={selectedItems.length === 0}
+          loading={loading}
+          onPrefetchCart={prefetchCart}
+          onAddToCart={handleAddToCart}
+          showQuantity={false}
+          variant="plp"
+        />
+      </div>
+    </>
   );
 }

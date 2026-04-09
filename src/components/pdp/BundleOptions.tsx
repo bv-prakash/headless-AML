@@ -8,6 +8,14 @@ import { useAddToCart } from "@/src/hooks/useAddToCart";
 import { formatPrice } from "@/src/utils/format";
 import AddToCartActions from "@/src/components/common/AddToCartActions";
 import {
+  PDP_ADD_TO_CART_WRAP_CLASS,
+  PDP_OPTIONS_BLOCK_CLASS,
+  PDP_OPTION_LABEL_CLASS,
+  PDP_OPTION_REQUIRED_CLASS,
+  PDP_OPTION_SELECT_CLASS,
+  pdpChoiceChipClass,
+} from "@/src/components/pdp/pdpAddToCartSection";
+import {
   ADD_BUNDLE_TO_CART_MUTATION,
   type AddBundleToCartResponse,
   type AddBundleToCartVariables,
@@ -20,11 +28,18 @@ type BundleOptionsProps = {
   readonly productId: number;
   readonly productName: string;
   readonly items: readonly BundleItem[];
+  readonly initialQty?: number | null;
 };
 
-export default function BundleOptions({ sku, productId, productName, items }: BundleOptionsProps) {
-  const quantity = useAppSelector((s) => s.cart.quantities[sku] ?? 1);
-  const { execute, loading } = useAddToCart(productName);
+export default function BundleOptions({
+  sku,
+  productId,
+  productName,
+  items,
+  initialQty = null,
+}: BundleOptionsProps) {
+  const quantity = useAppSelector((s) => s.cart.quantities[sku] ?? initialQty ?? 1);
+  const { execute, loading, prefetchCart } = useAddToCart(productName);
 
   const [selections, setSelections] = useState<Record<number, number[]>>(() => {
     const initial: Record<number, number[]> = {};
@@ -90,81 +105,92 @@ export default function BundleOptions({ sku, productId, productName, items }: Bu
   if (items.length === 0) return null;
 
   return (
-    <div className="bundle-options flex flex-col gap-5">
-      <h3 className="text-base font-bold uppercase text-gray-800">Customize Your Bundle</h3>
+    <>
+      <div className={`bundle-options ${PDP_OPTIONS_BLOCK_CLASS}`}>
+        {items.map((item) => {
+          const selectedIds = selections[item.option_id] ?? [];
+          const isMulti = item.type === "checkbox" || item.type === "multi";
 
-      {items.map((item) => {
-        const selectedIds = selections[item.option_id] ?? [];
-        const isMulti = item.type === "checkbox" || item.type === "multi";
+          return (
+            <div key={item.option_id} className="flex flex-col gap-2.5">
+              <div className={PDP_OPTION_LABEL_CLASS}>
+                {item.title}
+                {item.required && <span className={PDP_OPTION_REQUIRED_CLASS}>*</span>}
+              </div>
 
-        return (
-          <fieldset key={item.option_id} className="flex flex-col gap-2 border border-gray-200 rounded-lg p-4">
-            <legend className="text-sm font-semibold text-gray-700 px-1">
-              {item.title}
-              {item.required && <span className="text-red-500 ml-0.5">*</span>}
-            </legend>
+              {item.type === "select" || item.type === "drop_down" ? (
+                <select
+                  value={selectedIds[0] ?? ""}
+                  onChange={(e) => handleSingleSelect(item.option_id, Number(e.target.value))}
+                  className={PDP_OPTION_SELECT_CLASS}
+                >
+                  {item.options.map((choice) => {
+                    const price = choice.product?.price_range?.minimum_price?.final_price;
+                    return (
+                      <option key={choice.id} value={choice.id}>
+                        {choice.label}
+                        {price?.value != null && ` — ${formatPrice(price.value, price.currency)}`}
+                        {` × ${choice.quantity}`}
+                      </option>
+                    );
+                  })}
+                </select>
+              ) : (
+                <div className="flex flex-wrap gap-x-2.5 gap-y-2.5 lg-custom:gap-x-5!">
+                  {item.options.map((choice) => {
+                    const price = choice.product?.price_range?.minimum_price?.final_price;
+                    const isChecked = selectedIds.includes(choice.id);
 
-            {item.type === "select" || item.type === "drop_down" ? (
-              <select
-                value={selectedIds[0] ?? ""}
-                onChange={(e) => handleSingleSelect(item.option_id, Number(e.target.value))}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:border-theme-primary focus:outline-none"
-              >
-                {item.options.map((choice) => {
-                  const price = choice.product?.price_range?.minimum_price?.final_price;
-                  return (
-                    <option key={choice.id} value={choice.id}>
-                      {choice.label}
-                      {price?.value != null && ` — ${formatPrice(price.value, price.currency)}`}
-                      {` × ${choice.quantity}`}
-                    </option>
-                  );
-                })}
-              </select>
-            ) : (
-              <div className="flex flex-col gap-1.5">
-                {item.options.map((choice) => {
-                  const price = choice.product?.price_range?.minimum_price?.final_price;
-                  const isChecked = selectedIds.includes(choice.id);
-
-                  return (
-                    <label key={choice.id} className="flex items-center gap-2 text-sm cursor-pointer">
-                      <input
-                        type={isMulti ? "checkbox" : "radio"}
-                        name={`bundle-${item.option_id}`}
-                        value={choice.id}
-                        checked={isChecked}
-                        onChange={(e) =>
+                    return (
+                      <button
+                        key={choice.id}
+                        type="button"
+                        disabled={loading}
+                        onClick={() =>
                           isMulti
-                            ? handleMultiSelect(item.option_id, choice.id, e.target.checked)
+                            ? handleMultiSelect(item.option_id, choice.id, !isChecked)
                             : handleSingleSelect(item.option_id, choice.id)
                         }
-                      />
-                      <span>
-                        {choice.label}
-                        {price?.value != null && (
-                          <span className="text-gray-500"> — {formatPrice(price.value, price.currency)}</span>
-                        )}
-                        <span className="text-gray-400"> × {choice.quantity}</span>
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-            )}
-          </fieldset>
-        );
-      })}
+                        className={pdpChoiceChipClass(isChecked)}
+                      >
+                        <span className="inline-flex flex-col items-start gap-0.5 text-left">
+                          <span>{choice.label}</span>
+                          {price?.value != null && (
+                            <span
+                              className={
+                                isChecked
+                                  ? "text-xs font-normal text-white/90"
+                                  : "text-xs font-normal text-gray-600"
+                              }
+                            >
+                              {formatPrice(price.value, price.currency)} × {choice.quantity}
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
-      <AddToCartActions
-        itemKey={sku}
-        sku={sku}
-        productId={productId}
-        productName={productName}
-        disabled={!allRequiredSelected}
-        loading={loading}
-        onAddToCart={handleAddToCart}
-      />
-    </div>
+      <div className={PDP_ADD_TO_CART_WRAP_CLASS}>
+        <AddToCartActions
+          itemKey={sku}
+          sku={sku}
+          productId={productId}
+          productName={productName}
+          disabled={!allRequiredSelected}
+          loading={loading}
+          onPrefetchCart={prefetchCart}
+          onAddToCart={handleAddToCart}
+          defaultQuantity={initialQty ?? undefined}
+          variant="plp"
+        />
+      </div>
+    </>
   );
 }

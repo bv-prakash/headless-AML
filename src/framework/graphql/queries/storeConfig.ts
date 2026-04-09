@@ -3,6 +3,7 @@ import { magentoGraphqlFetch } from "@/src/framework/graphql/magentoGraphqlFetch
 const STORE_CONFIG_QUERY = `
   query StoreConfig {
     storeConfig {
+      copyright
       product_url_suffix
       category_url_suffix
       title_separator
@@ -17,6 +18,7 @@ const STORE_CONFIG_QUERY = `
 `;
 
 export type StoreConfig = {
+  readonly copyright: string | null;
   readonly product_url_suffix: string | null;
   readonly category_url_suffix: string | null;
   readonly title_separator: string | null;

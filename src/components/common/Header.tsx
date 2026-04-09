@@ -24,7 +24,7 @@ function HeaderIconsPlaceholder() {
 const Header = () => {
   return (
     <>
-      <header className="relative max-md:py-5 bg-white border-b-2 md:border-b-4 border-solid border-theme-primary w-full z-10">
+      <header className="relative max-md:py-5 bg-white border-b-2 md:border-b-4 border-solid border-theme-primary w-full z-40">
         <div className="container flex items-center gap-y-5 flex-wrap md:py-[25px] md:px-[15px] xl:py-[35px]!">
           <Logo />
 

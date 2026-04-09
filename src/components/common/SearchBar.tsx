@@ -13,7 +13,7 @@ import {
   type ProductSearchVariables,
 } from "@/src/framework/graphql/queries/searchProducts";
 
-const MIN_CHARS = 3;
+const MIN_CHARS = 2;
 const DEBOUNCE_MS = 350;
 
 export default function SearchBar({ className }: { className?: string }) {
@@ -66,25 +66,31 @@ export default function SearchBar({ className }: { className?: string }) {
   }, []);
 
   return (
-    <div ref={wrapperRef} className={`relative flex-1 max-w-[420px] ${className ? className : ""}`}>
+    <div
+      ref={wrapperRef}
+      className={`relative z-100 min-w-0 flex-1 max-w-[420px] ${className ? className : ""}`}
+    >
       {/* Input */}
       <div className="relative">
         <input
-          type="text"
+          type="search"
+          name="q"
           value={query}
           onChange={handleChange}
           onFocus={() => {
-            if (query.trim().length >= MIN_CHARS && items.length > 0) {
+            if (query.trim().length >= MIN_CHARS) {
               setOpen(true);
             }
           }}
           placeholder="Search"
+          autoComplete="off"
           className="w-full h-7.5 pl-2.5 pr-[35px] text-sm uppercase text-black bg-f0f0f0 border-f0f0f0 focus:outline-none focus:border-theme-primary transition-colors"
           aria-label="Search products"
           aria-expanded={showDropdown}
-          aria-controls="search-results-dropdown"
+          aria-controls={showDropdown ? "search-results-dropdown" : undefined}
           role="combobox"
           aria-autocomplete="list"
+          suppressHydrationWarning
         />
         {query.length > 0 ? (
           <button
@@ -106,7 +112,11 @@ export default function SearchBar({ className }: { className?: string }) {
         )}
 
         {loading && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          <div
+            className={`absolute top-1/2 -translate-y-1/2 ${
+              query.length > 0 ? "right-10" : "right-3"
+            }`}
+          >
             <div className="h-4 w-4 rounded-full border-2 border-gray-200 border-t-theme-primary animate-spin" />
           </div>
         )}
@@ -117,7 +127,7 @@ export default function SearchBar({ className }: { className?: string }) {
         <div
           id="search-results-dropdown"
           role="listbox"
-          className="absolute top-full left-0 w-full pt-2.5 mt-1 bg-white border border-gray-200 rounded shadow-lg z-50 max-h-[480px] overflow-y-auto"
+          className="absolute top-full left-0 w-full pt-2.5 mt-1 bg-white border border-gray-200 rounded shadow-lg z-110 max-h-[480px] overflow-y-auto"
         >
           {loading && items.length === 0 && (
             <div className="flex items-center justify-center py-8">
@@ -159,7 +169,7 @@ export default function SearchBar({ className }: { className?: string }) {
                     : "";
 
                   return (
-                    <li key={product.sku} role="option">
+                    <li key={product.uid} role="option">
                       <Link
                         href={`/${product.url_key}`}
                         onClick={handleResultClick}

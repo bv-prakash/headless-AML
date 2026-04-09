@@ -7,6 +7,10 @@ import {
   type BundleItem,
   type GroupedProductItem,
 } from "@/src/framework/graphql/queries/productDetail";
+import {
+  pickSearchParamPositiveInt,
+  pickSearchParamString,
+} from "@/src/utils/params";
 import { stripHtml } from "@/src/utils/html";
 import PageLoader from "@/src/components/common/PageLoader";
 import Breadcrumbs from "@/src/components/common/Breadcrumbs";
@@ -14,6 +18,7 @@ import ProductGallery from "@/src/components/pdp/ProductGallery";
 import ProductInfo from "@/src/components/pdp/ProductInfo";
 import ProductDescription from "@/src/components/pdp/ProductDescription";
 import ProductCarousel from "@/src/components/pdp/ProductCarousel";
+import { PDP_ADD_TO_CART_WRAP_CLASS } from "@/src/components/pdp/pdpAddToCartSection";
 import ProductActions from "@/src/components/plp/ProductActions";
 import ConfigurableOptions from "@/src/components/pdp/ConfigurableOptions";
 import BundleOptions from "@/src/components/pdp/BundleOptions";
@@ -22,7 +27,11 @@ import DownloadableLinks from "@/src/components/pdp/DownloadableLinks";
 
 type PDPPageProps = {
   params: Promise<{ url_key: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
+
+/** Ensure `?sku=` / `?qty=` (edit-from-cart) are applied on every full reload, not only client navigation. */
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -61,8 +70,12 @@ function isDownloadable(product: ProductDetail) {
   return product.__typename === "DownloadableProduct";
 }
 
-export default async function PDPPage({ params }: PDPPageProps) {
+export default async function PDPPage({ params, searchParams }: PDPPageProps) {
   const { url_key } = await params;
+  const sp = (await searchParams) ?? {};
+  const editSku = pickSearchParamString(sp.sku);
+  const editQty = pickSearchParamPositiveInt(sp.qty);
+
   const product = await getProductByUrlKey(url_key);
 
   if (!product) notFound();
@@ -100,10 +113,10 @@ export default async function PDPPage({ params }: PDPPageProps) {
           </div>
 
           {/* Right: Info + Type-specific options + Actions */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col">
             <ProductInfo product={product} />
 
-            {/* Configurable product options */}
+            {/* Configurable options: server passes `?sku=` / `?qty=` via props (no `useSearchParams` → no Suspense delay). */}
             {isConfigurable(product) &&
               product.configurable_options &&
               product.variants && (
@@ -111,8 +124,11 @@ export default async function PDPPage({ params }: PDPPageProps) {
                   parentSku={product.sku}
                   productId={product.id}
                   productName={product.name}
+                  productUrlKey={url_key}
                   options={product.configurable_options}
                   variants={product.variants}
+                  initialVariantSku={editSku}
+                  initialQty={editQty}
                 />
               )}
 
@@ -123,6 +139,7 @@ export default async function PDPPage({ params }: PDPPageProps) {
                 productId={product.id}
                 productName={product.name}
                 items={product.items as BundleItem[]}
+                initialQty={editQty}
               />
             )}
 
@@ -144,11 +161,13 @@ export default async function PDPPage({ params }: PDPPageProps) {
                 productName={product.name}
                 links={product.downloadable_product_links}
                 samples={product.downloadable_product_samples}
+                initialQty={editQty}
               />
             )}
 
             {/* Simple/non-configurable add-to-cart + compare + wishlist */}
             {showSimpleActions && (
+
               <ProductActions
                 sku={product.sku}
                 productId={product.id}
@@ -156,6 +175,8 @@ export default async function PDPPage({ params }: PDPPageProps) {
                 productType={product.__typename}
                 stockStatus={product.stock_status}
                 showQuantity
+                initialQty={editQty}
+                overrideStyles={PDP_ADD_TO_CART_WRAP_CLASS}
               />
             )}
           </div>

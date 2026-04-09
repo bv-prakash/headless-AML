@@ -9,7 +9,11 @@ import Link from "next/link";
 import Button from "@/src/components/common/Button";
 import { emailValidation } from "@/src/utils/validation";
 import { useAppDispatch } from "@/src/store/hooks";
+import { store } from "@/src/store/store";
 import { login } from "@/src/store/slices/authSlice";
+import { applySyncedCart, syncCartAfterLogin } from "@/src/framework/cart/syncCartAfterLogin";
+import { CART_ID_KEY } from "@/src/constants/storageKeys";
+import { getStoredValue } from "@/src/utils/storage";
 import {
   CREATE_CUSTOMER_MUTATION,
   GENERATE_CUSTOMER_TOKEN_MUTATION,
@@ -86,10 +90,27 @@ export default function SignUpForm() {
             },
           }),
         );
-      }
 
-      toast.success("Account created successfully.");
-      router.push("/");
+        const guestCartId =
+          store.getState().cart.cartId ?? getStoredValue(CART_ID_KEY);
+
+        router.push("/");
+
+        void (async () => {
+          try {
+            const synced = await syncCartAfterLogin(guestCartId, dispatch);
+            if (synced) {
+              applySyncedCart(dispatch, synced);
+            }
+          } catch {
+            /* best-effort cart sync */
+          }
+          toast.success("Account created successfully.");
+        })();
+      } else {
+        toast.success("Account created successfully.");
+        router.push("/");
+      }
     } catch (err) {
       const message =
         err instanceof Error

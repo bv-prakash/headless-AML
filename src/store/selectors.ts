@@ -3,6 +3,11 @@ import type { RootState } from "./store";
 
 export const selectIsLoggedIn = (state: RootState) => Boolean(state.auth.token);
 
+export const selectAuthHydrated = (state: RootState) => state.auth.hydrated;
+
+export const selectAuthSessionRevision = (state: RootState) =>
+  state.auth.sessionRevision;
+
 export const selectCartBadgeCount = (state: RootState) => state.cart.totalQuantity;
 
 export const selectMinicartProps = createSelector(

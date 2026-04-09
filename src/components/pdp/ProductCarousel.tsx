@@ -56,6 +56,7 @@ export default function ProductCarousel({ title, products }: ProductCarouselProp
           ? stripHtml(product.short_description.html)
           : undefined
       }
+      productType={product.__typename}
       stockStatus={product.stock_status}
       imageSize={280}
     />

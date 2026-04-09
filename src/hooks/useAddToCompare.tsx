@@ -3,7 +3,8 @@ import { useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "@/src/store/hooks";
 import { updateCompare, clearCompare } from "@/src/store/slices/compareSlice";
-import { getErrorMessage } from "@/src/utils/errors";
+import { invalidateCustomerSession } from "@/src/framework/graphql/invalidateCustomerSession";
+import { getErrorMessage, isCustomerSessionInvalidError } from "@/src/utils/errors";
 import {
   CREATE_COMPARE_LIST_MUTATION,
   ADD_TO_COMPARE_LIST_MUTATION,
@@ -88,9 +89,12 @@ export function useAddToCompare(productId: number, productName: string) {
         </span>,
       );
     } catch (err) {
-      if (mountedRef.current) {
-        toast.error(getErrorMessage(err, "Failed to add to compare."));
+      if (!mountedRef.current) return;
+      if (isCustomerSessionInvalidError(err)) {
+        invalidateCustomerSession();
+        return;
       }
+      toast.error(getErrorMessage(err, "Failed to add to compare."));
     } finally {
       if (mountedRef.current) setLoading(false);
     }

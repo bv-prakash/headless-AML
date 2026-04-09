@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Footer, Header } from "@/src/components";
-import ToastContainer from "@/src/components/common/ToastContainer";
+import ClientToastContainer from "@/src/components/common/ClientToastContainer";
 import Providers from "./Providers";
 
 export const metadata: Metadata = {
@@ -20,14 +20,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`font-proxima-nova h-full antialiased`}
+      className="font-proxima-nova h-full antialiased"
+      suppressHydrationWarning
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <Providers>
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
-          <ToastContainer />
+          <ClientToastContainer />
         </Providers>
       </body>
     </html>
