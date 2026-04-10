@@ -1,4 +1,4 @@
-import Breadcrumbs from "../common/Breadcrumbs";
+// import Breadcrumbs from "../common/Breadcrumbs";
 import PLPShopLayout from "./PLPShopLayout";
 import { getCategoryBreadcrumbs } from "@/src/framework/graphql/queries/breadcrumbs";
 import { stripHtml } from "@/src/utils/html";
@@ -7,6 +7,7 @@ import type {
   ProductListSortKey,
 } from "@/src/framework/graphql/queries/products";
 import type { PLPContentProduct } from "./types";
+import ServerBreadcrumbs from "./ServerBreadcrumbs";
 
 type PLPContentProps = {
   products: PLPContentProduct[];
@@ -38,7 +39,8 @@ const PLPContent = async ({
         <h1 className="text-xl leading-[1.1] mb-[5px] md:mb-2.5 mt-0 font-bold md:text-[26px] lg-custom:text-[32px]!">
           {name || "Products"}
         </h1>
-        <Breadcrumbs categoryId={categoryId} />
+        {/* <Breadcrumbs categoryId={categoryId} /> */}
+        <ServerBreadcrumbs categoryId={categoryId} />
       </div>
       <PLPShopLayout
         aggregations={aggregations}

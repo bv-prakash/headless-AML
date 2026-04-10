@@ -5,8 +5,8 @@ export type AddressFormState = {
   street1: string;
   street2: string;
   city: string;
+  /** State/province label (or free text when country has no directory regions). */
   region: string;
-  regionId: string;
   postcode: string;
   country_code: string;
   telephone: string;
@@ -21,7 +21,6 @@ export function emptyAddress(): AddressFormState {
     street2: "",
     city: "",
     region: "",
-    regionId: "",
     postcode: "",
     country_code: "US",
     telephone: "",

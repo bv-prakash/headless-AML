@@ -89,8 +89,12 @@ export default function CheckoutForm() {
                   !f.customerLoading &&
                   f.savedAddresses.length === 0)) && (
                 <ShippingAddressFields
+                  key={`ship-${f.shippingHydrateVersion}`}
                   shipping={f.shipping}
                   setShipping={f.setShipping}
+                  showSaveInAddressBook={f.isLoggedIn}
+                  saveInAddressBook={f.shippingSaveInAddressBook}
+                  onSaveInAddressBookChange={f.setShippingSaveInAddressBook}
                 />
               )}
             </section>
@@ -154,6 +158,8 @@ export default function CheckoutForm() {
           shipping={f.shipping}
           setShipping={f.setShipping}
           onClose={f.closeNewShippingAddressModal}
+          saveInAddressBook={f.shippingSaveInAddressBook}
+          onSaveInAddressBookChange={f.setShippingSaveInAddressBook}
         />
       ) : null}
 

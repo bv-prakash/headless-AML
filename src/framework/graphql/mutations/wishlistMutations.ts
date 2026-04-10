@@ -3,6 +3,7 @@ import { gql } from "@apollo/client";
 export const CUSTOMER_WISHLIST_QUERY = gql`
   query CustomerWishlist {
     customer {
+      id
       wishlist {
         id
         items_count
@@ -13,6 +14,7 @@ export const CUSTOMER_WISHLIST_QUERY = gql`
 
 export type CustomerWishlistResponse = {
   customer: {
+    id?: number | null;
     wishlist: {
       id: string;
       items_count: number;

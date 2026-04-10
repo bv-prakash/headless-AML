@@ -84,7 +84,26 @@ const apolloClient = new ApolloClient({
   link: ApolloLink.from([errorLink, authLink, httpLink]),
   cache: new InMemoryCache({
     typePolicies: {
-      Cart: { keyFields: false },
+      /** Same logged-in user from `CustomerWishlist`, `CustomerForCheckout`, etc. */
+      Customer: { keyFields: ["id"] },
+      Query: {
+        fields: {
+          /** Avoid cache loss when one query has `wishlist` and another has `addresses`. */
+          customer: {
+            merge(existing, incoming, { mergeObjects }) {
+              return mergeObjects(existing, incoming);
+            },
+          },
+          /** Avoid cache loss when one query has totals/items and another has checkout options. */
+          cart: {
+            merge(existing, incoming, { mergeObjects }) {
+              return mergeObjects(existing, incoming);
+            },
+          },
+        },
+      },
+      /** Magento cart has stable masked `id` (we include it in all cart queries). */
+      Cart: { keyFields: ["id"] },
       SimpleProduct: { keyFields: ["uid"] },
       ConfigurableProduct: { keyFields: ["uid"] },
       BundleProduct: { keyFields: ["uid"] },

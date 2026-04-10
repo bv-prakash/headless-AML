@@ -22,12 +22,11 @@ export default function CheckoutShippingMethods({
 }: CheckoutShippingMethodsProps) {
   return (
     <section
-      className="rounded-lg border border-aaa bg-white/90 p-5 space-y-4"
       aria-labelledby="checkout-ship-method-heading"
     >
       <h2
         id="checkout-ship-method-heading"
-        className="text-lg font-bold text-black uppercase"
+        className="text-lg font-semibold text-black uppercase mb-4 border-b border-aaa pb-2.5"
       >
         Shipping method
       </h2>
@@ -51,10 +50,6 @@ export default function CheckoutShippingMethods({
         </p>
       ) : (
         <>
-          <p className="text-sm text-gray-600">
-            Choose a delivery option. Rates update when you change the shipping
-            address.
-          </p>
           <ul className="space-y-2" role="radiogroup" aria-label="Shipping methods">
             {options.map((m) => {
               const key = shippingMethodKey(m);

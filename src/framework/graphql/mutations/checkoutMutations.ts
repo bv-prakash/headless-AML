@@ -88,6 +88,7 @@ export const SET_GUEST_EMAIL_ON_CART = gql`
 export const CHECKOUT_AVAILABLE_PAYMENT_METHODS_QUERY = gql`
   query CheckoutAvailablePaymentMethods($cartId: String!) {
     cart(cart_id: $cartId) {
+      id
       available_payment_methods {
         code
         title
@@ -100,6 +101,7 @@ export const CHECKOUT_AVAILABLE_PAYMENT_METHODS_QUERY = gql`
 export const CART_CHECKOUT_OPTIONS_QUERY = gql`
   query CartCheckoutOptions($cartId: String!) {
     cart(cart_id: $cartId) {
+      id
       shipping_addresses {
         available_shipping_methods {
           ...CheckoutAvailableShippingMethod

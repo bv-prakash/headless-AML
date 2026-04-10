@@ -40,7 +40,7 @@ export default function ApplyBackgroundImages({
     const root = document.getElementById(rootId);
     if (!root) return;
 
-    let timeout: number | null = null;
+    let rafId: number | null = null;
 
     const apply = () => {
       const isMobile = window.matchMedia(`(max-width: ${mobileMaxWidthPx}px)`).matches;
@@ -62,12 +62,13 @@ export default function ApplyBackgroundImages({
       });
     };
 
+    /** Coalesce rapid mutations (PageBuilder + Swiper) without the old 100ms gap that left slides visually empty. */
     const scheduleApply = () => {
-      if (timeout != null) return;
-      timeout = window.setTimeout(() => {
-        timeout = null;
+      if (rafId != null) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
         apply();
-      }, 100);
+      });
     };
 
     apply();
@@ -82,7 +83,7 @@ export default function ApplyBackgroundImages({
     return () => {
       observer.disconnect();
       window.removeEventListener("resize", apply);
-      if (timeout != null) window.clearTimeout(timeout);
+      if (rafId != null) window.cancelAnimationFrame(rafId);
     };
   }, [rootId, mobileMaxWidthPx]);
 

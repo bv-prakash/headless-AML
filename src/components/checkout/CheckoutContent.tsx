@@ -35,13 +35,6 @@ export default function CheckoutContent() {
             </p>
           </>
         )}
-
-        {hydrated && isLoggedIn && (
-          <p className="text-gray-600 mb-8">
-            First confirm shipping and delivery. Then choose payment on the next
-            step. Your order summary is always visible in the sidebar.
-          </p>
-        )}
       </ClientOnly>
 
       <CheckoutForm />

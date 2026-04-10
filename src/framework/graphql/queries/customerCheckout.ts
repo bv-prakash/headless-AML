@@ -5,6 +5,7 @@ import { CUSTOMER_ADDRESS_BOOK_ENTRY } from "@/src/framework/graphql/fragments/c
 export const CUSTOMER_FOR_CHECKOUT_QUERY = gql`
   query CustomerForCheckout {
     customer {
+      id
       firstname
       lastname
       suffix
@@ -37,6 +38,7 @@ export type CustomerAddressNode = {
 };
 
 export type CustomerForCheckoutData = {
+  readonly id?: number | null;
   readonly firstname?: string | null;
   readonly lastname?: string | null;
   readonly suffix?: string | null;

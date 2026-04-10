@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Footer, Header } from "@/src/components";
+import { LazyHeader } from "@/src/components/common/LazyHeader";
+import { LazyFooter } from "@/src/components/common/LazyFooter";
 import ClientToastContainer from "@/src/components/common/ClientToastContainer";
 import Providers from "./Providers";
 
@@ -25,9 +26,9 @@ export default function RootLayout({
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <Providers>
-          <Header />
+          <LazyHeader />
           <main className="flex-1">{children}</main>
-          <Footer />
+          <LazyFooter />
           <ClientToastContainer />
         </Providers>
       </body>

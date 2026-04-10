@@ -50,7 +50,7 @@ export default function CheckoutSavedAddresses({
         onClick={onAddNew}
         className="text-sm font-semibold text-theme-primary underline hover:no-underline"
       >
-        + Add new shipping address
+        + Add New address
       </button>
     </div>
   );

@@ -77,12 +77,24 @@ const nextConfig: NextConfig = {
     ...buildRemotePatterns(),
     formats: ["image/avif", "image/webp"],
   },
+  // Optimize package imports - only import necessary exports
   experimental: {
     optimizePackageImports: [
       "@apollo/client",
       "react-toastify",
       "swiper",
+      "react-redux",
+      "@reduxjs/toolkit",
     ],
+    // Faster incremental builds
+    staticGenerationRetryCount: 1,
+  },
+  // Better page loading for faster development
+  onDemandEntries: {
+    // period (in ms) where the server will keep pages in the buffer
+    maxInactiveAge: 60 * 1000,
+    // number of pages that should be kept simultaneously without being disposed
+    pagesBufferLength: 5,
   },
 };
 

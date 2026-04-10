@@ -16,7 +16,9 @@ export type SyncedCart = { readonly cartId: string; readonly cart: CartData };
 function toSyncedCart(cart: CartData | null | undefined): SyncedCart | null {
   if (!cart?.id) return null;
   const cartId = cart.id;
-  const { id: _omit, ...rest } = cart;
+  // `cartId` is stored separately in Redux; drop `id` from the cart payload.
+  // eslint/ts: avoid unused destructured vars.
+  const { id: _id, ...rest } = cart;
   return { cartId, cart: rest };
 }
 

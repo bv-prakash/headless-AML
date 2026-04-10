@@ -31,7 +31,8 @@ export async function getHomePage(): Promise<HomePageData | null> {
   try {
     const result = await client.query<CmsPageQueryResponse>({
       query: HOME_QUERY,
-      fetchPolicy: "cache-first",
+      /** Avoid unbounded growth on the long-lived server Apollo singleton during `next dev`. */
+      fetchPolicy: "no-cache",
     });
 
     return result.data?.cmsPage ?? null;

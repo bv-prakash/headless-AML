@@ -33,13 +33,6 @@ export const SHIPPING_ADDRESS_RULES: Rules = {
     required: "State / region is required",
     maxLength: { value: 100, message: "Region is too long" },
   },
-  regionId: {
-    validate: (v) => {
-      const t = String(v).trim();
-      if (t === "") return true;
-      return /^\d+$/.test(t) || "Region ID must be numeric";
-    },
-  },
   postcode: {
     required: "ZIP / postal code is required",
     validate: (v) => {

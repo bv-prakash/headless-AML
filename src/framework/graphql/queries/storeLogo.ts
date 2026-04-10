@@ -51,7 +51,7 @@ export async function getStoreLogo(): Promise<StoreLogoData | null> {
   try {
     const result = await client.query<StoreLogoConfigResponse>({
       query: STORE_LOGO_QUERY,
-      fetchPolicy: "cache-first",
+      fetchPolicy: "no-cache",
     });
 
     const storeConfig = result.data?.storeConfig;

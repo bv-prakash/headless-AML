@@ -70,11 +70,6 @@ export default function BillingAddressFields({
           required
         />
         <CheckoutField
-          label="Region ID (optional)"
-          value={billing.regionId}
-          onChange={(v) => setBilling((s) => ({ ...s, regionId: v }))}
-        />
-        <CheckoutField
           label="ZIP / Postal code"
           value={billing.postcode}
           onChange={(v) => setBilling((s) => ({ ...s, postcode: v }))}

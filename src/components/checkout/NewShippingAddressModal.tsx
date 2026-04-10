@@ -10,6 +10,8 @@ type NewShippingAddressModalProps = {
   readonly setShipping: Dispatch<SetStateAction<AddressFormState>>;
   readonly onClose: () => void;
   readonly shippingAddressFormRef?: Ref<ShippingAddressFieldsHandle | null>;
+  readonly saveInAddressBook?: boolean;
+  readonly onSaveInAddressBookChange?: (value: boolean) => void;
 };
 
 export default function NewShippingAddressModal({
@@ -17,6 +19,8 @@ export default function NewShippingAddressModal({
   setShipping,
   onClose,
   shippingAddressFormRef,
+  saveInAddressBook,
+  onSaveInAddressBookChange,
 }: NewShippingAddressModalProps) {
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
@@ -53,9 +57,11 @@ export default function NewShippingAddressModal({
         </p>
         <ShippingAddressFields
           ref={shippingAddressFormRef}
-          key={`modal-ship-${shipping.firstname}-${shipping.lastname}`}
           shipping={shipping}
           setShipping={setShipping}
+          showSaveInAddressBook
+          saveInAddressBook={saveInAddressBook}
+          onSaveInAddressBookChange={onSaveInAddressBookChange}
         />
         <div className="mt-6 flex flex-wrap justify-end gap-3">
           <button

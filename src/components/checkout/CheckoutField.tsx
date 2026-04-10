@@ -21,6 +21,8 @@ type CheckoutFieldRhfProps = {
   readonly className?: string;
   readonly placeholder?: string;
   readonly error?: string;
+  /** Match Luma `common-label-hide` — placeholder carries the visible hint. */
+  readonly labelSrOnly?: boolean;
   readonly value?: never;
   readonly onChange?: never;
 };
@@ -38,13 +40,18 @@ export default function CheckoutField(props: CheckoutFieldProps) {
       className = "",
       placeholder,
       error,
+      labelSrOnly,
     } = props;
     const fieldId = `checkout-field-${String(registration.name)}`;
     return (
       <div className={className}>
         <label
           htmlFor={fieldId}
-          className="block text-sm font-semibold text-black mb-1"
+          className={
+            labelSrOnly
+              ? "sr-only"
+              : "block text-sm font-semibold text-black mb-1"
+          }
         >
           {label}
           {required ? <span className="text-red-600"> *</span> : null}

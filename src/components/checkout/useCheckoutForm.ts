@@ -15,6 +15,10 @@ import {
   type CartQueryVariables,
 } from "@/src/framework/graphql/mutations/cartMutations";
 import {
+  CREATE_CUSTOMER_ADDRESS_MUTATION,
+  type CreateCustomerAddressResponse,
+} from "@/src/framework/graphql/mutations/customerAddressMutations";
+import {
   CART_CHECKOUT_OPTIONS_QUERY,
   SET_BILLING_ADDRESS_ON_CART,
   SET_GUEST_EMAIL_ON_CART,
@@ -42,10 +46,17 @@ import {
   type CustomerForCheckoutResponse,
 } from "@/src/framework/graphql/queries/customerCheckout";
 import {
+  COUNTRY_REGIONS_QUERY,
+  type CountryRegionsResponse,
+} from "@/src/framework/graphql/queries/countryRegions";
+import {
+  type CreateCustomerAddressMutationVariables,
+  findCustomerAddressMatchingForm,
   formatCustomerAddressSummary,
   formatShippingFormSummary,
   sameAddressId,
   toCartAddressInput,
+  toCreateCustomerAddressInput,
 } from "@/src/components/checkout/addressHelpers";
 import {
   parseShippingMethodKey,
@@ -68,6 +79,9 @@ export function useCheckoutForm() {
   const [sameBilling, setSameBilling] = useState(true);
   const [billing, setBilling] = useState(emptyAddress);
   const [billingSaveBook, setBillingSaveBook] = useState(true);
+  /** Luma-style “Save in address book” (logged-in + typed shipping only). */
+  const [shippingSaveInAddressBook, setShippingSaveInAddressBook] =
+    useState(true);
   const [useNewShippingForm, setUseNewShippingForm] = useState(false);
   const [selectedSavedAddressId, setSelectedSavedAddressId] = useState<
     number | null
@@ -100,6 +114,7 @@ export function useCheckoutForm() {
     data: customerData,
     loading: customerLoading,
     error: customerQueryError,
+    refetch: refetchCustomerCheckout,
   } = useQuery<CustomerForCheckoutResponse, Record<string, never>>(
     CUSTOMER_FOR_CHECKOUT_QUERY,
     {
@@ -113,6 +128,28 @@ export function useCheckoutForm() {
     () => customerData?.customer?.addresses ?? [],
     [customerData?.customer],
   );
+
+  const shippingCountryId = (shipping.country_code || "US").trim().toUpperCase();
+  const { data: shippingCountryRegions } = useQuery<
+    CountryRegionsResponse,
+    { countryId: string }
+  >(COUNTRY_REGIONS_QUERY, {
+    variables: { countryId: shippingCountryId },
+    skip: !checkoutStoreReady || shippingCountryId.length !== 2,
+    fetchPolicy: "cache-first",
+  });
+
+  const resolvedShippingRegionId = useMemo(() => {
+    const list = shippingCountryRegions?.country?.available_regions ?? [];
+    if (!list.length) return null;
+    const t = shipping.region.trim().toLowerCase();
+    if (!t) return null;
+    const byCode = list.find((r) => (r.code ?? "").toLowerCase() === t);
+    if (byCode) return Number(byCode.id);
+    const byName = list.find((r) => (r.name ?? "").toLowerCase() === t);
+    if (byName) return Number(byName.id);
+    return null;
+  }, [shippingCountryRegions, shipping.region]);
 
   useEffect(() => {
     if (customerQueryError) {
@@ -131,8 +168,23 @@ export function useCheckoutForm() {
     if (addrs.length === 0) {
       setUseNewShippingForm(true);
       setSelectedSavedAddressId(null);
+      pendingSelectSavedAfterBookRef.current = false;
       return;
     }
+
+    if (pendingSelectSavedAfterBookRef.current) {
+      pendingSelectSavedAfterBookRef.current = false;
+      const match = findCustomerAddressMatchingForm(
+        addrs,
+        shippingRef.current,
+      );
+      if (match != null) {
+        setSelectedSavedAddressId(Number(match.id));
+        setUseNewShippingForm(false);
+        return;
+      }
+    }
+
     setUseNewShippingForm(false);
     setSelectedSavedAddressId((prev) => {
       if (prev != null && addrs.some((a) => sameAddressId(a.id, prev))) {
@@ -153,6 +205,11 @@ export function useCheckoutForm() {
     SetShippingAddressesResponse,
     SetShippingAddressesVariables
   >(SET_SHIPPING_ADDRESSES_ON_CART);
+
+  const [createCustomerAddress] = useMutation<
+    CreateCustomerAddressResponse,
+    CreateCustomerAddressMutationVariables
+  >(CREATE_CUSTOMER_ADDRESS_MUTATION);
 
   const [setShippingMethods] = useMutation<
     SetShippingMethodsResponse,
@@ -178,6 +235,10 @@ export function useCheckoutForm() {
   /** True while address/billing is being applied and rates are fetched (auto-sync). */
   const [shippingRatesLoading, setShippingRatesLoading] = useState(false);
   const quoteRequestIdRef = useRef(0);
+  const shippingRef = useRef(shipping);
+  shippingRef.current = shipping;
+  /** After saving a typed address to the book, select that row in the list (see customer `useEffect`). */
+  const pendingSelectSavedAfterBookRef = useRef(false);
 
   const selectedShippingSummary = useMemo(() => {
     if (!selectedShipKey) return null;
@@ -275,9 +336,12 @@ export function useCheckoutForm() {
         return;
       }
 
-      const shipAddr = toCartAddressInput(shipping, false);
+      /** Persist typed shipping to address book via `createCustomerAddress` when the shopper opts in. */
+      const saveShippingToAddressBook =
+        isLoggedIn && !useSavedShipping && shippingSaveInAddressBook;
+      const shipAddr = toCartAddressInput(shipping, false, resolvedShippingRegionId);
       const billAddr = sameBilling
-        ? toCartAddressInput(shipping, false)
+        ? toCartAddressInput(shipping, false, resolvedShippingRegionId)
         : toCartAddressInput(billing, billingSaveBook);
 
       if (!useSavedShipping) {
@@ -354,6 +418,29 @@ export function useCheckoutForm() {
           }
           toast.error(shipError.message ?? "Shipping address failed.");
           return;
+        }
+
+        if (saveShippingToAddressBook) {
+          const { error: addrBookErr } = await createCustomerAddress({
+            variables: {
+              input: toCreateCustomerAddressInput(
+                shipping,
+                { default_shipping: true, default_billing: false },
+                resolvedShippingRegionId,
+              ),
+            },
+          });
+          if (addrBookErr) {
+            toast.error(
+              getErrorMessage(
+                addrBookErr,
+                "Could not save this address to your account.",
+              ),
+            );
+          } else {
+            pendingSelectSavedAfterBookRef.current = true;
+            await refetchCustomerCheckout();
+          }
         }
 
         const billingPayload: BillingAddressMutationInput = sameBilling
@@ -443,14 +530,18 @@ export function useCheckoutForm() {
       billing,
       billingSaveBook,
       cartId,
+      createCustomerAddress,
       fetchCheckoutOptions,
       guestEmail,
       isLoggedIn,
+      refetchCustomerCheckout,
       sameBilling,
       selectedSavedAddressId,
+      shippingSaveInAddressBook,
       setBillingAddress,
       setGuestEmailMutation,
       setShippingAddresses,
+      resolvedShippingRegionId,
       shipping,
       useNewShippingForm,
     ],
@@ -622,16 +713,13 @@ export function useCheckoutForm() {
   }, []);
 
   const onAddNewShippingAddress = useCallback(() => {
-    const c = customerData?.customer;
     setUseNewShippingForm(true);
     setShipping({
       ...emptyAddress(),
-      firstname: c?.firstname ?? "",
-      lastname: c?.lastname ?? "",
       country_code: "US",
     });
     setShippingHydrateVersion((v) => v + 1);
-  }, [customerData?.customer]);
+  }, []);
 
   return {
     checkoutStoreReady,
@@ -650,6 +738,8 @@ export function useCheckoutForm() {
     setBilling,
     billingSaveBook,
     setBillingSaveBook,
+    shippingSaveInAddressBook,
+    setShippingSaveInAddressBook,
     useNewShippingForm,
     setUseNewShippingForm,
     selectedSavedAddressId,

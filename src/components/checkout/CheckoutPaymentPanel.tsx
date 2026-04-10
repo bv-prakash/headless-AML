@@ -18,18 +18,14 @@ export default function CheckoutPaymentPanel({
 }: CheckoutPaymentPanelProps) {
   return (
     <section
-      className="rounded-lg border border-aaa bg-white/90 p-5 space-y-6"
       aria-labelledby="checkout-payment-heading"
     >
       <h2
         id="checkout-payment-heading"
-        className="text-lg font-bold text-black uppercase"
+        className="text-lg font-semibold text-black uppercase mb-4 border-b border-aaa pb-2.5"
       >
         Payment
       </h2>
-      <p className="text-sm text-gray-600">
-        Select how you would like to pay. Additional payment integrations can be wired here.
-      </p>
       <ul className="space-y-2" role="radiogroup" aria-label="Payment methods">
         {paymentOptions.map((p) => {
           const selected = selectedPaymentCode === p.code;
@@ -56,16 +52,6 @@ export default function CheckoutPaymentPanel({
         })}
       </ul>
 
-      <Button
-        type="button"
-        variant="secondary"
-        size="lg"
-        disabled
-        className="w-full uppercase opacity-70 cursor-not-allowed"
-        title="Placeholder for future card / wallet payment"
-      >
-        Pay with card (placeholder)
-      </Button>
 
       <button
         type="button"
