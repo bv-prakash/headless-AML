@@ -10,7 +10,7 @@ const Separator = () => (
 );
 
 
-export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
+export  function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   return (
     <nav aria-label="Breadcrumb" className="max-w-full p-0 m-0 mb-5">
       <ol className="breadcrumb flex items-center flex-wrap list-none p-0 m-0 text-base leading-[1.3] lg-custom:text-lg! text-theme-primary font-bold gap-2">

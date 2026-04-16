@@ -1,6 +1,6 @@
 "use client";
 
-import type { CustomerAddressNode } from "@/src/framework/graphql/queries/customerCheckout";
+import type { CustomerAddressNode } from "@/src/framework/graphql/queries/customerInfo";
 import { formatCustomerAddressSummary, sameAddressId } from "@/src/components/checkout/addressHelpers";
 
 type CheckoutSavedAddressesProps = {

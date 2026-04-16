@@ -99,7 +99,7 @@ export default function HeaderAuth() {
             </li>
             <li>
               <Link
-                href="/wishlist"
+                href="/account/wishlist"
                 onClick={handleDropdownLinkClick}
                 className="block px-4 py-2 hover:bg-gray-100 hover:text-theme-primary transition-colors"
               >
@@ -108,7 +108,7 @@ export default function HeaderAuth() {
             </li>
             <li>
               <Link
-                href="/orders"
+                href="/account/orders"
                 onClick={handleDropdownLinkClick}
                 className="block px-4 py-2 hover:bg-gray-100 hover:text-theme-primary transition-colors"
               >

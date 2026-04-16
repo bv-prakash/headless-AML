@@ -18,3 +18,9 @@ export type {
   ProductListSortKey,
   ProductAggregation,
 } from "./products";
+
+export { CUSTOMER_INFO_QUERY } from "./customerInfo";
+export type {
+  CustomerForCheckoutData,
+  CustomerForCheckoutResponse,
+} from "./customerInfo";

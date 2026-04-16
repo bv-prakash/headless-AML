@@ -21,6 +21,7 @@ type AddToCartActionsProps = {
   /** When Redux has no qty yet (e.g. `?qty=` from edit link). */
   readonly defaultQuantity?: number;
   readonly variant?: "plp" | "pdp";
+  overrideStyles?: string;
 };
 
 function AddToCartActions({
@@ -36,6 +37,7 @@ function AddToCartActions({
   showQuantity = true,
   defaultQuantity,
   variant = "pdp",
+  overrideStyles,
 }: AddToCartActionsProps) {
   const { execute: addToCompare, loading: compareLoading } =
     useAddToCompare(productId, productName);
@@ -48,7 +50,7 @@ function AddToCartActions({
 
   return (
     <div
-      className={`flex items-center ${isPlp ? "justify-center" : ""} gap-3`}
+      className={`flex items-center ${isPlp ? "justify-center " : ""} gap-3 ${overrideStyles || ""}`}
     >
       {showQuantity && !isOutOfStock && (
         <QuantitySelector

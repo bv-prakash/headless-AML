@@ -13,7 +13,6 @@ import {
 } from "@/src/utils/params";
 import { stripHtml } from "@/src/utils/html";
 import PageLoader from "@/src/components/common/PageLoader";
-import Breadcrumbs from "@/src/components/common/Breadcrumbs";
 import ProductGallery from "@/src/components/pdp/ProductGallery";
 import ProductInfo from "@/src/components/pdp/ProductInfo";
 import ProductDescription from "@/src/components/pdp/ProductDescription";
@@ -24,6 +23,7 @@ import ConfigurableOptions from "@/src/components/pdp/ConfigurableOptions";
 import BundleOptions from "@/src/components/pdp/BundleOptions";
 import GroupedProductTable from "@/src/components/pdp/GroupedProductTable";
 import DownloadableLinks from "@/src/components/pdp/DownloadableLinks";
+import ServerBreadcrumbs from "@/src/components/plp/ServerBreadcrumbs";
 
 type PDPPageProps = {
   params: Promise<{ url_key: string }>;
@@ -95,7 +95,7 @@ export default async function PDPPage({ params, searchParams }: PDPPageProps) {
       {/* Breadcrumbs */}
       {categoryId && (
         <div className="container mt-5 mb-5 lg-custom:mb-12.5!">
-          <Breadcrumbs categoryId={categoryId} productName={product.name} />
+          <ServerBreadcrumbs categoryId={categoryId} productName={product.name} />
         </div>
       )}
 

@@ -8,6 +8,7 @@ import { setWishlistCount } from "@/src/store/slices/wishlistSlice";
 import {
   CUSTOMER_WISHLIST_QUERY,
   type CustomerWishlistResponse,
+  getActiveWishlist,
 } from "@/src/framework/graphql/mutations/wishlistMutations";
 
 export default function WishlistIcon() {
@@ -27,15 +28,16 @@ export default function WishlistIcon() {
   useEffect(() => {
     if (data === prevDataRef.current) return;
     prevDataRef.current = data;
-    if (!data?.customer?.wishlist) return;
-    dispatch(setWishlistCount(data.customer.wishlist.items_count));
+    const wl = getActiveWishlist(data);
+    if (!wl) return;
+    dispatch(setWishlistCount(wl.items_count));
   }, [data, dispatch]);
 
   if (!isLoggedIn) return null;
 
   return (
     <Link
-      href="/wishlist"
+      href="/account/wishlist"
       className="relative flex items-center gap-1 hover:text-theme-primary transition-colors"
       aria-label={`Wishlist${itemCount > 0 ? ` (${itemCount} items)` : ""}`}
     >

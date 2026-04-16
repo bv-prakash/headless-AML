@@ -1,15 +1,17 @@
 import { gql } from "@apollo/client";
-import { CUSTOMER_ADDRESS_BOOK_ENTRY } from "@/src/framework/graphql/fragments/customerCheckout";
+import { CUSTOMER_ADDRESS_BOOK_ENTRY } from "@/src/framework/graphql/fragments/customerAddress";
 
 /** Customer profile + address book for checkout (shipping / billing selection). */
-export const CUSTOMER_FOR_CHECKOUT_QUERY = gql`
+export const CUSTOMER_INFO_QUERY = gql`
   query CustomerForCheckout {
     customer {
       id
       firstname
       lastname
+      telephone
       suffix
       email
+      is_subscribed
       addresses {
         ...CustomerAddressBookEntry
       }
@@ -27,6 +29,7 @@ export type CustomerRegion = {
 export type CustomerAddressNode = {
   readonly id: number;
   readonly default_shipping?: boolean | null;
+  readonly default_billing?: boolean | null;
   readonly firstname?: string | null;
   readonly lastname?: string | null;
   readonly street?: readonly string[] | null;
@@ -41,8 +44,10 @@ export type CustomerForCheckoutData = {
   readonly id?: number | null;
   readonly firstname?: string | null;
   readonly lastname?: string | null;
+  readonly telephone?: string | null;
   readonly suffix?: string | null;
   readonly email?: string | null;
+  readonly is_subscribed?: boolean | null;
   readonly addresses?: readonly CustomerAddressNode[] | null;
 };
 

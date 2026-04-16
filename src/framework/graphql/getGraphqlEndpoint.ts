@@ -18,6 +18,9 @@ function normalizeDdevUrl(url: string): string {
 /**
  * Resolves Magento GraphQL URL.
  *
+ * Adobe documents the PaaS/on-premises endpoint as `https://<commerce-server>/graphql`; SaaS uses a
+ * different host pattern. See https://developer.adobe.com/commerce/webapi/graphql/
+ *
  * Priority:
  * 1. Absolute `NEXT_PUBLIC_GRAPHQL_ENDPOINT` (starts with http).
  * 2. `NEXT_PUBLIC_COMMERCE_BASE_URL` that already ends with `/graphql`.

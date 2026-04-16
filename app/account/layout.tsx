@@ -14,14 +14,11 @@ export default function MyAccountLayout({ children }: MyAccountLayoutProps) {
       {/* <Breadcrumbs items={myAccountNavItems} /> */}
       <AccountBreadcrumbs />
       
-      <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-8 md:gap-13 items-start">
           <aside className="bg-white  shadow-[0_0_10px_rgba(0,0,0,0.1)]">
             <MyAccountSidebar />
           </aside>
-
-          <div className="min-w-0 border border-aaa bg-white p-6">
             {children}
-          </div>
         </div>
       </div>
     </RequireAuth>

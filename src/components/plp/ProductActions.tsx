@@ -111,6 +111,7 @@ export default function ProductActions({
         showQuantity={showQuantity}
         defaultQuantity={initialQty}
         variant="plp"
+        overrideStyles="w-full"
       />
     </div>
   );

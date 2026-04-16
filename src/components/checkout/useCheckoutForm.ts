@@ -42,9 +42,9 @@ import {
   type BillingAddressMutationInput,
 } from "@/src/framework/graphql/mutations/checkoutMutations";
 import {
-  CUSTOMER_FOR_CHECKOUT_QUERY,
+  CUSTOMER_INFO_QUERY,
   type CustomerForCheckoutResponse,
-} from "@/src/framework/graphql/queries/customerCheckout";
+} from "@/src/framework/graphql/queries/customerInfo";
 import {
   COUNTRY_REGIONS_QUERY,
   type CountryRegionsResponse,
@@ -54,6 +54,7 @@ import {
   findCustomerAddressMatchingForm,
   formatCustomerAddressSummary,
   formatShippingFormSummary,
+  resolveDirectoryRegionId,
   sameAddressId,
   toCartAddressInput,
   toCreateCustomerAddressInput,
@@ -116,7 +117,7 @@ export function useCheckoutForm() {
     error: customerQueryError,
     refetch: refetchCustomerCheckout,
   } = useQuery<CustomerForCheckoutResponse, Record<string, never>>(
-    CUSTOMER_FOR_CHECKOUT_QUERY,
+    CUSTOMER_INFO_QUERY,
     {
       skip: !checkoutStoreReady || !isLoggedIn,
       fetchPolicy: "network-only",
@@ -141,14 +142,7 @@ export function useCheckoutForm() {
 
   const resolvedShippingRegionId = useMemo(() => {
     const list = shippingCountryRegions?.country?.available_regions ?? [];
-    if (!list.length) return null;
-    const t = shipping.region.trim().toLowerCase();
-    if (!t) return null;
-    const byCode = list.find((r) => (r.code ?? "").toLowerCase() === t);
-    if (byCode) return Number(byCode.id);
-    const byName = list.find((r) => (r.name ?? "").toLowerCase() === t);
-    if (byName) return Number(byName.id);
-    return null;
+    return resolveDirectoryRegionId(shipping.region, list);
   }, [shippingCountryRegions, shipping.region]);
 
   useEffect(() => {

@@ -147,7 +147,7 @@ const PLPProductCard = ({
           productType={productType}
           stockStatus={stockStatus}
           productPageHref={href}
-          overrideStyles="flex-1 items-end"
+          overrideStyles="flex-1 items-end flex"
         />
       </div>
     </div>

@@ -1,7 +1,45 @@
 import type { CartAddressInput } from "@/src/framework/graphql/mutations/checkoutMutations";
 import type { CreateCustomerAddressInput } from "@/src/framework/graphql/mutations/customerAddressMutations";
-import type { CustomerAddressNode } from "@/src/framework/graphql/queries/customerCheckout";
+import type { CustomerAddressNode } from "@/src/framework/graphql/queries/customerInfo";
+import type { DirectoryRegionNode } from "@/src/framework/graphql/queries/countryRegions";
 import type { AddressFormState } from "@/src/components/checkout/addressTypes";
+
+/**
+ * Maps the shopper’s state/province text to Magento’s directory `region_id` when the country
+ * has `available_regions`. Required for countries where the API rejects saves without `region_id`.
+ */
+export function resolveDirectoryRegionId(
+  regionInput: string,
+  availableRegions?: readonly DirectoryRegionNode[] | null,
+): number | null {
+  const list = availableRegions ?? [];
+  if (!list.length) return null;
+  const trimmed = regionInput.trim();
+  if (!trimmed) return null;
+
+  /** Magento Luma `region_id` select uses numeric string option values. */
+  if (/^\d+$/.test(trimmed)) {
+    const byId = list.find((r) => String(r.id) === trimmed);
+    if (byId) {
+      const id = Number(byId.id);
+      return Number.isFinite(id) ? id : null;
+    }
+    return null;
+  }
+
+  const t = trimmed.toLowerCase();
+  const byCode = list.find((r) => (r.code ?? "").trim().toLowerCase() === t);
+  if (byCode) {
+    const id = Number(byCode.id);
+    return Number.isFinite(id) ? id : null;
+  }
+  const byName = list.find((r) => (r.name ?? "").trim().toLowerCase() === t);
+  if (byName) {
+    const id = Number(byName.id);
+    return Number.isFinite(id) ? id : null;
+  }
+  return null;
+}
 
 /** Magento `CustomerAddressInput` when checkout adds `region` (can include `region_id`). */
 export type CreateCustomerAddressPayload = CreateCustomerAddressInput & {
@@ -118,6 +156,28 @@ export function sameAddressId(
 }
 
 /** Pick the saved book row that matches the shipping form after `save_in_address_book` + refetch. */
+export function customerAddressToFormState(addr: CustomerAddressNode): AddressFormState {
+  const street = addr.street ?? [];
+  const rid = addr.region?.region_id;
+  const regionLabel =
+    rid != null && !Number.isNaN(Number(rid))
+      ? String(Number(rid))
+      : (addr.region?.region_code ?? "").trim() ||
+        (addr.region?.region ?? "").trim();
+  return {
+    firstname: (addr.firstname ?? "").trim(),
+    lastname: (addr.lastname ?? "").trim(),
+    company: "",
+    street1: (street[0] ?? "").trim(),
+    street2: (street[1] ?? "").trim(),
+    city: (addr.city ?? "").trim(),
+    region: regionLabel,
+    postcode: (addr.postcode ?? "").trim(),
+    country_code: ((addr.country_code ?? "US").trim().toUpperCase() || "US").slice(0, 2),
+    telephone: (addr.telephone ?? "").trim(),
+  };
+}
+
 export function findCustomerAddressMatchingForm(
   addresses: readonly CustomerAddressNode[],
   f: AddressFormState,

@@ -4,15 +4,22 @@ import {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   type Dispatch,
   type SetStateAction,
 } from "react";
+import { useQuery } from "@apollo/client/react";
 import { useForm, useWatch } from "react-hook-form";
 import CheckoutField from "@/src/components/checkout/CheckoutField";
 import CheckoutSelect from "@/src/components/checkout/CheckoutSelect";
+import { resolveDirectoryRegionId } from "@/src/components/checkout/addressHelpers";
 import { SHIPPING_ADDRESS_RULES } from "@/src/components/checkout/shippingAddressRules";
 import type { AddressFormState } from "@/src/components/checkout/addressTypes";
+import {
+  COUNTRY_REGIONS_QUERY,
+  type CountryRegionsResponse,
+} from "@/src/framework/graphql/queries/countryRegions";
 
 export type ShippingAddressFieldsHandle = {
   readonly triggerValidation: () => Promise<boolean>;
@@ -67,6 +74,43 @@ const ShippingAddressFields = forwardRef<
 
   const countryCode = useWatch({ control, name: "country_code" }) ?? "US";
   const countryId = String(countryCode || "US").trim().toUpperCase();
+
+  const { data: shippingCountryRegions, loading: regionsLoading } = useQuery<
+    CountryRegionsResponse,
+    { countryId: string }
+  >(COUNTRY_REGIONS_QUERY, {
+    variables: { countryId: countryId },
+    skip: countryId.length !== 2,
+    fetchPolicy: "cache-first",
+  });
+
+  const regionList = shippingCountryRegions?.country?.available_regions ?? [];
+  const directoryRegionMode = regionsLoading || regionList.length > 0;
+
+  const regionSelectOptions = useMemo(() => {
+    const list = shippingCountryRegions?.country?.available_regions ?? [];
+    if (!list.length) return [];
+    return [...list]
+      .map((r) => ({
+        value: String(r.id),
+        label: (r.name ?? r.code ?? String(r.id)).trim() || String(r.id),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+  }, [shippingCountryRegions]);
+
+  const regionField = useWatch({ control, name: "region" });
+
+  useEffect(() => {
+    const list = shippingCountryRegions?.country?.available_regions ?? [];
+    if (list.length === 0) return;
+    const current = String(regionField ?? "").trim();
+    if (!current) return;
+    if (/^\d+$/.test(current)) return;
+    const id = resolveDirectoryRegionId(current, list);
+    if (id != null) {
+      setValue("region", String(id), { shouldValidate: true, shouldDirty: false });
+    }
+  }, [shippingCountryRegions, regionField, setValue]);
 
   useEffect(() => {
     const sub = watch((value) => {
@@ -160,14 +204,34 @@ const ShippingAddressFields = forwardRef<
         error={errors.country_code?.message}
       />
 
-      <CheckoutField
-        label="region"
-        required
-        labelSrOnly
-        placeholder="State/Province*"
-        registration={register("region", SHIPPING_ADDRESS_RULES.region)}
-        error={errors.region?.message}
-      />
+      {directoryRegionMode ? (
+        <CheckoutSelect
+          label="region_id"
+          required
+          labelSrOnly
+          disabled={regionsLoading}
+          placeholderOption={
+            regionsLoading
+              ? "Loading regions…"
+              : "Please select a region, state or province."
+          }
+          registration={register("region", {
+            ...SHIPPING_ADDRESS_RULES.region,
+            setValueAs: (v: unknown) => String(v ?? "").trim(),
+          })}
+          options={regionSelectOptions}
+          error={errors.region?.message}
+        />
+      ) : (
+        <CheckoutField
+          label="region"
+          required
+          labelSrOnly
+          placeholder="State/Province*"
+          registration={register("region", SHIPPING_ADDRESS_RULES.region)}
+          error={errors.region?.message}
+        />
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <CheckoutField
