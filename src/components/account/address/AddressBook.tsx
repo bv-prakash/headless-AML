@@ -1,5 +1,5 @@
 import React, { useMemo, memo } from "react";
-import { InformationBox } from "./InformationBox";
+import { InformationBox } from "@/src/components/account/InformationBox";
 import { getBillingAddress, getShippingAddress } from "@/src/utils/addressHelpers";
 import type { CustomerAddressNode } from "@/src/framework/graphql/queries/customerInfo";
 

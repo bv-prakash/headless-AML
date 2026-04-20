@@ -4,7 +4,7 @@ import { useQuery } from "@apollo/client/react";
 import Link from "next/link";
 import { AccountPageTitle } from "@/src/components/account/AccountPageTitle";
 import { InformationBox } from "@/src/components/account/InformationBox";
-import { AddressBook } from "@/src/components/account/AddressBook";
+import { AddressBook } from "@/src/components/account/address/AddressBook";
 import { DashboardRecentOrders } from "@/src/components/account/DashboardRecentOrders";
 import PageLoader from "@/src/components/common/PageLoader";
 import { CUSTOMER_INFO_QUERY } from "@/src/framework/graphql/queries";

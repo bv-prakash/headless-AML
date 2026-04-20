@@ -6,6 +6,8 @@ type AddressTableProps = {
   addresses?: readonly CustomerAddressNode[] | null;
   onDelete?: (addressId: string | number) => void;
   isLoading?: boolean;
+  /** For paginated lists: global row index for accessibility (default 0). */
+  rowIndexOffset?: number;
 };
 
 type AddressRowProps = {
@@ -179,7 +181,12 @@ TableHeader.displayName = "TableHeader";
 /**
  * Main AddressTable component - displays all addresses in table format
  */
-function AddressTableComponent({ addresses, onDelete, isLoading = false }: AddressTableProps) {
+function AddressTableComponent({
+  addresses,
+  onDelete,
+  isLoading = false,
+  rowIndexOffset = 0,
+}: AddressTableProps) {
   const hasAddresses = useMemo(() => addresses && addresses.length > 0, [addresses]);
 
   if (!hasAddresses) {
@@ -196,7 +203,7 @@ function AddressTableComponent({ addresses, onDelete, isLoading = false }: Addre
               <AddressRow
                 key={address?.id || idx}
                 address={address}
-                index={idx}
+                index={rowIndexOffset + idx}
                 onDelete={onDelete}
                 isLoading={isLoading}
               />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@apollo/client/react";
@@ -64,27 +64,15 @@ export function AddressBookForm({ mode, addressId }: AddressBookFormProps) {
   const formKey =
     mode === "edit" && addressId != null ? `edit-${addressId}` : "create";
 
-  /** When Apollo delivers the saved row, align form state before paint (avoids stale `useState` init). */
-  const hydratedFromIdRef = useRef<number | "create" | null>(null);
-  const hydrationKey: number | "create" | "pending" =
+  /** Stable identity for when to re-apply Apollo data (avoid re-running on new `existing` object references). */
+  const hydrationKey =
     mode === "create"
       ? "create"
-      : existing != null
-        ? existing.id
-        : "pending";
-
-  if (hydratedFromIdRef.current !== hydrationKey) {
-    hydratedFromIdRef.current = hydrationKey;
-    if (mode === "create") {
-      setShipping(emptyAddress());
-      setDefaultShipping(false);
-      setDefaultBilling(false);
-    } else if (existing != null) {
-      setShipping(customerAddressToFormState(existing));
-      setDefaultShipping(!!existing.default_shipping);
-      setDefaultBilling(!!existing.default_billing);
-    }
-  }
+      : addressId == null
+        ? "edit-missing-id"
+        : existing != null && sameAddressId(existing.id, addressId)
+          ? `edit-${addressId}`
+          : `edit-pending-${addressId}`;
 
   const shippingCountryId = (shipping.country_code || "US").trim().toUpperCase();
   const { data: shippingCountryRegions, loading: regionsLoading } = useQuery<
@@ -146,6 +134,25 @@ export function AddressBookForm({ mode, addressId }: AddressBookFormProps) {
       setDefaultBilling(!!existing.default_billing);
     }
   }, [mode, existing]);
+
+  /**
+   * Sync form when route/mode or loaded row identity changes — not on every Apollo cache refresh.
+   * `existing` is intentionally omitted from deps: it is read for the commit where `hydrationKey`
+   * advanced (e.g. pending → row loaded); including `existing` would re-apply on new object references.
+   */
+  useLayoutEffect(() => {
+    if (mode === "create") {
+      setShipping(emptyAddress());
+      setDefaultShipping(false);
+      setDefaultBilling(false);
+      return;
+    }
+    if (existing != null) {
+      setShipping(customerAddressToFormState(existing));
+      setDefaultShipping(!!existing.default_shipping);
+      setDefaultBilling(!!existing.default_billing);
+    }
+  }, [mode, hydrationKey]);
 
   const showLoader =
     queryLoading ||

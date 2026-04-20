@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { AddressBookForm } from "@/src/components/account/AddressBookForm";
+import { AddressBookForm } from "@/src/components/account/address/AddressBookForm";
 
 export default function EditAddressPage() {
   const params = useParams();

@@ -33,16 +33,16 @@ const CUSTOMER_ORDER_SUMMARY_FIELDS = `
   }
 `;
 
-/** Customer order list (newest first). */
+/** Customer order list (newest first). Pagination via `$currentPage` / `$pageSize`. */
 export const CUSTOMER_ORDERS_QUERY = gql`
-  query CustomerOrdersList {
+  query CustomerOrdersList($currentPage: Int!, $pageSize: Int!) {
     customer {
       id
       firstname
       lastname
       orders(
-        pageSize: 50
-        currentPage: 1
+        pageSize: $pageSize
+        currentPage: $currentPage
         sort: { sort_field: CREATED_AT, sort_direction: DESC }
       ) {
         total_count
@@ -113,6 +113,11 @@ export type CustomerOrdersData = {
       readonly items: readonly CustomerOrderListItem[];
     } | null;
   } | null;
+};
+
+export type CustomerOrdersVariables = {
+  readonly currentPage: number;
+  readonly pageSize: number;
 };
 
 export const CUSTOMER_ORDER_DETAIL_QUERY = gql`

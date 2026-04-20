@@ -17,10 +17,10 @@ type OrdersTableProps = {
 };
 
 const STATUS_BADGE =
-  "inline-block px-2 py-1 rounded text-xs font-medium capitalize";
-const STATUS_COMPLETE = "bg-green-100 text-green-800";
-const STATUS_CANCELLED = "bg-red-100 text-red-800";
-const STATUS_DEFAULT = "bg-yellow-100 text-yellow-800";
+  "inline-block px-3 py-2 rounded font-medium capitalize";
+const STATUS_COMPLETE = "bg-green-100 text-light-green";
+const STATUS_CANCELLED = "bg-red-100 text-light-red";
+const STATUS_DEFAULT = "bg-yellow-100 text-light-yellow";
 
 function statusClass(status: string | undefined): string {
   const s = (status ?? "").toLowerCase();
@@ -48,34 +48,34 @@ const OrderRow = memo(function OrderRow({
   const href = `/account/orders/${encodeURIComponent(order.number)}`;
   const total = formatOrderMoney(order.total?.grand_total ?? null);
   return (
-    <tr>
-      <td data-th="ID" className="col id px-4 py-3 text-sm border-b border-ccc">
+    <tr className="border-b border-ccc hover:bg-f4f4f4">
+      <td data-th="ID" className="col id p-5">
         {orderDisplayId(order)}
       </td>
-      <td data-th="PO number" className="col po-number px-4 py-3 text-sm border-b border-ccc">
+      <td data-th="PO number" className="col po-number p-5">
         {orderPoNumber(order)}
       </td>
-      <td data-th="Order #" className="col oracle-id px-4 py-3 text-sm border-b border-ccc">
+      <td data-th="Order #" className="col oracle-id p-5">
         <Link href={href} className="text-theme-primary hover:underline">
           {order.number}
         </Link>
       </td>
-      <td data-th="Date" className="col date px-4 py-3 text-sm border-b border-ccc">
+      <td data-th="Date" className="col date p-5">
         {formatOrderDateShort(order.order_date)}
       </td>
-      <td data-th="Created By" className="col shipping px-4 py-3 text-sm border-b border-ccc">
+      <td data-th="Created By" className="col shipping p-5">
         {createdByDisplay}
       </td>
-      <td data-th="Order Total" className="col total px-4 py-3 text-sm border-b border-ccc">
+      <td data-th="Order Total" className="col total p-5">
         <span className="price">{total}</span>
       </td>
-      <td data-th="Status" className="col status px-4 py-3 text-sm border-b border-ccc">
+      <td data-th="Status" className="col status p-5">
         <span className={statusClass(order.status)}>
           {order.status ? order.status.replace(/_/g, " ") : "—"}
         </span>
       </td>
-      <td data-th="Action" className="col actions px-4 py-3 text-sm border-b border-ccc text-center">
-        <Link href={href} className="action view text-theme-primary hover:underline text-sm">
+      <td data-th="Action" className="col actions p-5">
+        <Link href={href} className="action view text-theme-primary hover:underline">
           <span>View Order</span>
         </Link>
       </td>
@@ -100,28 +100,28 @@ function OrdersTableComponent({ orders, createdByDisplay = "—" }: OrdersTableP
         <caption className="table-caption sr-only">Orders</caption>
         <thead>
           <tr className="bg-f0f0f0 border-b-2 border-aaa">
-            <th scope="col" className="col id px-4 py-3 text-left text-xs font-bold uppercase">
+            <th scope="col" className="col id px-5 py-3.5 text-left font-bold uppercase align-bottom">
               ID
             </th>
-            <th data-th="PO number" className="col po-number px-4 py-3 text-left text-xs font-bold uppercase">
+            <th data-th="PO number" className="col po-number px-5 py-3.5 text-left font-bold uppercase align-bottom">
               PO number
             </th>
-            <th scope="col" className="col oracle-id px-4 py-3 text-left text-xs font-bold uppercase">
+            <th scope="col" className="col oracle-id px-5 py-3.5 text-left font-bold uppercase align-bottom">
               Order #
             </th>
-            <th scope="col" className="col date px-4 py-3 text-left text-xs font-bold uppercase">
+            <th scope="col" className="col date px-5 py-3.5 text-left font-bold uppercase align-bottom">
               Date
             </th>
-            <th scope="col" className="col shipping px-4 py-3 text-left text-xs font-bold uppercase">
+            <th scope="col" className="col shipping px-5 py-3.5 text-left font-bold uppercase align-bottom">
               Created By
             </th>
-            <th scope="col" className="col total px-4 py-3 text-left text-xs font-bold uppercase">
+            <th scope="col" className="col total px-5 py-3.5 text-left font-bold uppercase align-bottom">
               Order Total
             </th>
-            <th scope="col" className="col status px-4 py-3 text-left text-xs font-bold uppercase">
+            <th scope="col" className="col status px-5 py-3.5 text-left font-bold uppercase align-bottom">
               Status
             </th>
-            <th scope="col" className="col actions px-4 py-3 text-center text-xs font-bold uppercase">
+            <th scope="col" className="col actions px-5 py-3.5 text-left font-bold uppercase align-bottom">
               Action
             </th>
           </tr>
