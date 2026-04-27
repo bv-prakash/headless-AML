@@ -62,14 +62,23 @@ const PLPProductCard = ({
             className="product-image-wrapper block h-0 overflow-hidden relative z-1 pb-full"
             style={{ paddingBottom: "100%" }}
           >
-            <Image
-              className="product-image-photo block inset-0 m-auto absolute w-auto group-hover:scale-[1.08] transition-transform duration-200 ease-in-out"
-              src={imageUrl}
-              loading="lazy"
-              width={imageSize}
-              height={imageSize}
-              alt={name}
-            />
+            {imageUrl ? (
+              <Image
+                className="product-image-photo block inset-0 m-auto absolute w-auto group-hover:scale-[1.08] transition-transform duration-200 ease-in-out"
+                src={imageUrl}
+                loading="lazy"
+                width={imageSize}
+                height={imageSize}
+                alt={name}
+              />
+            ) : (
+              <span
+                className="product-image-photo absolute inset-0 m-auto flex items-center justify-center bg-f5f5f5 text-center text-xs font-medium text-gray-500 px-2"
+                aria-hidden
+              >
+                No image
+              </span>
+            )}
           </span>
 
           {labelImageUrl && (

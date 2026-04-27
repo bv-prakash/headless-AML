@@ -1,4 +1,7 @@
-import { magentoGraphqlFetch } from "@/src/framework/graphql/magentoGraphqlFetch";
+import {
+  magentoGraphqlFetch,
+  MagentoGraphqlError,
+} from "@/src/framework/graphql/magentoGraphqlFetch";
 import { COMMON_PRODUCT_FRAGMENT } from "@/src/framework/graphql/fragments/commonProduct";
 import { CONFIGURABLE_PRODUCT_FRAGMENT } from "@/src/framework/graphql/fragments/configurableProduct";
 import { BUNDLE_PRODUCT_FRAGMENT } from "@/src/framework/graphql/fragments/bundleProduct";
@@ -227,18 +230,42 @@ const PRODUCT_DETAIL_QUERY = `
   ${RELATED_PRODUCTS_FRAGMENT}
 `;
 
-const DEFAULT_REVALIDATE_SECONDS = 0;
-
 // ── Fetch ──────────────────────────────────────────────────
+
+async function fetchProductDetailOrNullOnFatal(
+  urlKey: string,
+  storeViewCode?: string,
+): Promise<ProductDetail | null | undefined> {
+  try {
+    const data = await magentoGraphqlFetch<ProductDetailResponse>(
+      PRODUCT_DETAIL_QUERY,
+      { urlKey },
+      storeViewCode ? { storeViewCode } : {},
+    );
+    return data.products.items[0] ?? null;
+  } catch (err) {
+    if (err instanceof MagentoGraphqlError && err.isPhpFatal) return undefined;
+    throw err;
+  }
+}
 
 export async function getProductByUrlKey(
   urlKey: string,
+  options: { storeViewCode?: string; fallbackStoreViewCode?: string } = {},
 ): Promise<ProductDetail | null> {
-  const data = await magentoGraphqlFetch<ProductDetailResponse>(
-    PRODUCT_DETAIL_QUERY,
-    { urlKey },
-    { revalidate: DEFAULT_REVALIDATE_SECONDS },
-  );
+  const storeViewCode = options.storeViewCode?.trim();
+  const fallbackStoreViewCode = options.fallbackStoreViewCode?.trim();
 
-  return data.products.items[0] ?? null;
+  const primary = await fetchProductDetailOrNullOnFatal(urlKey, storeViewCode);
+  if (primary) return primary;
+
+  if (
+    fallbackStoreViewCode &&
+    (!storeViewCode || fallbackStoreViewCode !== storeViewCode)
+  ) {
+    const fallback = await fetchProductDetailOrNullOnFatal(urlKey, fallbackStoreViewCode);
+    if (fallback) return fallback;
+  }
+
+  return null;
 }

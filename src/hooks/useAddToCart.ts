@@ -8,7 +8,7 @@ import {
   clearCart,
 } from "@/src/store/slices/cartSlice";
 import { CART_ID_KEY } from "@/src/constants/storageKeys";
-import { getStoredValue } from "@/src/utils/storage";
+import { getScopedStoredValue } from "@/src/utils/storage";
 import { getErrorMessage, isStaleCartError } from "@/src/utils/errors";
 import { ensureGuestCartId } from "@/src/framework/cart/ensureGuestCart";
 import {
@@ -42,7 +42,7 @@ export function useAddToCart(productName: string) {
 
   /** Fire-and-forget: creates guest cart early (deduped) so the click path often skips `createEmptyCart`. */
   const prefetchCart = useCallback(() => {
-    if (storeCartId ?? getStoredValue(CART_ID_KEY)) return;
+    if (storeCartId ?? getScopedStoredValue(CART_ID_KEY)) return;
     void ensureGuestCartId().then((id) => {
       if (id) dispatch(setCartId(id));
     });
@@ -54,7 +54,7 @@ export function useAddToCart(productName: string) {
       inFlightRef.current = true;
       setLoading(true);
       try {
-        let cartId = storeCartId ?? getStoredValue(CART_ID_KEY);
+        let cartId = storeCartId ?? getScopedStoredValue(CART_ID_KEY);
 
         if (!cartId) {
           cartId = await ensureGuestCartId();

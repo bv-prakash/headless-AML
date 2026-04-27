@@ -18,7 +18,7 @@ const sizeClasses = {
  * Theme-aligned loader using `--color-theme-primary` (Tailwind `border-t-theme-primary`).
  */
 export default function PageLoader({
-  label = "Loading…",
+  label = "Loading...",
   minHeightClassName = "min-h-[40vh]",
   fullScreen = false,
   size = "md",

@@ -45,8 +45,8 @@ export default function CheckoutSelect({
         id={fieldId}
         aria-invalid={error ? "true" : undefined}
         aria-describedby={error ? `${fieldId}-err` : undefined}
-        className={`select w-full h-10 px-3 text-base border rounded bg-white focus:outline-none focus:ring-2 focus:ring-theme-primary ${
-          error ? "border-red-500" : "border-gray-300"
+        className={`select w-full h-10 md:h-12.5 px-3 md:px-4 border  bg-white focus:outline-none focus:ring-2 focus:ring-theme-primary ${
+          error ? "border-light-red" : "border-aaa"
         } ${disabled ? "opacity-60 cursor-not-allowed bg-gray-50" : ""}`}
       >
         <option value="">{placeholderOption}</option>
@@ -57,7 +57,7 @@ export default function CheckoutSelect({
         ))}
       </select>
       {error ? (
-        <p id={`${fieldId}-err`} className="mt-1 text-sm text-red-600" role="alert">
+        <p id={`${fieldId}-err`} className="mt-1 text-sm text-light-red" role="alert">
           {error}
         </p>
       ) : null}

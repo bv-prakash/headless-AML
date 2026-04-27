@@ -1,4 +1,4 @@
-/* Home page */
+/* Home page — imported from `app/globals.css` so Tailwind resolves `@apply`. */
 
 .home-slider {
     @apply mb-10 md:mb-15 xl-custom:mb-20!;

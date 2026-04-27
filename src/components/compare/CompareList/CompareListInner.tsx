@@ -6,10 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import { useAppSelector, useAppDispatch } from "@/src/store/hooks";
-import {
-  clearCompare,
-  setCompareCount,
-} from "@/src/store/slices/compareSlice";
+import { clearCompare, setCompareCount } from "@/src/store/slices/compareSlice";
 import { stripHtml } from "@/src/utils/html";
 import { formatPrice } from "@/src/utils/format";
 import {
@@ -20,11 +17,11 @@ import {
   type RemoveFromCompareListResponse,
   type RemoveFromCompareListVariables,
 } from "@/src/framework/graphql/mutations/compareMutations";
+import { CompareListSkeleton } from "./CompareListSkeleton";
 
-export default function CompareList() {
+export function CompareListInner() {
   const dispatch = useAppDispatch();
   const compareUid = useAppSelector((state) => state.compare.uid);
-  const hydrated = useAppSelector((state) => state.compare.hydrated);
 
   const { data, loading, error, refetch } = useQuery<
     CompareListQueryResponse,
@@ -71,30 +68,21 @@ export default function CompareList() {
         toast.success(`${productName} removed from compare.`);
         refetch();
       } catch (err) {
-        toast.error(
-          err instanceof Error ? err.message : "Failed to remove product.",
-        );
+        toast.error(err instanceof Error ? err.message : "Failed to remove product.");
       }
     },
     [compareUid, removeProducts, refetch, dispatch],
   );
 
-  if (!hydrated || loading) {
-    return (
-      <div className="flex items-center justify-center py-20" role="status" aria-live="polite">
-        <div className="h-10 w-10 rounded-full border-[3px] border-gray-200 border-t-theme-primary animate-spin" />
-        <span className="sr-only">Loading compare list</span>
-      </div>
-    );
+  if (loading && compareUid) {
+    return <CompareListSkeleton />;
   }
 
   if (!compareUid) {
     return (
       <div className="text-center py-20 text-gray-500">
         <p className="text-lg">No compare list found.</p>
-        <p className="mt-2 text-sm">
-          Add products to compare from the product listing page.
-        </p>
+        <p className="mt-2 text-sm">Add products to compare from the product listing page.</p>
       </div>
     );
   }
@@ -112,9 +100,7 @@ export default function CompareList() {
     return (
       <div className="text-center py-20 text-gray-500">
         <p className="text-lg">Your compare list is empty.</p>
-        <p className="mt-2 text-sm">
-          Add products to compare from the product listing page.
-        </p>
+        <p className="mt-2 text-sm">Add products to compare from the product listing page.</p>
         <Link
           href="/"
           className="mt-4 inline-block text-theme-primary underline hover:no-underline"
@@ -149,6 +135,7 @@ export default function CompareList() {
                         width={120}
                         height={120}
                         className="object-contain"
+                        sizes="120px"
                       />
                     </Link>
                   )}
@@ -160,9 +147,7 @@ export default function CompareList() {
                   </Link>
                   <button
                     type="button"
-                    onClick={() =>
-                      handleRemove(item.uid, item.product.name)
-                    }
+                    onClick={() => handleRemove(item.uid, item.product.name)}
                     disabled={removing}
                     className="text-xs text-red-600 hover:text-red-800 underline cursor-pointer disabled:opacity-50"
                     aria-label={`Remove ${item.product.name} from compare`}
@@ -177,9 +162,7 @@ export default function CompareList() {
         </thead>
         <tbody>
           <tr>
-            <td className="sticky left-0 z-10 bg-gray-50 border border-gray-200 p-3 font-semibold">
-              SKU
-            </td>
+            <td className="sticky left-0 z-10 bg-gray-50 border border-gray-200 p-3 font-semibold">SKU</td>
             {items.map((item) => (
               <td key={item.uid} className="border border-gray-200 p-3 text-center">
                 {item.product.sku}
@@ -188,9 +171,7 @@ export default function CompareList() {
           </tr>
 
           <tr>
-            <td className="sticky left-0 z-10 bg-gray-50 border border-gray-200 p-3 font-semibold">
-              Price
-            </td>
+            <td className="sticky left-0 z-10 bg-gray-50 border border-gray-200 p-3 font-semibold">Price</td>
             {items.map((item) => {
               const price = item.product.price_range?.minimum_price?.regular_price;
               return (
@@ -210,11 +191,9 @@ export default function CompareList() {
                 ? stripHtml(item.product.description.html)
                 : "";
               return (
-              <td key={item.uid} className="border border-gray-200 p-3 text-left text-xs leading-relaxed">
-                {plain
-                  ? plain.slice(0, 200) + (plain.length > 200 ? "…" : "")
-                  : "—"}
-              </td>
+                <td key={item.uid} className="border border-gray-200 p-3 text-left text-xs leading-relaxed">
+                  {plain ? plain.slice(0, 200) + (plain.length > 200 ? "…" : "") : "—"}
+                </td>
               );
             })}
           </tr>

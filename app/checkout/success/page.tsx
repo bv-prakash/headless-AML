@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import Breadcrumbs from "@/src/components/common/Breadcrumbs";
+import { Breadcrumbs } from "@/src/components/common/Breadcrumbs";
 import OrderSuccessContent from "@/src/components/checkout/OrderSuccessContent";
 import PageLoader from "@/src/components/common/PageLoader";
 

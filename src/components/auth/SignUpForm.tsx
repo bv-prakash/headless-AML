@@ -13,7 +13,7 @@ import { store } from "@/src/store/store";
 import { login } from "@/src/store/slices/authSlice";
 import { applySyncedCart, syncCartAfterLogin } from "@/src/framework/cart/syncCartAfterLogin";
 import { CART_ID_KEY } from "@/src/constants/storageKeys";
-import { getStoredValue } from "@/src/utils/storage";
+import { getScopedStoredValue } from "@/src/utils/storage";
 import {
   CREATE_CUSTOMER_MUTATION,
   GENERATE_CUSTOMER_TOKEN_MUTATION,
@@ -92,7 +92,7 @@ export default function SignUpForm() {
         );
 
         const guestCartId =
-          store.getState().cart.cartId ?? getStoredValue(CART_ID_KEY);
+          store.getState().cart.cartId ?? getScopedStoredValue(CART_ID_KEY);
 
         router.push("/");
 

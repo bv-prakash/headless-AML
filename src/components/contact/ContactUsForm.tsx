@@ -58,7 +58,7 @@ export default function ContactUsForm() {
 
   const onSubmit = async (values: ContactUsFormValues) => {
     try {
-      const { data, errors } = await contactUsMut({
+      const { data, error: gqlError } = await contactUsMut({
         variables: {
           input: {
             name: values.name.trim(),
@@ -69,8 +69,8 @@ export default function ContactUsForm() {
         },
       });
 
-      if (errors?.length) {
-        toast.error(errors.map((e) => e.message).join(" "));
+      if (gqlError) {
+        toast.error(getErrorMessage(gqlError, "Your message could not be sent."));
         return;
       }
 

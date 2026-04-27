@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { decodeHtmlEntities } from "@/src/utils/decodeHtmlEntities";
 import { hasVisibleContent } from "@/src/utils/html";
+import { sanitizeMagentoCmsHtml } from "@/src/utils/pagebuilder/sanitizeMagentoCmsHtml";
 
 type Tab = {
   readonly id: string;
@@ -39,7 +40,7 @@ export default function ProductDescription({
 
   const activeContent = useMemo(() => {
     const rawContent = tabs.find((t) => t.id === activeTab)?.content ?? "";
-    return decodeHtmlEntities(rawContent);
+    return sanitizeMagentoCmsHtml(decodeHtmlEntities(rawContent));
   }, [tabs, activeTab]);
 
   return (

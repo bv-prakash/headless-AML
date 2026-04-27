@@ -8,6 +8,10 @@ export const selectAuthHydrated = (state: RootState) => state.auth.hydrated;
 export const selectAuthSessionRevision = (state: RootState) =>
   state.auth.sessionRevision;
 
+export const selectStoreViewCode = (state: RootState) => state.storeView.code;
+
+export const selectStoreViewRevision = (state: RootState) => state.storeView.revision;
+
 export const selectCartBadgeCount = (state: RootState) => state.cart.totalQuantity;
 
 export const selectMinicartProps = createSelector(

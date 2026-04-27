@@ -1,9 +1,3 @@
-export {
-  getFooterLeftCmsBlock,
-  getFooterServiceCmsBlock,
-  getFooterSocialCmsBlock,
-} from "./footerGraphql";
-
 export { getHomePage } from "./home";
 
 export { getStoreLogo } from "./storeLogo";

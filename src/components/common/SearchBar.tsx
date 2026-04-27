@@ -36,7 +36,17 @@ export default function SearchBar({ className }: { className?: string }) {
 
       if (value.trim().length >= MIN_CHARS) {
         debounceRef.current = setTimeout(() => {
-          search({ variables: { search: value.trim(), pageSize: SEARCH_RESULTS_PAGE_SIZE } });
+          /**
+           * Lazy-query promise is fire-and-forget. Swallow aborts so store toggle
+           * (`apolloClient.resetStore`) / unmount don't surface `AbortError` in the
+           * Next dev overlay.
+           */
+          void search({
+            variables: {
+              search: value.trim(),
+              pageSize: SEARCH_RESULTS_PAGE_SIZE,
+            },
+          }).catch(() => {});
           setOpen(true);
         }, DEBOUNCE_MS);
       } else {
@@ -73,7 +83,7 @@ export default function SearchBar({ className }: { className?: string }) {
       {/* Input */}
       <div className="relative">
         <input
-          type="search"
+          type="text"
           name="q"
           value={query}
           onChange={handleChange}

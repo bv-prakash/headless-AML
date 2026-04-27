@@ -12,6 +12,9 @@ import {
   FACET_PARAM_PREFIX,
   type ProductAggregation,
 } from "@/src/framework/graphql/queries/products";
+import { useLanguageTranslation } from "@/src/config/language";
+import { useAppSelector } from "@/src/store/hooks";
+import { selectStoreViewCode } from "@/src/store/selectors";
 
 type FilterProductsProps = {
   aggregations: ProductAggregation[];
@@ -93,10 +96,32 @@ export default function FilterProducts({
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const filterRef = useRef<HTMLDivElement>(null);
+  const { getTranslation } = useLanguageTranslation();
+  const storeViewCode = useAppSelector(selectStoreViewCode);
+  const filterOptionsLabel = getTranslation("Filter Options");
+  const resetAllLabel = getTranslation("Reset All");
+  const noFiltersAvailableLabel = getTranslation(
+    "No filters available for this category.",
+  );
+  const removeLabel = getTranslation("Remove");
 
   useEffect(() => {
     onPendingChange?.(isPending);
   }, [isPending, onPendingChange]);
+
+  useEffect(() => {
+    console.info("[PLP][client] Aggregations by store view", {
+      storeViewCode,
+      labels: (aggregations ?? []).map((agg) => ({
+        attribute_code: agg.attribute_code ?? "",
+        label: agg.label ?? "",
+        option_labels: (agg.options ?? []).map((opt) => ({
+          value: opt.value ?? "",
+          label: opt.label ?? "",
+        })),
+      })),
+    });
+  }, [aggregations, storeViewCode]);
 
   const blocks = useMemo(
     () =>
@@ -162,7 +187,7 @@ export default function FilterProducts({
   if (!blocks.length) {
     return (
       <div className="sidebar-filters text-sm text-foreground/60">
-        No filters available for this category.
+        {noFiltersAvailableLabel}
       </div>
     );
   }
@@ -173,7 +198,7 @@ export default function FilterProducts({
       <div ref={filterRef} className="block filter filter-products md:mb-10">
         <div className="flex justify-between items-center mb-3">
           <strong className="hidden md:block md:static uppercase font-normal text-[17px] lg:shadow-none lg:text-[22px] lg-custom:text-[24px]!">
-            Filter Options
+            {filterOptionsLabel}
           </strong>
           {activeItems.length > 0 && (
             <button
@@ -181,7 +206,7 @@ export default function FilterProducts({
             className="text-sm font-semibold text-theme-primary underline hover:no-underline cursor-pointer"
             onClick={resetAllFilters}
           >
-            Reset All
+            {resetAllLabel}
           </button>
           )}
         </div>
@@ -209,8 +234,8 @@ export default function FilterProducts({
                     <button
                       type="button"
                       className="flex justify-center cursor-pointer items-center absolute left-0 h-3 w-3 top-2"
-                      aria-label={`Remove ${item.attributeLabel} ${item.valueLabel}`}
-                      title={`Remove ${item.attributeLabel} ${item.valueLabel}`}
+                      aria-label={`${removeLabel} ${item.attributeLabel} ${item.valueLabel}`}
+                      title={`${removeLabel} ${item.attributeLabel} ${item.valueLabel}`}
                       onClick={() => {
                         startTransition(() => {
                           router.push(removeHref);
@@ -277,7 +302,9 @@ export default function FilterProducts({
                             htmlFor={id}
                             className="cursor-pointer text-black py-[5px] text-sm leading-[1.3]"
                           >
-                            <span className="filter-label">{opt.label}</span>
+                            <span className="filter-label">
+                              {opt.label ?? val}
+                            </span>
                             {typeof opt.count === "number" ? (
                               <span className="ml-1 hidden text-foreground/50">
                                 ({opt.count})

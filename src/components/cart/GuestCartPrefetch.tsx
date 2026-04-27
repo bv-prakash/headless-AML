@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useAppDispatch } from "@/src/store/hooks";
 import { setCartId } from "@/src/store/slices/cartSlice";
 import { CART_ID_KEY } from "@/src/constants/storageKeys";
-import { getStoredValue } from "@/src/utils/storage";
+import { getScopedStoredValue } from "@/src/utils/storage";
 import { ensureGuestCartId } from "@/src/framework/cart/ensureGuestCart";
 
 /**
@@ -15,7 +15,7 @@ export default function GuestCartPrefetch() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (getStoredValue(CART_ID_KEY)) return;
+    if (getScopedStoredValue(CART_ID_KEY)) return;
 
     let cancelled = false;
     void ensureGuestCartId().then((id) => {

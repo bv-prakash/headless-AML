@@ -54,7 +54,7 @@ export default function CheckoutField(props: CheckoutFieldProps) {
           }
         >
           {label}
-          {required ? <span className="text-red-600"> *</span> : null}
+          {required ? <span className="text-light-red"> *</span> : null}
         </label>
         <input
           {...registration}
@@ -62,12 +62,12 @@ export default function CheckoutField(props: CheckoutFieldProps) {
           placeholder={placeholder}
           aria-invalid={error ? "true" : undefined}
           aria-describedby={error ? `${fieldId}-err` : undefined}
-          className={`input-text w-full h-10 px-3 text-base border rounded bg-white focus:outline-none focus:ring-2 focus:ring-theme-primary ${
-            error ? "border-red-500" : "border-gray-300"
+          className={`input-text w-full h-10 md:h-12.5 px-3 md:px-4 border  bg-white focus:outline-none focus:ring-2 focus:ring-theme-primary ${
+            error ? "border-light-red" : "border-aaa"
           }`}
         />
         {error ? (
-          <p id={`${fieldId}-err`} className="mt-1 text-sm text-red-600" role="alert">
+          <p id={`${fieldId}-err`} className="mt-1 text-sm text-light-red" role="alert">
             {error}
           </p>
         ) : null}
@@ -98,12 +98,12 @@ export default function CheckoutField(props: CheckoutFieldProps) {
         onChange={(e) => onChange(e.target.value)}
         aria-invalid={error ? "true" : undefined}
         aria-describedby={error ? `${id}-err` : undefined}
-        className={`input-text w-full h-10 px-3 text-base border rounded bg-white focus:outline-none focus:ring-2 focus:ring-theme-primary ${
-          error ? "border-red-500" : "border-gray-300"
+        className={`input-text w-full h-10 md:h-12.5 px-3 md:px-4 border  bg-white focus:outline-none focus:ring-2 focus:ring-theme-primary ${
+          error ? "border-light-red" : "border-aaa"
         }`}
       />
       {error ? (
-        <p id={`${id}-err`} className="mt-1 text-sm text-red-600" role="alert">
+        <p id={`${id}-err`} className="mt-1 text-sm text-light-red" role="alert">
           {error}
         </p>
       ) : null}

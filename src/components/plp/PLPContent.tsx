@@ -1,12 +1,13 @@
 // import Breadcrumbs from "../common/Breadcrumbs";
 import PLPShopLayout from "./PLPShopLayout";
-import { getCategoryBreadcrumbs } from "@/src/framework/graphql/queries/breadcrumbs";
+import type { CategoryBreadcrumbsData } from "@/src/framework/graphql/queries/breadcrumbs";
 import { stripHtml } from "@/src/utils/html";
 import type {
   ProductAggregation,
   ProductListSortKey,
 } from "@/src/framework/graphql/queries/products";
 import type { PLPContentProduct } from "./types";
+import PlpGraphqlDebugLazy from "./PlpGraphqlDebugLazy";
 import ServerBreadcrumbs from "./ServerBreadcrumbs";
 
 type PLPContentProps = {
@@ -14,19 +15,33 @@ type PLPContentProps = {
   sortBy: ProductListSortKey;
   aggregations?: ProductAggregation[];
   categoryId: string;
+  /** From {@link getCategoryBreadcrumbs} on the page — keeps PLP synchronous so the products query is not deferred behind breadcrumbs. */
+  breadcrumbsData: CategoryBreadcrumbsData;
   currentPage: number;
   totalPages: number;
+  /** When set, renders a client panel that POSTs the PLP query to `/api/graphql-proxy`. Add `?debug_plp=1` to the URL. */
+  plpGraphqlDebug?: {
+    readonly filterFacets: Record<string, string[]>;
+    readonly pageSize: number;
+    readonly currentPage: number;
+    /** Same as server PLP — probe can retry with `category_uid` when `category_id` returns zero. */
+    readonly categoryUid?: string | null;
+    /** Same `Store` header as SSR for `/api/graphql-proxy` (matches catalog scope). */
+    readonly storeViewCode: string;
+  };
 };
 
-const PLPContent = async ({
+const PLPContent = ({
   products,
   sortBy,
   aggregations = [],
   categoryId,
+  breadcrumbsData,
   currentPage,
   totalPages,
+  plpGraphqlDebug,
 }: PLPContentProps) => {
-  const { name } = await getCategoryBreadcrumbs(categoryId);
+  const { name } = breadcrumbsData;
 
   const items = products.map((p) => ({
     ...p,
@@ -40,7 +55,10 @@ const PLPContent = async ({
           {name || "Products"}
         </h1>
         {/* <Breadcrumbs categoryId={categoryId} /> */}
-        <ServerBreadcrumbs categoryId={categoryId} />
+        <ServerBreadcrumbs
+          categoryId={categoryId}
+          prefetched={breadcrumbsData}
+        />
       </div>
       <PLPShopLayout
         aggregations={aggregations}
@@ -49,6 +67,17 @@ const PLPContent = async ({
         currentPage={currentPage}
         totalPages={totalPages}
       />
+      {plpGraphqlDebug ? (
+        <PlpGraphqlDebugLazy
+          categoryId={categoryId}
+          categoryUid={plpGraphqlDebug.categoryUid}
+          storeViewCode={plpGraphqlDebug.storeViewCode}
+          filterFacets={plpGraphqlDebug.filterFacets}
+          pageSize={plpGraphqlDebug.pageSize}
+          currentPage={plpGraphqlDebug.currentPage}
+          sortBy={sortBy}
+        />
+      ) : null}
     </>
   );
 };

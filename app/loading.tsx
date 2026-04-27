@@ -4,7 +4,7 @@ import PageLoader from "@/src/components/common/PageLoader";
 export default function RootLoading() {
   return (
     <PageLoader
-      label="Loading…"
+      label="Loading..."
       minHeightClassName="min-h-[120px]"
       size="sm"
     />

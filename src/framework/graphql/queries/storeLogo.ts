@@ -1,29 +1,13 @@
-import { gql } from "@apollo/client";
-import client from "@/src/framework/graphql/apolloClient";
 import config from "@/src/config/config";
+import { getStoreConfig } from "@/src/framework/graphql/queries/storeConfig";
 
-type StoreLogoData = {
+export type StoreLogoData = {
   readonly header_logo_src: string;
   readonly header_logo_url: string;
   readonly logo_alt: string;
   readonly logo_width: number;
   readonly logo_height: number;
 };
-
-type StoreLogoConfigResponse = {
-  storeConfig?: Omit<StoreLogoData, "header_logo_url"> | null;
-};
-
-const STORE_LOGO_QUERY = gql`
-  query StoreLogo {
-    storeConfig {
-      header_logo_src
-      logo_alt
-      logo_width
-      logo_height
-    }
-  }
-`;
 
 function resolveMediaUrl(pathOrUrl: string): string {
   const value = (pathOrUrl ?? "").trim();
@@ -47,24 +31,24 @@ function resolveMediaUrl(pathOrUrl: string): string {
   return `${baseNormalized}${normalized}`;
 }
 
-export async function getStoreLogo(): Promise<StoreLogoData | null> {
-  try {
-    const result = await client.query<StoreLogoConfigResponse>({
-      query: STORE_LOGO_QUERY,
-      fetchPolicy: "no-cache",
-    });
+/**
+ * Header logo from the same cached {@link getStoreConfig} document as footer / PLP — avoids a separate Apollo POST on the server.
+ */
+export async function getStoreLogo(
+  explicitStoreViewCode?: string,
+): Promise<StoreLogoData | null> {
+  const trimmed = explicitStoreViewCode?.trim();
+  const cfg = trimmed
+    ? await getStoreConfig(trimmed)
+    : await getStoreConfig();
+  const src = (cfg.header_logo_src ?? "").trim();
+  if (!src) return null;
 
-    const storeConfig = result.data?.storeConfig;
-    if (!storeConfig) return null;
-
-    return {
-      ...storeConfig,
-      header_logo_url: resolveMediaUrl(storeConfig.header_logo_src),
-    };
-  } catch (error) {
-    if (process.env.NODE_ENV !== "production") {
-      console.error("Store logo GraphQL request failed:", error);
-    }
-    return null;
-  }
+  return {
+    header_logo_src: src,
+    header_logo_url: resolveMediaUrl(src),
+    logo_alt: (cfg.logo_alt ?? "").trim() || "Store logo",
+    logo_width: cfg.logo_width && cfg.logo_width > 0 ? cfg.logo_width : 242,
+    logo_height: cfg.logo_height && cfg.logo_height > 0 ? cfg.logo_height : 20,
+  };
 }

@@ -4,6 +4,7 @@ import type { ChangeEvent } from "react";
 import { useEffect, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ProductListSortKey } from "@/src/framework/graphql/queries/products";
+import { useLanguageTranslation } from "@/src/config/language";
 
 export type SortOption = {
   value: string;
@@ -25,7 +26,9 @@ type SortingProductProps = {
 
 const defaultOptions: SortOption[] = [
   { value: "position", label: "Position" },
-  { value: "name", label: "Product Name" }
+  { value: "name", label: "Product Name" },
+  { value: "price", label: "Price" },
+  { value: "product_type", label: "Product Type" },
 ];
 
 const SortingProduct = ({
@@ -40,6 +43,8 @@ const SortingProduct = ({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const { getTranslation } = useLanguageTranslation();
+  const sortByLabel = getTranslation("Sort By");
 
   useEffect(() => {
     onPendingChange?.(isPending);
@@ -61,7 +66,7 @@ const SortingProduct = ({
   return (
     <div className="toolbar-sorter ">
       <label htmlFor={id} className="sort-by-title md:font-bold md:align-middle md:uppercase md:mr-3 md:inline-block">
-        Sort By
+        {sortByLabel}
       </label>
       <select
         id={id}
@@ -74,7 +79,7 @@ const SortingProduct = ({
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
-            {opt.label}
+            {getTranslation(opt.label)}
           </option>
         ))}
       </select>

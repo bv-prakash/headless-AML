@@ -13,9 +13,6 @@ const parseBackgroundImages = (raw: string | null): BackgroundImages | null => {
   try {
     return JSON.parse(raw) as BackgroundImages;
   } catch {
-    // Magento PageBuilder often embeds escaped JSON like:
-    //   {\"desktop_image\":\"...\",\"mobile_image\":\"...\"}
-    // Try a second pass by unescaping quotes/backslashes.
     try {
       const unescaped = raw
         .replace(/&quot;/gi, '"')
@@ -29,6 +26,11 @@ const parseBackgroundImages = (raw: string | null): BackgroundImages | null => {
   }
 };
 
+/** Min time between mutation-driven full scans (Swiper/PageBuilder can mutate DOM every frame). */
+const MUTATION_APPLY_THROTTLE_MS = 150;
+/** Debounce window resize so matchMedia + full scan does not run continuously while dragging. */
+const RESIZE_DEBOUNCE_MS = 120;
+
 export default function ApplyBackgroundImages({
   rootId = "html-body",
   mobileMaxWidthPx = 768,
@@ -40,7 +42,11 @@ export default function ApplyBackgroundImages({
     const root = document.getElementById(rootId);
     if (!root) return;
 
-    let rafId: number | null = null;
+    /** Browser timers are numeric ids; avoid `NodeJS.Timeout` vs `number` mismatch under @types/node. */
+    let mutationThrottleTimer: number | null = null;
+    let resizeDebounceTimer: number | null = null;
+    let lastMutationApply = 0;
+    let observer: MutationObserver | null = null;
 
     const apply = () => {
       const isMobile = window.matchMedia(`(max-width: ${mobileMaxWidthPx}px)`).matches;
@@ -51,42 +57,71 @@ export default function ApplyBackgroundImages({
         const url = (isMobile ? parsed?.mobile_image : parsed?.desktop_image) || parsed?.desktop_image;
         if (!url) return;
 
-        // Keep in sync across resize (desktop <-> mobile).
         const nextBg = `url("${url}")`;
         if (node.style.backgroundImage !== nextBg) {
           node.style.backgroundImage = nextBg;
         }
-        node.style.backgroundSize = node.style.backgroundSize || "cover";
-        node.style.backgroundPosition = node.style.backgroundPosition || "center";
-        node.style.backgroundRepeat = node.style.backgroundRepeat || "no-repeat";
+        if (!node.style.backgroundSize) node.style.backgroundSize = "cover";
+        if (!node.style.backgroundPosition) node.style.backgroundPosition = "center";
+        if (!node.style.backgroundRepeat) node.style.backgroundRepeat = "no-repeat";
       });
     };
 
-    /** Coalesce rapid mutations (PageBuilder + Swiper) without the old 100ms gap that left slides visually empty. */
-    const scheduleApply = () => {
-      if (rafId != null) return;
-      rafId = window.requestAnimationFrame(() => {
-        rafId = null;
+    const runMutationThrottled = () => {
+      const now = performance.now();
+      const elapsed = now - lastMutationApply;
+      if (elapsed >= MUTATION_APPLY_THROTTLE_MS) {
+        lastMutationApply = now;
+        if (mutationThrottleTimer) {
+          clearTimeout(mutationThrottleTimer);
+          mutationThrottleTimer = null;
+        }
+        if (observer) observer.disconnect();
+        try {
+          apply();
+        } finally {
+          observer?.observe(root, { childList: true, subtree: true });
+        }
+        return;
+      }
+      if (mutationThrottleTimer != null) return;
+      mutationThrottleTimer = window.setTimeout(() => {
+        mutationThrottleTimer = null;
+        lastMutationApply = performance.now();
+        if (observer) observer.disconnect();
+        try {
+          apply();
+        } finally {
+          observer?.observe(root, { childList: true, subtree: true });
+        }
+      }, MUTATION_APPLY_THROTTLE_MS - elapsed);
+    };
+
+    const onResizeDebounced = () => {
+      if (resizeDebounceTimer) clearTimeout(resizeDebounceTimer);
+      resizeDebounceTimer = window.setTimeout(() => {
+        resizeDebounceTimer = null;
         apply();
-      });
+      }, RESIZE_DEBOUNCE_MS);
     };
 
     apply();
 
-    // PageBuilder/Swiper can replace slider markup after our first render.
-    // Re-apply background images when DOM changes.
-    const observer = new MutationObserver(() => scheduleApply());
+    observer = new MutationObserver(() => {
+      runMutationThrottled();
+    });
     observer.observe(root, { childList: true, subtree: true });
 
-    window.addEventListener("resize", apply);
+    window.addEventListener("resize", onResizeDebounced, { passive: true });
 
     return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", apply);
-      if (rafId != null) window.cancelAnimationFrame(rafId);
+      observer?.disconnect();
+      observer = null;
+      window.removeEventListener("resize", onResizeDebounced);
+      if (mutationThrottleTimer) clearTimeout(mutationThrottleTimer);
+      if (resizeDebounceTimer) clearTimeout(resizeDebounceTimer);
     };
   }, [rootId, mobileMaxWidthPx]);
 
   return null;
 }
-

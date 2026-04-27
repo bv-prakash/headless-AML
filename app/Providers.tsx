@@ -6,6 +6,7 @@ import { ApolloProvider } from "@apollo/client/react";
 import { apolloClient } from "@/src/framework/graphql";
 import { store } from "@/src/store/store";
 import { StoreHydrator } from "./StoreHydrator";
+import { StoreViewDocumentSync } from "@/src/components/common/StoreViewDocumentSync";
 
 export default function Providers({
   children,
@@ -15,7 +16,10 @@ export default function Providers({
   return (
     <ReduxProvider store={store}>
       <ApolloProvider client={apolloClient}>
-        <StoreHydrator>{children}</StoreHydrator>
+        <StoreHydrator>
+          <StoreViewDocumentSync />
+          {children}
+        </StoreHydrator>
       </ApolloProvider>
     </ReduxProvider>
   );

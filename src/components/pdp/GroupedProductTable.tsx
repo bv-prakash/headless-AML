@@ -11,10 +11,10 @@ import {
   PDP_OPTIONS_BLOCK_CLASS,
   PDP_OPTION_LABEL_CLASS,
 } from "@/src/components/pdp/pdpAddToCartSection";
-import {
-  ADD_GROUPED_TO_CART_MUTATION,
-  type AddGroupedToCartResponse,
-  type AddGroupedToCartVariables,
+import { ADD_GROUPED_TO_CART_MUTATION } from "@/src/framework/graphql/mutations/cartMutations";
+import type {
+  AddGroupedToCartResponse,
+  AddGroupedToCartVariables,
 } from "@/src/framework/graphql/mutations/cartMutations";
 import type { GroupedProductItem } from "@/src/framework/graphql/queries/productDetail";
 

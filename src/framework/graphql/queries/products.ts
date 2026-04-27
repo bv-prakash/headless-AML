@@ -1,34 +1,19 @@
 import { magentoGraphqlFetch } from "@/src/framework/graphql/magentoGraphqlFetch";
 import { formatProductTypeLabel } from "@/src/framework/graphql/constants/productTypes";
+import { getLanguageCodeForStoreView, normalizeStoreViewCode } from "@/src/config/storeViews";
+import { getWebsiteCodeForStoreView } from "@/src/config/storeViews";
+import {
+  PLP_PRODUCTS_BY_CATEGORY_QUERY,
+  toMagentoProductsByCategoryVariables,
+  type ProductListSortKey,
+} from "@/src/framework/graphql/queries/plpCatalogGraphql";
 
 // ── Constants ──────────────────────────────────────────────
 
-const DEFAULT_REVALIDATE_SECONDS = 0;
-const CLIENT_SIDE_FACET_CODES: ReadonlySet<string> = new Set(["product_type"]);
 export const FACET_PARAM_PREFIX = "f_";
 
-// ── Sort ───────────────────────────────────────────────────
-
-export type ProductListSortKey = "position" | "name" | "product_type";
-
-const SORT_MAP: Record<ProductListSortKey, Record<string, string>> = {
-  position: { position: "ASC" },
-  name: { name: "ASC" },
-  product_type: { position: "ASC" },
-};
-
-export function parseProductListSortParam(
-  raw: string | string[] | undefined,
-): ProductListSortKey {
-  const v = Array.isArray(raw) ? raw[0] : raw;
-  return v && v in SORT_MAP ? (v as ProductListSortKey) : "position";
-}
-
-function buildProductSortInput(
-  sortKey: ProductListSortKey,
-): Record<string, string> {
-  return SORT_MAP[sortKey];
-}
+export type { ProductListSortKey } from "@/src/framework/graphql/queries/plpCatalogGraphql";
+export { parseProductListSortParam } from "@/src/framework/graphql/queries/plpCatalogGraphql";
 
 // ── Facet Parsing ──────────────────────────────────────────
 
@@ -51,26 +36,6 @@ export function parseFacetSearchParams(
   }
 
   return out;
-}
-
-function buildProductFilterInput(
-  categoryId: string,
-  facets: Record<string, string[]>,
-): Record<string, { eq?: string; in?: string[] }> {
-  const hasCategoryUid = (facets.category_uid?.length ?? 0) > 0;
-
-  const filter: Record<string, { eq?: string; in?: string[] }> = hasCategoryUid
-    ? {}
-    : { category_id: { eq: categoryId } };
-
-  for (const [code, values] of Object.entries(facets)) {
-    if (code === "category_id") continue;
-    const unique = [...new Set(values)].filter(Boolean);
-    if (unique.length === 0) continue;
-    filter[code] = unique.length === 1 ? { eq: unique[0] } : { in: unique };
-  }
-
-  return filter;
 }
 
 // ── Types ──────────────────────────────────────────────────
@@ -111,12 +76,25 @@ export type ProductAggregation = {
 
 type ProductsByCategoryVariables = {
   readonly categoryId: string;
+  /** From `categoryList { uid }`. When present (and no URL `f_category_uid`), used as `filter.category_uid`. */
+  readonly categoryUid?: string | null;
+  /** Pin `Store` header for this request (from `getServerStoreViewCode()`). */
+  readonly storeViewCode?: string;
+  /**
+   * Preferred store view for aggregation labels/options. When set, its labels win over
+   * the main response labels (useful when products fall back to another store).
+   */
+  readonly aggregationLabelPreferredStoreViewCode?: string;
+  /** Optional category id to use when fetching preferred store labels. */
+  readonly aggregationLabelPreferredCategoryId?: string;
+  /** Optional category uid to use when fetching preferred store labels. */
+  readonly aggregationLabelPreferredCategoryUid?: string | null;
+  /** Optional fallback store used only to fill missing aggregation labels/options. */
+  readonly aggregationLabelFallbackStoreViewCode?: string;
   readonly pageSize: number;
   readonly currentPage: number;
   readonly sort?: ProductListSortKey;
   readonly filterFacets?: Record<string, string[]>;
-  readonly childCategoryIds?: readonly number[];
-  readonly childCategoryUids?: readonly string[];
 };
 
 type ProductsByCategoryResponse = {
@@ -127,54 +105,28 @@ type ProductsByCategoryResponse = {
   };
 };
 
-// ── GraphQL Query ──────────────────────────────────────────
+type AttributeMetadataResponse = {
+  customAttributeMetadata?: {
+    items?: readonly {
+      attribute_code?: string | null;
+      storefront_labels?: readonly {
+        store_code?: string | null;
+        label?: string | null;
+      }[] | null;
+    }[] | null;
+  } | null;
+};
 
-const PRODUCTS_BY_CATEGORY_QUERY = `
-  query ProductsByCategory(
-    $filter: ProductAttributeFilterInput!
-    $pageSize: Int!
-    $currentPage: Int!
-    $sort: ProductAttributeSortInput
-  ) {
-    products(
-      filter: $filter
-      pageSize: $pageSize
-      currentPage: $currentPage
-      sort: $sort
-    ) {
-      aggregations {
-        attribute_code
-        count
-        label
-        options {
-          label
-          value
-          count
-        }
-      }
+const ATTRIBUTE_METADATA_QUERY = `
+  query AttributeLabels($attributes: [AttributeInput!]!) {
+    customAttributeMetadata(attributes: $attributes) {
       items {
-        id
-        __typename
-        name
-        sku
-        url_key
-        stock_status
-        small_image {
-          url
-        }
-        short_description {
-          html
-        }
-        price_range {
-          minimum_price {
-            regular_price {
-              value
-              currency
-            }
-          }
+        attribute_code
+        storefront_labels {
+          store_code
+          label
         }
       }
-      total_count
     }
   }
 `;
@@ -205,25 +157,135 @@ function buildProductTypeAggregation(
   };
 }
 
-function filterCategoryAggregations(
-  aggregations: readonly ProductAggregation[],
-  allowedIds: ReadonlySet<string>,
-  allowedUids: ReadonlySet<string>,
+function mergeAggregationLabels(
+  primary: readonly ProductAggregation[],
+  fallback: readonly ProductAggregation[],
 ): ProductAggregation[] {
-  return aggregations.map((agg) => {
-    const code = agg.attribute_code ?? "";
-    const allowedSet =
-      code === "category_id" ? allowedIds :
-      code === "category_uid" ? allowedUids :
-      null;
-
-    if (!allowedSet) return agg;
-
-    const filtered = (agg.options ?? []).filter(
-      (opt) => allowedSet.has(String(opt.value ?? "")),
-    );
-    return { ...agg, options: filtered, count: filtered.length };
+  const fallbackByCode = new Map<string, ProductAggregation>();
+  fallback.forEach((agg) => {
+    const code = agg.attribute_code?.trim();
+    if (code) fallbackByCode.set(code, agg);
   });
+
+  const mergedPrimary = primary.map((agg) => {
+    const code = agg.attribute_code?.trim();
+    if (!code) return agg;
+    const fallbackAgg = fallbackByCode.get(code);
+    if (!fallbackAgg) return agg;
+
+    const primaryOptions = agg.options ?? [];
+    const fallbackOptionByValue = new Map<string, { label?: string | null }>();
+    (fallbackAgg.options ?? []).forEach((opt) => {
+      const value = opt.value?.trim();
+      if (!value) return;
+      fallbackOptionByValue.set(value, { label: opt.label });
+    });
+
+    const options =
+      primaryOptions.length > 0
+        ? primaryOptions.map((opt) => {
+            const value = opt.value?.trim();
+            if (!value) return opt;
+            const fallbackOpt = fallbackOptionByValue.get(value);
+            if ((opt.label ?? "").trim() || !fallbackOpt?.label) return opt;
+            return { ...opt, label: fallbackOpt.label };
+          })
+        : (fallbackAgg.options ?? null);
+
+    return {
+      ...agg,
+      label: (agg.label ?? "").trim() ? agg.label : fallbackAgg.label,
+      options,
+    };
+  });
+
+  const primaryCodes = new Set(
+    mergedPrimary
+      .map((agg) => agg.attribute_code?.trim())
+      .filter((code): code is string => Boolean(code)),
+  );
+  const fallbackOnly = fallback.filter((agg) => {
+    const code = agg.attribute_code?.trim();
+    if (!code) return false;
+    return !primaryCodes.has(code);
+  });
+
+  return [...mergedPrimary, ...fallbackOnly];
+}
+
+async function getAggregationAttributeLabelOverrides(
+  aggregations: readonly ProductAggregation[],
+  storeViewCode?: string,
+): Promise<Map<string, string>> {
+  const code = storeViewCode?.trim();
+  if (!code) return new Map<string, string>();
+  const normalizedCode = normalizeStoreViewCode(code) ?? code;
+  const languageCode = getLanguageCodeForStoreView(normalizedCode);
+
+  const attributeCodes = [
+    ...new Set(
+      aggregations
+        .map((agg) => agg.attribute_code?.trim())
+        .filter((v): v is string => Boolean(v)),
+    ),
+  ];
+  if (attributeCodes.length === 0) return new Map<string, string>();
+
+  try {
+    const attributes = attributeCodes.map((attributeCode) => ({
+      attribute_code: attributeCode,
+      entity_type: "catalog_product",
+    }));
+
+    const data = await magentoGraphqlFetch<AttributeMetadataResponse>(
+      ATTRIBUTE_METADATA_QUERY,
+      { attributes },
+      { storeViewCode: code },
+    );
+
+    const out = new Map<string, string>();
+    (data.customAttributeMetadata?.items ?? []).forEach((item) => {
+      const attrCode = item.attribute_code?.trim();
+      if (!attrCode) return;
+      const labels = item.storefront_labels ?? [];
+      const exactStoreMatch = labels.find((l) => {
+        const rawStoreCode = l.store_code?.trim();
+        if (!rawStoreCode) return false;
+        const normalizedStoreCode = normalizeStoreViewCode(rawStoreCode) ?? rawStoreCode;
+        return normalizedStoreCode === normalizedCode;
+      });
+      const exactLabel = exactStoreMatch?.label?.trim() ?? "";
+      if (exactLabel) {
+        out.set(attrCode, exactLabel);
+        return;
+      }
+
+      // Some Magento setups expose storefront label store codes that do not exactly match
+      // GraphQL `Store` header values. Try language-aware token matching next.
+      const languageAwareMatch = labels.find((l) => {
+        const sc = l.store_code?.trim().toLowerCase() ?? "";
+        if (!sc) return false;
+        if (languageCode === "ar") {
+          return sc.includes("_ar") || sc.includes("arabic");
+        }
+        return sc.includes("_en") || sc.includes("english") || sc === "default";
+      });
+      const languageAwareLabel = languageAwareMatch?.label?.trim() ?? "";
+      if (languageAwareLabel) {
+        out.set(attrCode, languageAwareLabel);
+        return;
+      }
+
+      // Only use unlabeled fallback when metadata is unambiguous.
+      if (labels.length === 1) {
+        const singleLabel = labels[0]?.label?.trim() ?? "";
+        if (singleLabel) out.set(attrCode, singleLabel);
+      }
+    });
+    return out;
+  } catch {
+    return new Map<string, string>();
+  }
 }
 
 // ── Main Fetch ─────────────────────────────────────────────
@@ -235,32 +297,101 @@ export async function getProductsByCategory(
     sort: sortParam,
     filterFacets = {},
     categoryId,
+    categoryUid,
+    storeViewCode,
+    aggregationLabelPreferredStoreViewCode,
+    aggregationLabelPreferredCategoryId,
+    aggregationLabelPreferredCategoryUid,
+    aggregationLabelFallbackStoreViewCode,
     pageSize,
     currentPage,
-    childCategoryIds,
-    childCategoryUids,
   } = variables;
 
   const sortKey = sortParam ?? "position";
 
-  const serverFacets = Object.fromEntries(
-    Object.entries(filterFacets).filter(
-      ([code]) => !CLIENT_SIDE_FACET_CODES.has(code),
-    ),
-  );
+  const hasFacetCategoryUid =
+    (filterFacets.category_uid?.length ?? 0) > 0;
 
-  const data = await magentoGraphqlFetch<ProductsByCategoryResponse>(
-    PRODUCTS_BY_CATEGORY_QUERY,
-    {
-      filter: buildProductFilterInput(categoryId, serverFacets),
-      pageSize,
-      currentPage,
-      sort: buildProductSortInput(sortKey),
-    },
-    { revalidate: DEFAULT_REVALIDATE_SECONDS },
-  );
+  const scopeUid =
+    categoryUid?.trim() && !hasFacetCategoryUid ? categoryUid.trim() : null;
 
-  let items = [...data.products.items];
+  const graphqlVariables = toMagentoProductsByCategoryVariables({
+    categoryId,
+    filterFacets,
+    pageSize,
+    currentPage,
+    sort: sortKey,
+    categoryScopeUid: scopeUid,
+  });
+
+  const EMPTY_RESPONSE: ProductsByCategoryResponse = {
+    products: { items: [], aggregations: [], total_count: 0 },
+  };
+
+  let data: ProductsByCategoryResponse;
+  try {
+    data = await magentoGraphqlFetch<ProductsByCategoryResponse>(
+      PLP_PRODUCTS_BY_CATEGORY_QUERY,
+      graphqlVariables,
+      storeViewCode?.trim() ? { storeViewCode: storeViewCode.trim() } : {},
+    );
+  } catch (err) {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("[PLP] products GraphQL failed — rendering empty result.", err);
+    }
+    data = EMPTY_RESPONSE;
+  }
+  let preferredAggregations: readonly ProductAggregation[] = [];
+  const preferredCode = aggregationLabelPreferredStoreViewCode?.trim();
+  const primaryCode = storeViewCode?.trim();
+  if (preferredCode && preferredCode !== primaryCode) {
+    try {
+      const preferredCategoryScopeUid =
+        aggregationLabelPreferredCategoryUid?.trim() || null;
+      const preferredLabelVariables = toMagentoProductsByCategoryVariables({
+        categoryId: aggregationLabelPreferredCategoryId?.trim() || categoryId,
+        categoryScopeUid: preferredCategoryScopeUid,
+        filterFacets,
+        pageSize,
+        currentPage,
+        sort: sortKey,
+      });
+      const preferredData = await magentoGraphqlFetch<ProductsByCategoryResponse>(
+        PLP_PRODUCTS_BY_CATEGORY_QUERY,
+        preferredLabelVariables,
+        { storeViewCode: preferredCode },
+      );
+      preferredAggregations = preferredData.products.aggregations ?? [];
+    } catch {
+      preferredAggregations = [];
+    }
+  }
+  let fallbackAggregations: readonly ProductAggregation[] = [];
+  const fallbackCode = aggregationLabelFallbackStoreViewCode?.trim();
+  if (fallbackCode && fallbackCode !== primaryCode) {
+    try {
+      const fallbackLabelVariables = toMagentoProductsByCategoryVariables({
+        categoryId,
+        // Do not pin primary store `category_uid` here; UID can differ per store view.
+        // For label fallback, category_id scope is more stable across stores.
+        categoryScopeUid: null,
+        filterFacets,
+        pageSize,
+        currentPage,
+        sort: sortKey,
+      });
+      const fallbackData = await magentoGraphqlFetch<ProductsByCategoryResponse>(
+        PLP_PRODUCTS_BY_CATEGORY_QUERY,
+        fallbackLabelVariables,
+        { storeViewCode: fallbackCode },
+      );
+      fallbackAggregations = fallbackData.products.aggregations ?? [];
+    } catch {
+      fallbackAggregations = [];
+    }
+  }
+
+  let items = [...(data.products.items ?? [])];
 
   const productTypeFilter = filterFacets.product_type;
   if (productTypeFilter?.length) {
@@ -272,21 +403,40 @@ export async function getProductsByCategory(
     items.sort((a, b) => a.__typename.localeCompare(b.__typename));
   }
 
-  let aggregations: ProductAggregation[] = [
-    ...(data.products.aggregations ?? []),
-    buildProductTypeAggregation(data.products.items),
-  ];
+  /** Magento facets as returned (do not trim category buckets — id/uid mismatches cleared all filters). */
+  let aggregations: ProductAggregation[] = [...(data.products.aggregations ?? [])];
+  if (preferredAggregations.length > 0) {
+    aggregations = mergeAggregationLabels(preferredAggregations, aggregations);
+  }
+  if (fallbackAggregations.length > 0) {
+    aggregations = mergeAggregationLabels(aggregations, fallbackAggregations);
+  }
+  const labelOverrides = await getAggregationAttributeLabelOverrides(
+    aggregations,
+    aggregationLabelPreferredStoreViewCode?.trim() || storeViewCode?.trim(),
+  );
+  if (labelOverrides.size > 0) {
+    aggregations = aggregations.map((agg) => {
+      const code = agg.attribute_code?.trim();
+      if (!code) return agg;
+      const label = labelOverrides.get(code);
+      if (!label) return agg;
+      return { ...agg, label };
+    });
+  }
+  const typeAgg = buildProductTypeAggregation(items);
+  if (typeAgg.options?.length) {
+    aggregations = [...aggregations, typeAgg];
+  }
 
-  const hasChildren =
-    (childCategoryIds?.length ?? 0) > 0 ||
-    (childCategoryUids?.length ?? 0) > 0;
-
-  if (hasChildren) {
-    aggregations = filterCategoryAggregations(
-      aggregations,
-      new Set((childCategoryIds ?? []).map(String)),
-      new Set(childCategoryUids ?? []),
-    );
+  if (process.env.NODE_ENV !== "production") {
+    console.info("[PLP] Aggregations by store context", {
+      storeViewCode: storeViewCode?.trim() ?? "",
+      preferredStoreViewCode: aggregationLabelPreferredStoreViewCode?.trim() ?? "",
+      fallbackStoreViewCode: aggregationLabelFallbackStoreViewCode?.trim() ?? "",
+      websiteCode: getWebsiteCodeForStoreView(storeViewCode?.trim() ?? ""),
+      aggregationCount: aggregations.length,
+    });
   }
 
   return { ...data.products, items, aggregations };

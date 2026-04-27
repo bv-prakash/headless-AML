@@ -151,7 +151,6 @@ export async function searchProducts(
   const data = await magentoGraphqlFetch<ServerSearchResponse>(
     SERVER_SEARCH_QUERY,
     variables,
-    { revalidate: 0 },
   );
 
   return {

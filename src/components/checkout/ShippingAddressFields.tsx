@@ -164,8 +164,8 @@ const ShippingAddressFields = forwardRef<
         error={errors.company?.message}
       />
 
-      <fieldset className="border-0 p-0 m-0 min-w-0">
-        <legend className="text-sm font-semibold text-black mb-2 block">
+      <fieldset className="border-0 p-0 m-0 min-w-0 mb-3">
+        <legend className="font-semibold text-black mb-2 block">
           Street Address
         </legend>
         <div className="space-y-3">

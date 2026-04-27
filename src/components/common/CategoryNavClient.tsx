@@ -9,6 +9,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 import { useClickOutside } from "@/src/hooks/useClickOutside";
+import { plpHrefFromMagentoCategoryUrlPath } from "@/src/utils/plpPaths";
 
 type NavItem = {
   readonly id: number;
@@ -132,7 +133,7 @@ function SubMenu({
         return (
           <li key={child.id} role="none" className="relative">
             <Link
-              href={`/products/${child.url_path ?? ""}`}
+              href={plpHrefFromMagentoCategoryUrlPath(child.url_path)}
               role="menuitem"
               aria-haspopup={hasChildren ? "menu" : undefined}
               aria-expanded={hasChildren ? isChildOpen : undefined}
@@ -305,13 +306,13 @@ export default function CategoryNavClient({ items }: CategoryNavClientProps) {
             onMouseLeave={handleMouseLeave}
           >
             <Link
-              href={`/products/${cat.url_path ?? ""}`}
+              href={plpHrefFromMagentoCategoryUrlPath(cat.url_path)}
               role="menuitem"
               aria-haspopup={hasChildren ? "menu" : undefined}
               aria-expanded={hasChildren ? isOpen : undefined}
               aria-controls={hasChildren ? menuId : undefined}
               tabIndex={index === 0 ? 0 : -1}
-              className="flex items-center gap-1 text-sm font-bold text-black leading-[1.3] hover:text-theme-primary focus-visible:text-theme-primary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-theme-primary focus:outline-none transition-colors whitespace-nowrap"
+              className="flex items-center gap-1 text-sm font-bold leading-[1.3] text-theme-header-fg transition-colors hover:text-theme-primary focus:outline-none focus-visible:text-theme-primary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-theme-primary whitespace-nowrap"
               onKeyDown={(e) => handleTopLevelKeyDown(e, cat, index)}
               onFocus={() => {
                 if (hasChildren) handleMouseEnter(cat.id);

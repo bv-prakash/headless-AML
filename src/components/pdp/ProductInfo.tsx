@@ -2,6 +2,7 @@ import { formatPrice } from "@/src/utils/format";
 import type { ProductDetail } from "@/src/framework/graphql/queries/productDetail";
 import { decodeHtmlEntities } from "@/src/utils/decodeHtmlEntities";
 import { hasVisibleContent } from "@/src/utils/html";
+import { sanitizeMagentoCmsHtml } from "@/src/utils/pagebuilder/sanitizeMagentoCmsHtml";
 
 type ProductInfoProps = {
   readonly product: ProductDetail;
@@ -113,7 +114,9 @@ export default function ProductInfo({ product }: ProductInfoProps) {
       {descriptionHtml && hasVisibleContent(descriptionHtml) && (
         <div
           className="border-t product-description-content border-aaa pt-5 my-5 lg-custom:my-7.5! lg-custom:pt-7.5!"
-          dangerouslySetInnerHTML={{ __html: decodeHtmlEntities(descriptionHtml) }}
+          dangerouslySetInnerHTML={{
+            __html: sanitizeMagentoCmsHtml(decodeHtmlEntities(descriptionHtml)),
+          }}
         />
       )}
     </div>

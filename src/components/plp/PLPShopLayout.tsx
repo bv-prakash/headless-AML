@@ -31,14 +31,15 @@ export default function PLPShopLayout({
 
   return (
     <div className="container relative z-1 flex flex-wrap md:block">
-      <aside className="sidebar-content grow basis-full md:float-left md:w-[23%] md:min-h-[300px] lg-custom:pr-[2%]!">
+      {aggregations && aggregations.length > 0 && (
+        <aside className="sidebar-content grow basis-full md:float-left md:w-[23%] md:min-h-[300px] lg-custom:pr-[2%]!">
         <div className="sidebar-content">
           <FilterProducts
             aggregations={aggregations}
             onPendingChange={setFilterNavPending}
           />
-        </div>
-      </aside>
+          </div>
+      </aside>)}
       <PLPMainColumn
         sortBy={sortBy}
         products={products}
