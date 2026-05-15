@@ -43,6 +43,8 @@ export type ProductCategory = {
 export type ConfigurableOptionValue = {
   readonly value_index: number;
   readonly label: string;
+  /** Base64 UID required by `addProductsToRequisitionList` `selected_options`. */
+  readonly uid: string;
 };
 
 export type ConfigurableOption = {

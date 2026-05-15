@@ -38,17 +38,22 @@ const CategoryPage = async ({ params, searchParams }: CategoryPageProps) => {
     getStoreConfig(),
     resolveCategoryFromSlug(slug, { storeViewCode }),
   ]);
+  let fallbackCategoryResolved = null as Awaited<
+    ReturnType<typeof resolveCategoryFromSlug>
+  >;
   let effectiveStoreViewCode = storeViewCode;
   let resolvedCategory = category;
   if (!resolvedCategory && fallbackStoreViewCode !== storeViewCode) {
-    resolvedCategory = await resolveCategoryFromSlug(slug, {
+    fallbackCategoryResolved = await resolveCategoryFromSlug(slug, {
       storeViewCode: fallbackStoreViewCode,
     });
+    resolvedCategory = fallbackCategoryResolved;
     if (resolvedCategory) effectiveStoreViewCode = fallbackStoreViewCode;
   }
   if (!resolvedCategory) notFound();
 
-  const categoryId = String(resolvedCategory.id);
+  let effectiveCategory = resolvedCategory;
+  let effectiveCategoryId = String(effectiveCategory.id);
 
   const defaultSort = storeConfig.catalog_default_sort_by ?? "position";
   const gridPerPage = storeConfig.grid_per_page && storeConfig.grid_per_page > 0
@@ -69,21 +74,22 @@ const CategoryPage = async ({ params, searchParams }: CategoryPageProps) => {
   let [{ items, aggregations, total_count }, breadcrumbsData] =
     await Promise.all([
       getProductsByCategory({
-        categoryId,
-        categoryUid: resolvedCategory.uid,
+        categoryId: effectiveCategoryId,
+        categoryUid: effectiveCategory.uid,
         storeViewCode: effectiveStoreViewCode,
         aggregationLabelPreferredStoreViewCode: storeViewCode,
         aggregationLabelPreferredCategoryId: category
           ? String(category.id)
-          : categoryId,
+          : effectiveCategoryId,
         aggregationLabelPreferredCategoryUid: category?.uid ?? null,
-        aggregationLabelFallbackStoreViewCode: fallbackStoreViewCode,
+        aggregationLabelFallbackStoreViewCode:
+          effectiveStoreViewCode === fallbackStoreViewCode ? undefined : fallbackStoreViewCode,
         pageSize: gridPerPage,
         currentPage,
         sort: sortBy,
         filterFacets,
       }),
-      getCategoryBreadcrumbs(categoryId, { storeViewCode: effectiveStoreViewCode }),
+      getCategoryBreadcrumbs(effectiveCategoryId, { storeViewCode: effectiveStoreViewCode }),
     ]);
 
   if (
@@ -91,9 +97,10 @@ const CategoryPage = async ({ params, searchParams }: CategoryPageProps) => {
     effectiveStoreViewCode === storeViewCode &&
     fallbackStoreViewCode !== storeViewCode
   ) {
-    const fallbackCategory = await resolveCategoryFromSlug(slug, {
-      storeViewCode: fallbackStoreViewCode,
-    });
+    const fallbackCategory = fallbackCategoryResolved
+      ?? (await resolveCategoryFromSlug(slug, {
+        storeViewCode: fallbackStoreViewCode,
+      }));
     if (fallbackCategory) {
       const fallbackCategoryId = String(fallbackCategory.id);
       const fallbackResult = await getProductsByCategory({
@@ -105,7 +112,7 @@ const CategoryPage = async ({ params, searchParams }: CategoryPageProps) => {
           ? String(category.id)
           : fallbackCategoryId,
         aggregationLabelPreferredCategoryUid: category?.uid ?? null,
-        aggregationLabelFallbackStoreViewCode: fallbackStoreViewCode,
+        aggregationLabelFallbackStoreViewCode: undefined,
         pageSize: gridPerPage,
         currentPage,
         sort: sortBy,
@@ -113,6 +120,8 @@ const CategoryPage = async ({ params, searchParams }: CategoryPageProps) => {
       });
       if (fallbackResult.items.length > 0) {
         effectiveStoreViewCode = fallbackStoreViewCode;
+        effectiveCategory = fallbackCategory;
+        effectiveCategoryId = fallbackCategoryId;
         items = fallbackResult.items;
         aggregations = fallbackResult.aggregations;
         total_count = fallbackResult.total_count;
@@ -141,7 +150,7 @@ const CategoryPage = async ({ params, searchParams }: CategoryPageProps) => {
       products={products}
       sortBy={sortBy}
       aggregations={aggregations as ProductAggregation[]}
-      categoryId={categoryId}
+      categoryId={effectiveCategoryId}
       breadcrumbsData={breadcrumbsData}
       currentPage={currentPage}
       totalPages={totalPages}
@@ -151,7 +160,7 @@ const CategoryPage = async ({ params, searchParams }: CategoryPageProps) => {
               filterFacets,
               pageSize: gridPerPage,
               currentPage,
-              categoryUid: resolvedCategory.uid,
+              categoryUid: effectiveCategory.uid,
               storeViewCode: effectiveStoreViewCode,
             }
           : undefined

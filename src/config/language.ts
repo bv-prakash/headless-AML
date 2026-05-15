@@ -4,10 +4,9 @@ import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { LANGUAGE_CODE_KEY, STORE_VIEW_CODE_KEY } from "@/src/constants/storageKeys";
 import {
   STORE_VIEW_COOKIE_NAME,
-  getDefaultStoreViewCodeFromEnv,
   getLanguageCodeForStoreView,
   getLanguageOptionsForStoreView,
-  normalizeStoreViewCode,
+  resolveStoreViewCodeForClientSources,
 } from "@/src/config/storeViews";
 import {
   DEFAULT_LANGUAGE,
@@ -24,21 +23,21 @@ const LANGUAGE_DIRECTIONS: Record<LanguageCode, "ltr" | "rtl"> = {
 };
 
 function readClientStoreViewCode(): string {
-  if (typeof document === "undefined") return getDefaultStoreViewCodeFromEnv();
+  if (typeof document === "undefined") return "";
+  let fromCookie: string | null = null;
   const parts = document.cookie.split("; ");
   for (const p of parts) {
     const i = p.indexOf("=");
     if (i === -1) continue;
     if (p.slice(0, i).trim() === STORE_VIEW_COOKIE_NAME) {
-      const fromCookie = decodeURIComponent(p.slice(i + 1).trim());
-      const normalized = normalizeStoreViewCode(fromCookie);
-      if (normalized) return normalized;
+      fromCookie = decodeURIComponent(p.slice(i + 1).trim());
       break;
     }
   }
-  const fromStorage = normalizeStoreViewCode(getStoredValue(STORE_VIEW_CODE_KEY));
-  if (fromStorage) return fromStorage;
-  return getDefaultStoreViewCodeFromEnv();
+  return resolveStoreViewCodeForClientSources(
+    fromCookie,
+    getStoredValue(STORE_VIEW_CODE_KEY),
+  );
 }
 
 function readLanguageCode(): LanguageCode {

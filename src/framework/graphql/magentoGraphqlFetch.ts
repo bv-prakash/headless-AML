@@ -374,6 +374,20 @@ async function executeMagentoGraphqlPostWithRetry<TData>(
       options,
     );
   } catch (err) {
+    if (
+      err instanceof MagentoGraphqlError &&
+      err.httpStatus === 400 &&
+      storeCode.trim().length > 0
+    ) {
+      // If a store-scoped request is rejected, retry once without Store header.
+      return executeMagentoGraphqlPost<TData>(
+        endpoint,
+        "",
+        query,
+        variables,
+        options,
+      );
+    }
     if (!isRetryableMagentoError(err)) throw err;
     await wait(RETRY_DELAY_MS);
     return executeMagentoGraphqlPost<TData>(
@@ -393,9 +407,10 @@ async function executeMagentoGraphqlPost<TData>(
   variables: Record<string, unknown> | undefined,
   options: GraphqlFetchOptions | undefined,
 ): Promise<TData> {
+  const normalizedStoreCode = storeCode.trim();
   const headers: HeadersInit = {
     "Content-Type": "application/json",
-    Store: storeCode,
+    ...(normalizedStoreCode ? { Store: normalizedStoreCode } : {}),
   };
 
   if (options?.auth === "apiKey" && config.commerce.apiKey) {

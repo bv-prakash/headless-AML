@@ -117,11 +117,14 @@ async function magentoGraphqlTry<T>(
 
 export async function getCategoryList(
   rootId: string = "2",
+  options: { storeViewCode?: string } = {},
 ): Promise<readonly CategoryListItem[]> {
+  const trimmed = options.storeViewCode?.trim();
   const data = await magentoGraphqlTry<CategoryListResponse>(
     CATEGORY_LIST_QUERY,
     { rootId },
     {
+      ...(trimmed ? { storeViewCode: trimmed } : {}),
       cacheTtlMs: CATEGORY_TREE_CACHE_TTL_MS,
       serveStaleOnError: true,
     },
@@ -140,7 +143,7 @@ export async function getCategoryTreeForNav(
 ): Promise<readonly CategoryListItem[]> {
   const override = getCategoryNavRootIdOverride(storeViewCode);
   if (override) {
-    return getCategoryList(override);
+    return getCategoryList(override, { storeViewCode });
   }
 
   const cfg = await getStoreConfig();
@@ -160,7 +163,7 @@ export async function getCategoryTreeForNav(
     }
   }
 
-  return getCategoryList("2");
+  return getCategoryList("2", { storeViewCode });
 }
 
 export type CategoryChildSimple = {

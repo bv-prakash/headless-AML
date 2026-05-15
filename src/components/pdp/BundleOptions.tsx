@@ -22,6 +22,8 @@ import {
   type BundleOptionInput,
 } from "@/src/framework/graphql/mutations/cartMutations";
 import type { BundleItem } from "@/src/framework/graphql/queries/productDetail";
+import { encodeOptionUid } from "@/src/utils/magentoOptionUid";
+import type { RequisitionListItemsInput } from "@/src/framework/graphql/mutations/requisitionListMutations";
 
 type BundleOptionsProps = {
   readonly sku: string;
@@ -85,6 +87,25 @@ export default function BundleOptions({
         };
       });
   }, [items, selections]);
+
+  /**
+   * Magento `addProductsToRequisitionList` (unified mutation) accepts the
+   * parent bundle SKU plus an array of base64-encoded option UIDs in the
+   * shape `bundle/<optionId>/<selectionId>/<qty>` — same encoding the
+   * storefront uses for bundle line items in the cart.
+   */
+  const buildRequisitionItems = useCallback((): ReadonlyArray<RequisitionListItemsInput> => {
+    const uids: string[] = [];
+    for (const item of items) {
+      const selectedIds = selections[item.option_id] ?? [];
+      for (const selId of selectedIds) {
+        const choice = item.options.find((o) => o.id === selId);
+        const qty = choice?.quantity ?? 1;
+        uids.push(encodeOptionUid("bundle", item.option_id, selId, qty));
+      }
+    }
+    return [{ sku, selected_options: uids }];
+  }, [items, selections, sku]);
 
   const handleAddToCart = useCallback(() => {
     if (!allRequiredSelected) {
@@ -189,6 +210,8 @@ export default function BundleOptions({
           onAddToCart={handleAddToCart}
           defaultQuantity={initialQty ?? undefined}
           variant="plp"
+          showRequisitionButton
+          buildRequisitionItems={buildRequisitionItems}
         />
       </div>
     </>

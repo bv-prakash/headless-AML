@@ -15,6 +15,7 @@ export type PLPProductCardProps = {
   readonly imageSize?: number;
   readonly labelImageUrl?: string;
   readonly zIndex?: number;
+  readonly eagerImage?: boolean;
 };
 
 const PLPProductCard = ({
@@ -29,6 +30,7 @@ const PLPProductCard = ({
   imageSize = 280,
   labelImageUrl,
   zIndex,
+  eagerImage = false,
 }: PLPProductCardProps) => {
   const typeLabel = productType ? formatProductTypeLabel(productType) : "";
   const isOutOfStock = stockStatus === "OUT_OF_STOCK";
@@ -66,7 +68,8 @@ const PLPProductCard = ({
               <Image
                 className="product-image-photo block inset-0 m-auto absolute w-auto group-hover:scale-[1.08] transition-transform duration-200 ease-in-out"
                 src={imageUrl}
-                loading="lazy"
+                loading={eagerImage ? "eager" : "lazy"}
+                priority={eagerImage}
                 width={imageSize}
                 height={imageSize}
                 alt={name}

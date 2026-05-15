@@ -6,19 +6,21 @@ import { toast } from "react-toastify";
 import {
   getLanguageCodeForStoreView,
   getStoreViewOptionsForToggle,
+  hydrateStoreViewOptionsFromMagento,
   STORE_VIEW_OPTIONS,
   getWebsiteCodeForStoreView,
   type StoreViewOption,
 } from "@/src/config/storeViews";
-import { setAppLanguage, useLanguageTranslation } from "@/src/config/language";
-import apolloClient from "@/src/framework/graphql/apolloClient";
-import { writeStoreViewCookie } from "@/src/framework/store/storeViewCookie";
+import { useLanguageTranslation } from "@/src/config/language";
+import {
+  applyClientStoreViewState,
+  refreshAfterStoreViewChange,
+} from "@/src/framework/store/clientStoreViewSwitch";
 import { useAppDispatch, useAppSelector } from "@/src/store/hooks";
 import { logout } from "@/src/store/slices/authSlice";
 import { clearCart, hydrateCart } from "@/src/store/slices/cartSlice";
 import { clearCompare, hydrateCompare } from "@/src/store/slices/compareSlice";
 import { clearWishlist, hydrateWishlist } from "@/src/store/slices/wishlistSlice";
-import { setStoreViewCode } from "@/src/store/slices/storeViewSlice";
 import { selectStoreViewCode } from "@/src/store/selectors";
 
 type PendingSwitch = {
@@ -43,6 +45,13 @@ export default function StoreViewToggle() {
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [pending, setPending] = useState<PendingSwitch | null>(null);
+  const [storeViewsRevision, setStoreViewsRevision] = useState(0);
+
+  useEffect(() => {
+    void hydrateStoreViewOptionsFromMagento().then(() => {
+      setStoreViewsRevision((prev) => prev + 1);
+    });
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -63,18 +72,22 @@ export default function StoreViewToggle() {
 
   const current = useMemo(
     () => STORE_VIEW_OPTIONS.find((o) => o.code === code) ?? STORE_VIEW_OPTIONS[0],
-    [code],
+    [code, storeViewsRevision],
   );
   const toggleOptions = useMemo(
     () => getStoreViewOptionsForToggle(code, language),
-    [code, language],
+    [code, language, storeViewsRevision],
   );
 
   const applyStore = useCallback(
     (next: string, prev: string, opts: { signOut: boolean; redirectTo?: string }) => {
-      writeStoreViewCookie(next);
-      dispatch(setStoreViewCode(next));
-      setAppLanguage(getLanguageCodeForStoreView(next));
+      const storeChanged = applyClientStoreViewState({
+        dispatch,
+        nextStoreViewCode: next,
+        currentStoreViewCode: prev,
+        nextLanguageCode: getLanguageCodeForStoreView(next),
+      });
+      if (!storeChanged) return;
 
       const websiteChanged =
         getWebsiteCodeForStoreView(next) !== getWebsiteCodeForStoreView(prev);
@@ -100,22 +113,7 @@ export default function StoreViewToggle() {
         dispatch(hydrateWishlist());
       }
 
-      /**
-       * `resetStore` refetches active queries; any in-flight HTTP request is aborted
-       * when `router.push` / `router.refresh` below unmounts a component. Apollo's
-       * promise then rejects with `AbortError` — swallow it so Next's dev overlay
-       * does not surface a spurious "Runtime AbortError: The operation was aborted."
-       */
-      void apolloClient
-        .resetStore()
-        .catch(() => {})
-        .finally(() => {
-          if (opts.redirectTo) {
-            router.push(opts.redirectTo);
-          } else {
-            router.refresh();
-          }
-        });
+      refreshAfterStoreViewChange(router, { redirectTo: opts.redirectTo });
     },
     [dispatch, router],
   );
@@ -129,6 +127,7 @@ export default function StoreViewToggle() {
         STORE_VIEW_OPTIONS.find((o) => o.code === nextCode) ?? STORE_VIEW_OPTIONS[0];
       const prev =
         STORE_VIEW_OPTIONS.find((o) => o.code === code) ?? STORE_VIEW_OPTIONS[0];
+      if (!next || !prev) return;
       const websiteChanged =
         getWebsiteCodeForStoreView(next.code) !==
         getWebsiteCodeForStoreView(prev.code);
@@ -172,6 +171,8 @@ export default function StoreViewToggle() {
     setPending(null);
   }, []);
 
+  if (!current) return null;
+
   return (
     <>
     <details
@@ -203,7 +204,7 @@ export default function StoreViewToggle() {
               type="button"
               role="option"
               aria-selected={o.code === code}
-              className={`flex w-full flex-col items-start gap-0.5 px-3 py-2.5 text-left text-xs transition-colors hover:bg-f0f0f0 ${
+              className={`flex w-full flex-col cursor-pointer items-start gap-0.5 px-3 py-2.5 text-left text-xs transition-colors hover:bg-f0f0f0 ${
                 o.code === code ? "bg-f0f0f0 font-semibold text-black" : "text-gray-800"
               }`}
               onClick={() => pick(o.code)}

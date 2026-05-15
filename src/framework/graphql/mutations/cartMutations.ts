@@ -1,67 +1,100 @@
 import { gql } from "@apollo/client";
 
+const CART_PRODUCT_FIELDS = `
+  uid
+  sku
+  name
+  url_key
+  small_image {
+    url
+  }
+`;
+
+const CART_ITEM_PRICE_FIELDS = `
+  row_total {
+    value
+    currency
+  }
+`;
+
+const CART_ITEM_BASE_FIELDS = `
+  uid
+  product {
+    ${CART_PRODUCT_FIELDS}
+  }
+  quantity
+  prices {
+    ${CART_ITEM_PRICE_FIELDS}
+  }
+`;
+
+/**
+ * Type-specific cart item spreads. Used in BOTH `CART_BODY` and
+ * `CART_ADD_RESPONSE_BODY` — they must stay in sync or `writeCartQueryToCache`
+ * trips Apollo's "Missing field 'configurable_options'" cache warning when a
+ * mutation response lacks fields the cache slot expects.
+ */
+const CART_ITEM_TYPE_SPREADS = `
+  ... on ConfigurableCartItem {
+    configurable_options {
+      option_label
+      value_label
+    }
+  }
+  ... on BundleCartItem {
+    bundle_options {
+      uid
+      label
+      type
+      values {
+        id
+        label
+        price
+        quantity
+      }
+    }
+  }
+  ... on DownloadableCartItem {
+    links {
+      title
+      price
+    }
+    samples {
+      title
+      sample_url
+    }
+  }
+`;
+
+const CART_PRICE_FIELDS = `
+  grand_total {
+    value
+    currency
+  }
+  subtotal_excluding_tax {
+    value
+    currency
+  }
+`;
+
 export const CART_BODY = `
   id
   total_quantity
   items {
-    uid
-    product {
-      uid
-      sku
-      name
-      url_key
-      small_image {
-        url
-      }
-    }
-    quantity
-    prices {
-      row_total {
-        value
-        currency
-      }
-    }
-    ... on ConfigurableCartItem {
-      configurable_options {
-        option_label
-        value_label
-      }
-    }
-    ... on BundleCartItem {
-      bundle_options {
-        uid
-        label
-        type
-        values {
-          id
-          label
-          price
-          quantity
-        }
-      }
-    }
-    ... on DownloadableCartItem {
-      links {
-        title
-        price
-      }
-      samples {
-        title
-        sample_url
-      }
-    }
+    ${CART_ITEM_BASE_FIELDS}
+    ${CART_ITEM_TYPE_SPREADS}
   }
   prices {
-    grand_total {
-      value
-      currency
-    }
-    subtotal_excluding_tax {
-      value
-      currency
-    }
+    ${CART_PRICE_FIELDS}
   }
 `;
+
+/**
+ * Add-to-cart mutation response. Must match `CART_BODY`'s item shape so
+ * `writeCartQueryToCache` can merge mutation results into `CART_QUERY`'s
+ * cache slot without Apollo logging "Missing field 'configurable_options'".
+ */
+export const CART_ADD_RESPONSE_BODY = CART_BODY;
 
 export const CREATE_EMPTY_CART_MUTATION = gql`
   mutation CreateEmptyCart {
@@ -78,7 +111,7 @@ export const ADD_TO_CART_MUTATION = gql`
       }
     ) {
       cart {
-        ${CART_BODY}
+        ${CART_ADD_RESPONSE_BODY}
       }
     }
   }
@@ -154,7 +187,7 @@ export const ADD_CONFIGURABLE_TO_CART_MUTATION = gql`
       }
     ) {
       cart {
-        ${CART_BODY}
+        ${CART_ADD_RESPONSE_BODY}
       }
     }
   }
@@ -179,7 +212,7 @@ export const ADD_BUNDLE_TO_CART_MUTATION = gql`
       }
     ) {
       cart {
-        ${CART_BODY}
+        ${CART_ADD_RESPONSE_BODY}
       }
     }
   }
@@ -202,7 +235,7 @@ export const ADD_DOWNLOADABLE_TO_CART_MUTATION = gql`
       }
     ) {
       cart {
-        ${CART_BODY}
+        ${CART_ADD_RESPONSE_BODY}
       }
     }
   }
@@ -217,7 +250,7 @@ export const ADD_VIRTUAL_TO_CART_MUTATION = gql`
       }
     ) {
       cart {
-        ${CART_BODY}
+        ${CART_ADD_RESPONSE_BODY}
       }
     }
   }
@@ -227,7 +260,7 @@ export const ADD_GROUPED_TO_CART_MUTATION = gql`
   mutation AddGroupedToCart($cartId: String!, $cartItems: [SimpleProductCartItemInput!]!) {
     addSimpleProductsToCart(input: { cart_id: $cartId, cart_items: $cartItems }) {
       cart {
-        ${CART_BODY}
+        ${CART_ADD_RESPONSE_BODY}
       }
     }
   }

@@ -2,14 +2,27 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
+import { useB2BNavGating } from "@/src/framework/graphql/queries/storeConfigB2BFeatures";
 import { NAV_ITEMS } from "./AccountNavItems";
 
 export function MyAccountSidebar() {
   const pathname = usePathname();
+  const { gates, loading } = useB2BNavGating();
+
+  const visibleItems = useMemo(() => {
+    /**
+     * While gates resolve, hide gated items rather than flashing them in and
+     * then removing them once Magento responds.
+     */
+    if (loading) return NAV_ITEMS.filter((i) => !i.requires);
+    return NAV_ITEMS.filter((i) => !i.requires || gates[i.requires]);
+  }, [gates, loading]);
+
   return (
     <nav>
       <ul className="m-0 p-0 last-none">
-        {NAV_ITEMS.map((i) => {
+        {visibleItems.map((i) => {
           const isActive =
             i.href === "/account"
               ? pathname === "/account"

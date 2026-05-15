@@ -96,12 +96,22 @@ export default function PageBuilderSliders(options?: PageBuilderSliderOptions) {
     const swiperInstances: Swiper[] = [];
     const initializedRoots: HTMLElement[] = [];
     let cancelled = false;
+    let retryAttempts = 0;
+    const maxRetries = 12;
+    let retryTimerId: number | null = null;
+    let observer: MutationObserver | null = null;
 
-    /** Defer so `#html-body` + sibling effects (e.g. backgrounds) settle; avoids broken / empty Swiper. */
-    const scheduleId = window.setTimeout(() => {
+    const tryInitialize = () => {
       if (cancelled) return;
 
       const sliders = Array.from(root.querySelectorAll<HTMLElement>(selector));
+      if (sliders.length === 0) {
+        if (retryAttempts < maxRetries) {
+          retryAttempts += 1;
+          retryTimerId = window.setTimeout(tryInitialize, 100);
+        }
+        return;
+      }
       const responsiveLimit =
         (JSON.parse(responsiveLimitKey) as Array<{ mediaQuery: string; limit: number }>) ||
         [];
@@ -113,6 +123,7 @@ export default function PageBuilderSliders(options?: PageBuilderSliderOptions) {
 
       targetSliders.forEach((slider) => {
         if (cancelled) return;
+        if (slider.dataset.swiperInitialized === "true") return;
 
         if (!sourceHtmlBySlider.has(slider)) {
           sourceHtmlBySlider.set(slider, slider.innerHTML);
@@ -177,6 +188,10 @@ export default function PageBuilderSliders(options?: PageBuilderSliderOptions) {
           modules: [Autoplay, Navigation, Pagination],
           loop: loopEnabled,
           watchOverflow: true,
+          // Ignore repeated rapid clicks while a slide transition is in progress.
+          preventInteractionOnTransition: true,
+          // Keep loop navigation stable under fast repeated next/prev interactions.
+          loopPreventsSliding: true,
           autoplay: autoplayEnabled
             ? { delay: autoplayDelay, disableOnInteraction: false }
             : false,
@@ -191,12 +206,23 @@ export default function PageBuilderSliders(options?: PageBuilderSliderOptions) {
         swiperInstances.push(instance);
         slider.dataset.swiperInitialized = "true";
         initializedRoots.push(slider);
-    });
+      });
+    };
+
+    /** Defer so `#html-body` + sibling effects (e.g. backgrounds) settle; avoids broken / empty Swiper. */
+    const scheduleId = window.setTimeout(() => {
+      tryInitialize();
+      observer = new MutationObserver(() => {
+        tryInitialize();
+      });
+      observer.observe(root, { childList: true, subtree: true });
     }, 0);
 
     return () => {
       cancelled = true;
       window.clearTimeout(scheduleId);
+      if (retryTimerId != null) window.clearTimeout(retryTimerId);
+      observer?.disconnect();
       swiperInstances.forEach((sw) => {
         try {
           sw.destroy(true, true);

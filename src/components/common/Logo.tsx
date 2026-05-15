@@ -2,8 +2,12 @@ import Image from "next/image";
 import { getStoreLogo } from "@/src/framework/graphql";
 import Link from "next/link";
 
-const Logo = async () => { 
-    const storeLogo = await getStoreLogo();
+type LogoProps = {
+  readonly storeViewCode?: string;
+};
+
+const Logo = async ({ storeViewCode }: LogoProps) => {
+    const storeLogo = await getStoreLogo(storeViewCode);
     const src = storeLogo?.header_logo_url ?? "";
     const width = storeLogo?.logo_width || 242;
     const height = storeLogo?.logo_height || 20;

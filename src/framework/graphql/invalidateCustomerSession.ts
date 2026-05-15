@@ -6,9 +6,12 @@ import { clearCart } from "@/src/store/slices/cartSlice";
 import { clearCompare } from "@/src/store/slices/compareSlice";
 import { CUSTOMER_TOKEN_KEY } from "@/src/constants/storageKeys";
 import { getStoredValue } from "@/src/utils/storage";
+import { resolveClientStoreViewCode } from "@/src/framework/store/resolveClientStoreViewCode";
+import { writeStoreViewCookie } from "@/src/framework/store/storeViewCookie";
 
 export const CUSTOMER_SESSION_INVALID_MESSAGE =
   "Your session has expired or is no longer valid. Please sign in again.";
+export const SESSION_EXPIRED_TOAST_KEY = "magento_session_expired_toast";
 
 let lastInvalidationAt = 0;
 const DEBOUNCE_MS = 2500;
@@ -38,12 +41,23 @@ export function invalidateCustomerSession(): void {
   store.dispatch(clearCompare());
 
   if (showToast) {
-    toast.error(CUSTOMER_SESSION_INVALID_MESSAGE);
+    try {
+      sessionStorage.setItem(SESSION_EXPIRED_TOAST_KEY, "1");
+    } catch {}
   }
 
   resetApolloStoreAfterAuthChange();
 
   window.dispatchEvent(new CustomEvent("magento:session-expired"));
+
+  // Keep storefront context stable after forced logout.
+  const activeStoreView = resolveClientStoreViewCode();
+  if (activeStoreView) writeStoreViewCookie(activeStoreView);
+
+  // Always return shopper to home after expiry; render one-time toast there.
+  if (window.location.pathname !== "/") {
+    window.location.assign("/");
+  }
 }
 
 /** Refetch-friendly cache reset after auth changes (logout / session expiry). */

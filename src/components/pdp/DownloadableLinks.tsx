@@ -21,6 +21,8 @@ import type {
   DownloadableLink,
   DownloadableSample,
 } from "@/src/framework/graphql/queries/productDetail";
+import { encodeOptionUid } from "@/src/utils/magentoOptionUid";
+import type { RequisitionListItemsInput } from "@/src/framework/graphql/mutations/requisitionListMutations";
 
 type DownloadableLinksProps = {
   readonly sku: string;
@@ -62,6 +64,21 @@ export default function DownloadableLinks({
       return next;
     });
   }, []);
+
+  /**
+   * Magento encodes downloadable link picks as base64
+   * `downloadable/<productId>/<linkId>` UIDs in `selected_options`.
+   */
+  const buildRequisitionItems = useCallback((): ReadonlyArray<RequisitionListItemsInput> => {
+    return [
+      {
+        sku,
+        selected_options: Array.from(selectedLinkIds).map((linkId) =>
+          encodeOptionUid("downloadable", productId, linkId),
+        ),
+      },
+    ];
+  }, [sku, selectedLinkIds, productId]);
 
   const handleAddToCart = useCallback(() => {
     if (selectedLinkIds.size === 0) {
@@ -167,6 +184,8 @@ export default function DownloadableLinks({
           onAddToCart={handleAddToCart}
           defaultQuantity={initialQty ?? undefined}
           variant="plp"
+          showRequisitionButton
+          buildRequisitionItems={buildRequisitionItems}
         />
       </div>
     </>

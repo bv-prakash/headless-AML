@@ -53,7 +53,7 @@ const Footer = async () => {
 
         <div className="footer-right-block md:flex lg-custom:block! lg-custom:w-[38%]">
           <NewsLatter />
-          <div className="footer-bottom md:w-[61%] pl-7.5 lg:flex-wrap lg:flex lg-custom:w-full! lg-custom:pl-0">
+          <div className="footer-bottom md:w-[61%] lg:flex-wrap lg:flex lg-custom:w-full! lg-custom:pl-0">
             {footerServiceBlock ? (
               <div
                 className="footer-service-block sm:-mx-[5px] lg:w-[calc(100%-130px)] lg-custom:w-full lg-custom:mb-5 xl-custom:w-[calc(100%-130px)]"

@@ -190,6 +190,7 @@ export default async function PDPPage({ params, searchParams }: PDPPageProps) {
                 stockStatus={product.stock_status}
                 showQuantity
                 initialQty={editQty}
+                showRequisitionButton
                 overrideStyles={PDP_ADD_TO_CART_WRAP_CLASS}
               />
             )}

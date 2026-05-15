@@ -6,6 +6,7 @@ export const CONFIGURABLE_PRODUCT_FRAGMENT = `
       values {
         value_index
         label
+        uid
       }
     }
     variants {

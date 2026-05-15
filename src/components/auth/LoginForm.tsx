@@ -22,7 +22,6 @@ import {
 import { safeRedirectPath } from "@/src/utils/safeRedirectPath";
 import {
   STORE_VIEW_OPTIONS,
-  getWebsiteCodeForStoreView,
 } from "@/src/config/storeViews";
 import { selectStoreViewCode } from "@/src/store/selectors";
 
@@ -65,6 +64,7 @@ export default function LoginForm() {
       STORE_VIEW_OPTIONS[0],
     [storeViewCode],
   );
+  const activeStoreGroup = activeStore?.group ?? "this store";
 
   const reason = searchParams.get("reason");
   const storeFromQuery = searchParams.get("store")?.trim() || null;
@@ -115,11 +115,11 @@ export default function LoginForm() {
     } catch (err) {
       const raw = err instanceof Error ? err.message : String(err);
       if (looksLikeCrossWebsiteLogin(raw)) {
-        const hint = `These credentials aren't valid on ${activeStore.group}. Make sure you've selected the store where your account was created, then try again.`;
+        const hint = `These credentials aren't valid on ${activeStoreGroup}. Make sure you've selected the store where your account was created, then try again.`;
         toast.error(hint);
         const nextParams = new URLSearchParams(searchParams.toString());
         nextParams.set("reason", "store_mismatch");
-        nextParams.set("store", activeStore.group);
+        nextParams.set("store", activeStoreGroup);
         router.replace(`/sign-in?${nextParams.toString()}`);
       } else {
         toast.error(raw || "Login failed. Please try again.");
@@ -142,7 +142,7 @@ export default function LoginForm() {
             className="mb-5 rounded border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900"
           >
             You switched to{" "}
-            <strong>{storeFromQuery ?? activeStore.group}</strong>. Accounts are
+            <strong>{storeFromQuery ?? activeStoreGroup}</strong>. Accounts are
             specific to each store — please sign in with credentials for this store.
           </div>
         ) : null}
@@ -151,7 +151,7 @@ export default function LoginForm() {
             role="alert"
             className="mb-5 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900"
           >
-            Those credentials don't match <strong>{storeFromQuery ?? activeStore.group}</strong>.
+            Those credentials don't match <strong>{storeFromQuery ?? activeStoreGroup}</strong>.
             If your account was created on a different store, please change the store
             from the header first, then sign in.
           </div>

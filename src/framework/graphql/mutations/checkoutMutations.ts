@@ -23,17 +23,10 @@ export const SET_SHIPPING_ADDRESSES_ON_CART = gql`
       input: { cart_id: $cartId, shipping_addresses: $shippingAddresses }
     ) {
       cart {
-        shipping_addresses {
-          ...CheckoutCartAddressCore
-          available_shipping_methods {
-            ...CheckoutAvailableShippingMethod
-          }
-        }
+        id
       }
     }
   }
-  ${CHECKOUT_CART_ADDRESS_CORE}
-  ${CHECKOUT_AVAILABLE_SHIPPING_METHOD}
 `;
 
 export const SET_BILLING_ADDRESS_ON_CART = gql`

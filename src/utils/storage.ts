@@ -1,9 +1,8 @@
 import {
   DEFAULT_WEBSITE_CODE,
   STORE_VIEW_COOKIE_NAME,
-  getDefaultStoreViewCodeFromEnv,
+  resolveStoreViewCodeForClientSources,
   getWebsiteCodeForStoreView,
-  normalizeStoreViewCode,
 } from "@/src/config/storeViews";
 import { STORE_VIEW_CODE_KEY } from "@/src/constants/storageKeys";
 
@@ -27,25 +26,26 @@ export function removeStoredValue(key: string): void {
  * that helper depends on `getStoredValue` from this module.
  */
 function readClientStoreViewCode(): string {
-  if (!IS_BROWSER) return getDefaultStoreViewCodeFromEnv();
+  if (!IS_BROWSER) return "";
   try {
+    let fromCookie: string | null = null;
     const parts = document.cookie.split("; ");
     for (const p of parts) {
       const i = p.indexOf("=");
       if (i === -1) continue;
       if (p.slice(0, i).trim() === STORE_VIEW_COOKIE_NAME) {
-        const fromCookie = decodeURIComponent(p.slice(i + 1).trim());
-        const normalized = normalizeStoreViewCode(fromCookie);
-        if (normalized) return normalized;
+        fromCookie = decodeURIComponent(p.slice(i + 1).trim());
         break;
       }
     }
-    const fromLs = normalizeStoreViewCode(localStorage.getItem(STORE_VIEW_CODE_KEY));
-    if (fromLs) return fromLs;
+    return resolveStoreViewCodeForClientSources(
+      fromCookie,
+      localStorage.getItem(STORE_VIEW_CODE_KEY),
+    );
   } catch {
     /* fall through to env default */
   }
-  return getDefaultStoreViewCodeFromEnv();
+  return resolveStoreViewCodeForClientSources(null, null);
 }
 
 /**

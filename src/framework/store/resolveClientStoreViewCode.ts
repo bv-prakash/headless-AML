@@ -1,7 +1,6 @@
 import { STORE_VIEW_CODE_KEY } from "@/src/constants/storageKeys";
 import {
-  getDefaultStoreViewCodeFromEnv,
-  normalizeStoreViewCode,
+  resolveStoreViewCodeForClientSources,
   STORE_VIEW_COOKIE_NAME,
 } from "@/src/config/storeViews";
 import { getStoredValue } from "@/src/utils/storage";
@@ -24,9 +23,8 @@ function readCookie(name: string): string | null {
  * so Apollo `Store` matches RSC/catalog after toggling store or clearing only one storage.
  */
 export function resolveClientStoreViewCode(): string {
-  return (
-    normalizeStoreViewCode(readCookie(STORE_VIEW_COOKIE_NAME)) ??
-    normalizeStoreViewCode(getStoredValue(STORE_VIEW_CODE_KEY)) ??
-    getDefaultStoreViewCodeFromEnv()
+  return resolveStoreViewCodeForClientSources(
+    readCookie(STORE_VIEW_COOKIE_NAME),
+    getStoredValue(STORE_VIEW_CODE_KEY),
   );
 }

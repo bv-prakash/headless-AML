@@ -2,13 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { setAppLanguage, useLanguageTranslation } from "@/src/config/language";
-import { getLanguageOptionsForStoreView } from "@/src/config/storeViews";
-import apolloClient from "@/src/framework/graphql/apolloClient";
-import { writeStoreViewCookie } from "@/src/framework/store/storeViewCookie";
+import { useLanguageTranslation } from "@/src/config/language";
+import {
+  getLanguageOptionsForStoreView,
+  hydrateStoreViewOptionsFromMagento,
+} from "@/src/config/storeViews";
+import {
+  applyClientStoreViewState,
+  refreshAfterStoreViewChange,
+} from "@/src/framework/store/clientStoreViewSwitch";
 import { useAppDispatch, useAppSelector } from "@/src/store/hooks";
 import { selectStoreViewCode } from "@/src/store/selectors";
-import { setStoreViewCode } from "@/src/store/slices/storeViewSlice";
 
 export default function LanguageSwitcher() {
   const { language: code, getTranslation } = useLanguageTranslation();
@@ -17,6 +21,13 @@ export default function LanguageSwitcher() {
   const storeViewCode = useAppSelector(selectStoreViewCode);
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [storeViewsRevision, setStoreViewsRevision] = useState(0);
+
+  useEffect(() => {
+    void hydrateStoreViewOptionsFromMagento().then(() => {
+      setStoreViewsRevision((prev) => prev + 1);
+    });
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -37,7 +48,7 @@ export default function LanguageSwitcher() {
 
   const languageOptions = useMemo(
     () => getLanguageOptionsForStoreView(storeViewCode),
-    [storeViewCode],
+    [storeViewCode, storeViewsRevision],
   );
   const current = useMemo(
     () =>
@@ -52,19 +63,14 @@ export default function LanguageSwitcher() {
 
   const onChange = (nextStoreViewCode: string, nextCode: string) => {
     detailsRef.current?.removeAttribute("open");
-    const storeChanged = nextStoreViewCode !== storeViewCode;
+    const storeChanged = applyClientStoreViewState({
+      dispatch,
+      nextStoreViewCode,
+      currentStoreViewCode: storeViewCode,
+      nextLanguageCode: nextCode,
+    });
     if (storeChanged) {
-      writeStoreViewCookie(nextStoreViewCode);
-      dispatch(setStoreViewCode(nextStoreViewCode));
-    }
-    setAppLanguage(nextCode);
-    if (storeChanged) {
-      void apolloClient
-        .resetStore()
-        .catch(() => {})
-        .finally(() => {
-          router.refresh();
-        });
+      refreshAfterStoreViewChange(router);
     }
   };
 
@@ -100,7 +106,7 @@ export default function LanguageSwitcher() {
               type="button"
               role="option"
               aria-selected={option.storeViewCode === storeViewCode}
-              className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-f0f0f0 ${
+              className={`flex w-full items-center justify-between gap-2 cursor-pointer px-3 py-2 text-left text-xs transition-colors hover:bg-f0f0f0 ${
                 option.storeViewCode === storeViewCode
                   ? "bg-f0f0f0 font-semibold text-black"
                   : "text-gray-800"

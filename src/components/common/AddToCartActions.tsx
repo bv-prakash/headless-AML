@@ -1,10 +1,23 @@
 "use client";
 
 import { memo } from "react";
+import dynamic from "next/dynamic";
 import QuantitySelector from "@/src/components/common/QuantitySelector";
 import Button from "@/src/components/common/Button";
 import { useAddToCompare } from "@/src/hooks/useAddToCompare";
 import { useAddToWishlist } from "@/src/hooks/useAddToWishlist";
+import type { RequisitionListItemsInput } from "@/src/framework/graphql/mutations/requisitionListMutations";
+
+/**
+ * Lazy-loaded — the button pulls in Apollo queries for storeConfig + customer
+ * requisition lists + the create-list modal, and is needed only on PDPs. PLP
+ * cards, Related, Upsell, Cross-sell all skip `showRequisitionButton`, so
+ * eager-importing would ship ~15kB they never execute.
+ */
+const AddToRequisitionListButton = dynamic(
+  () => import("@/src/components/pdp/AddToRequisitionListButton"),
+  { ssr: false },
+);
 
 type AddToCartActionsProps = {
   readonly itemKey: string;
@@ -21,6 +34,19 @@ type AddToCartActionsProps = {
   /** When Redux has no qty yet (e.g. `?qty=` from edit link). */
   readonly defaultQuantity?: number;
   readonly variant?: "plp" | "pdp";
+  /**
+   * Show the "Add to Requisition List" icon button. Must be set explicitly by
+   * the caller — relying on `variant === "pdp"` is unsafe because the PDP page
+   * reuses `ProductActions` (which hard-codes `variant="plp"`) for simple/
+   * virtual products. Only callers that know they're on a PDP set this.
+   */
+  readonly showRequisitionButton?: boolean;
+  /**
+   * Builds the items sent to `addProductsToRequisitionList`. PDP option
+   * components use this to send the correct SKU/options shape per product type
+   * (e.g. configurable must send the variant child SKU, not the parent).
+   */
+  readonly buildRequisitionItems?: () => ReadonlyArray<RequisitionListItemsInput> | null;
   overrideStyles?: string;
 };
 
@@ -37,6 +63,8 @@ function AddToCartActions({
   showQuantity = true,
   defaultQuantity,
   variant = "pdp",
+  showRequisitionButton = false,
+  buildRequisitionItems,
   overrideStyles,
 }: AddToCartActionsProps) {
   const { execute: addToCompare, loading: compareLoading } =
@@ -130,6 +158,16 @@ function AddToCartActions({
           aria-hidden="true"
         />
       </Button>
+
+      {showRequisitionButton && (
+        <AddToRequisitionListButton
+          itemKey={itemKey}
+          sku={sku}
+          productName={productName}
+          disabled={disabled || isOutOfStock}
+          buildItems={buildRequisitionItems}
+        />
+      )}
     </div>
   );
 }

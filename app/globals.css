@@ -6,6 +6,7 @@
 @import "../src/style/footer.css";
 @import "../src/style/icons.css";
 @import "../src/style/pdp.css";
+@import "../src/style/companyStructureTree.css";
 
 /*
  * Store-view colors (single source of truth in TS: `src/theme/store-view/themes/base.theme.ts`

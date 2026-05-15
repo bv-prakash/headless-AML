@@ -61,6 +61,11 @@ const errorLink = new ErrorLink(({ error }) => {
   }
 
   if (error instanceof Error) {
+    const msg = error.message ?? "";
+    if (/status code 401|unauthorized/i.test(msg)) {
+      invalidateCustomerSession();
+      return;
+    }
     if (isStaleCartError(error.message)) return;
     if (messagesIndicateInvalidCustomerSession(error.message)) {
       invalidateCustomerSession();
@@ -96,6 +101,7 @@ const authLink = setContext(async (_, { headers }) => {
 
 const apolloClient = new ApolloClient({
   link: ApolloLink.from([errorLink, authLink, httpLink]),
+  queryDeduplication: true,
   cache: new InMemoryCache({
     typePolicies: {
       /** Same logged-in user from `CustomerWishlist`, `CustomerForCheckout`, etc. */
@@ -127,6 +133,22 @@ const apolloClient = new ApolloClient({
       StoreConfig: { keyFields: [] },
       CompareList: { keyFields: ["uid"] },
       CategoryTree: { keyFields: ["id"] },
+      /**
+       * Company ACL resource nodes appear in TWO unrelated trees:
+       *   - `Company.acl_resources` → master tree of every grantable resource
+       *   - `CompanyRole.permissions` → only the *granted* branches
+       *
+       * Both trees use `CompanyAclResource` and share node ids (e.g.
+       * `Magento_Sales`). With default `__typename:id` normalisation Apollo
+       * would write both into the same cache slot, and the role's smaller
+       * `children` list would overwrite the master tree's children — which
+       * is why the edit form rendered only the granted branches instead of
+       * the full permission tree.
+       *
+       * `keyFields: false` makes these objects embedded values, so each
+       * query keeps its own tree intact.
+       */
+      CompanyAclResource: { keyFields: false },
     },
   }),
   defaultOptions: {

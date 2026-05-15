@@ -1,6 +1,10 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { STORE_VIEW_CODE_KEY } from "@/src/constants/storageKeys";
-import { getDefaultStoreViewCodeFromEnv, normalizeStoreViewCode } from "@/src/config/storeViews";
+import {
+  getDefaultStoreViewCodeFromEnv,
+  normalizeStoreViewCode,
+  normalizeStoreViewCodeLoose,
+} from "@/src/config/storeViews";
 import { resolveClientStoreViewCode } from "@/src/framework/store/resolveClientStoreViewCode";
 import { setStoredValue } from "@/src/utils/storage";
 
@@ -28,7 +32,14 @@ const storeViewSlice = createSlice({
       setStoredValue(STORE_VIEW_CODE_KEY, code);
     },
     setStoreViewCode(state, action: PayloadAction<string>) {
-      const next = normalizeStoreViewCode(action.payload);
+      /**
+       * During early boot, store options may not be hydrated yet, so strict normalization can
+       * reject valid store codes. Fall back to loose normalization so multi-store switching
+       * still works immediately; strict validation resumes automatically after hydration.
+       */
+      const next =
+        normalizeStoreViewCode(action.payload) ??
+        normalizeStoreViewCodeLoose(action.payload);
       if (!next) return;
       state.code = next;
       state.revision += 1;

@@ -73,11 +73,17 @@ function buildRemotePatterns(): NextConfig["images"] {
 }
 
 const nextConfig: NextConfig = {
-  i18n: {
-    locales: ["en", "ar"],
-    defaultLocale: "en",
+  /**
+   * Pin Turbopack to this project so a stray `package.json` / `package-lock.json`
+   * higher up the tree (e.g. in `~` or in `magento-headless-project/`) doesn't
+   * get auto-selected as the workspace root. Without this, the CSS resolver
+   * starts above `headless-aml` and fails to find `tailwindcss`.
+   *
+   * @see https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory
+   */
+  turbopack: {
+    root: __dirname,
   },
-  
   images: {
     ...buildRemotePatterns(),
     formats: ["image/avif", "image/webp"],

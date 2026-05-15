@@ -52,9 +52,6 @@ export const CUSTOMER_WISHLIST_QUERY = gql`
       wishlist {
         ${WISHLIST_LIST_BODY}
       }
-      wishlists(pageSize: 1, currentPage: 1) {
-        ${WISHLIST_LIST_BODY}
-      }
     }
   }
 `;

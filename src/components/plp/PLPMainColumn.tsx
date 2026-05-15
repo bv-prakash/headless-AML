@@ -55,7 +55,7 @@ export default function PLPMainColumn({
             listLoading ? "pointer-events-none select-none opacity-50" : ""
           }`}
         >
-          {products.map((p) => (
+          {products.map((p, index) => (
             <li
               key={p.sku}
               className="product-item text-[15px] leading-[1.3] lg-custom:text-lg!"
@@ -69,6 +69,7 @@ export default function PLPMainColumn({
                 description={p.description}
                 productType={p.productType}
                 stockStatus={p.stockStatus}
+                eagerImage={index === 0}
               />
             </li>
           ))}

@@ -35,6 +35,8 @@ type ProductActionsProps = {
   readonly showQuantity?: boolean;
   /** From `?qty=` when opening PDP from cart/minicart edit. */
   readonly initialQty?: number;
+  /** Render the "Add to Requisition List" button. Only set on the PDP page (simple/virtual). */
+  readonly showRequisitionButton?: boolean;
 };
 
 export default function ProductActions({
@@ -47,16 +49,18 @@ export default function ProductActions({
   overrideStyles,
   showQuantity = false,
   initialQty,
+  showRequisitionButton = false,
 }: ProductActionsProps) {
   const router = useRouter();
   const isOutOfStock = stockStatus === "OUT_OF_STOCK";
   const needsOptions = NEEDS_OPTIONS_TYPES.includes(productType ?? "");
   const isVirtual = productType === "VirtualProduct";
+  const canDirectAddToCart = !isOutOfStock && !needsOptions;
   const quantity = useAppSelector(
     (state) => state.cart.quantities[sku] ?? initialQty ?? 1,
   );
 
-  const { execute, loading, prefetchCart } = useAddToCart(productName);
+  const { execute, loading, prefetchCart } = useAddToCart(productName, sku);
 
   const [addToCart] = useMutation<AddToCartResponse, AddToCartVariables>(
     ADD_TO_CART_MUTATION,
@@ -106,11 +110,12 @@ export default function ProductActions({
         productName={productName}
         isOutOfStock={isOutOfStock}
         loading={loading}
-        onPrefetchCart={prefetchCart}
+        onPrefetchCart={canDirectAddToCart ? prefetchCart : undefined}
         onAddToCart={handleAddToCart}
         showQuantity={showQuantity}
         defaultQuantity={initialQty}
         variant="plp"
+        showRequisitionButton={showRequisitionButton}
         overrideStyles="w-full"
       />
     </div>

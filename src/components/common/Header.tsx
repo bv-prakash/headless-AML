@@ -32,7 +32,7 @@ export default async function Header() {
     <>
       <header className={`relative z-40 w-full bg-theme-header-bg text-theme-header-fg max-md:py-5 ${storeViewCode === "proluxelighting_store_view" || storeViewCode === "prizmlighting_store_view" ? "" : "border-b-2 border-solid border-theme-header-border md:border-b-4"}`}>
         <div className="container flex flex-wrap items-center gap-y-5 md:px-[15px] md:py-[25px] xl:py-[35px]!">
-          <Logo />
+          <Logo storeViewCode={storeViewCode} />
 
           <div className="flex flex-1 flex-wrap items-center justify-end gap-5">
             {isStoreComponentEnabled("categoryNav", storeViewCode) ? <CategoryNav /> : null}

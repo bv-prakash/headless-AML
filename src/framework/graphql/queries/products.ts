@@ -213,6 +213,14 @@ function mergeAggregationLabels(
   return [...mergedPrimary, ...fallbackOnly];
 }
 
+function hasMissingAggregationLabels(aggregations: readonly ProductAggregation[]): boolean {
+  return aggregations.some((agg) => {
+    const hasAggregationLabel = Boolean((agg.label ?? "").trim());
+    if (!hasAggregationLabel) return true;
+    return (agg.options ?? []).some((opt) => !((opt.label ?? "").trim()));
+  });
+}
+
 async function getAggregationAttributeLabelOverrides(
   aggregations: readonly ProductAggregation[],
   storeViewCode?: string,
@@ -341,55 +349,9 @@ export async function getProductsByCategory(
     }
     data = EMPTY_RESPONSE;
   }
-  let preferredAggregations: readonly ProductAggregation[] = [];
   const preferredCode = aggregationLabelPreferredStoreViewCode?.trim();
   const primaryCode = storeViewCode?.trim();
-  if (preferredCode && preferredCode !== primaryCode) {
-    try {
-      const preferredCategoryScopeUid =
-        aggregationLabelPreferredCategoryUid?.trim() || null;
-      const preferredLabelVariables = toMagentoProductsByCategoryVariables({
-        categoryId: aggregationLabelPreferredCategoryId?.trim() || categoryId,
-        categoryScopeUid: preferredCategoryScopeUid,
-        filterFacets,
-        pageSize,
-        currentPage,
-        sort: sortKey,
-      });
-      const preferredData = await magentoGraphqlFetch<ProductsByCategoryResponse>(
-        PLP_PRODUCTS_BY_CATEGORY_QUERY,
-        preferredLabelVariables,
-        { storeViewCode: preferredCode },
-      );
-      preferredAggregations = preferredData.products.aggregations ?? [];
-    } catch {
-      preferredAggregations = [];
-    }
-  }
-  let fallbackAggregations: readonly ProductAggregation[] = [];
   const fallbackCode = aggregationLabelFallbackStoreViewCode?.trim();
-  if (fallbackCode && fallbackCode !== primaryCode) {
-    try {
-      const fallbackLabelVariables = toMagentoProductsByCategoryVariables({
-        categoryId,
-        // Do not pin primary store `category_uid` here; UID can differ per store view.
-        // For label fallback, category_id scope is more stable across stores.
-        categoryScopeUid: null,
-        filterFacets,
-        pageSize,
-        currentPage,
-        sort: sortKey,
-      });
-      const fallbackData = await magentoGraphqlFetch<ProductsByCategoryResponse>(
-        PLP_PRODUCTS_BY_CATEGORY_QUERY,
-        fallbackLabelVariables,
-        { storeViewCode: fallbackCode },
-      );
-      fallbackAggregations = fallbackData.products.aggregations ?? [];
-    } catch {
-      fallbackAggregations = [];
-    }
-  }
 
   let items = [...(data.products.items ?? [])];
 
@@ -405,24 +367,76 @@ export async function getProductsByCategory(
 
   /** Magento facets as returned (do not trim category buckets — id/uid mismatches cleared all filters). */
   let aggregations: ProductAggregation[] = [...(data.products.aggregations ?? [])];
-  if (preferredAggregations.length > 0) {
-    aggregations = mergeAggregationLabels(preferredAggregations, aggregations);
-  }
-  if (fallbackAggregations.length > 0) {
-    aggregations = mergeAggregationLabels(aggregations, fallbackAggregations);
-  }
-  const labelOverrides = await getAggregationAttributeLabelOverrides(
-    aggregations,
-    aggregationLabelPreferredStoreViewCode?.trim() || storeViewCode?.trim(),
-  );
-  if (labelOverrides.size > 0) {
-    aggregations = aggregations.map((agg) => {
-      const code = agg.attribute_code?.trim();
-      if (!code) return agg;
-      const label = labelOverrides.get(code);
-      if (!label) return agg;
-      return { ...agg, label };
-    });
+  const shouldHydrateMissingLabels = hasMissingAggregationLabels(aggregations);
+  if (shouldHydrateMissingLabels) {
+    let preferredAggregations: readonly ProductAggregation[] = [];
+    if (preferredCode && preferredCode !== primaryCode) {
+      try {
+        const preferredCategoryScopeUid =
+          aggregationLabelPreferredCategoryUid?.trim() || null;
+        const preferredLabelVariables = toMagentoProductsByCategoryVariables({
+          categoryId: aggregationLabelPreferredCategoryId?.trim() || categoryId,
+          categoryScopeUid: preferredCategoryScopeUid,
+          filterFacets,
+          pageSize,
+          currentPage,
+          sort: sortKey,
+        });
+        const preferredData = await magentoGraphqlFetch<ProductsByCategoryResponse>(
+          PLP_PRODUCTS_BY_CATEGORY_QUERY,
+          preferredLabelVariables,
+          { storeViewCode: preferredCode },
+        );
+        preferredAggregations = preferredData.products.aggregations ?? [];
+      } catch {
+        preferredAggregations = [];
+      }
+    }
+
+    let fallbackAggregations: readonly ProductAggregation[] = [];
+    if (fallbackCode && fallbackCode !== primaryCode) {
+      try {
+        const fallbackLabelVariables = toMagentoProductsByCategoryVariables({
+          categoryId,
+          // Do not pin primary store `category_uid` here; UID can differ per store view.
+          // For label fallback, category_id scope is more stable across stores.
+          categoryScopeUid: null,
+          filterFacets,
+          pageSize,
+          currentPage,
+          sort: sortKey,
+        });
+        const fallbackData = await magentoGraphqlFetch<ProductsByCategoryResponse>(
+          PLP_PRODUCTS_BY_CATEGORY_QUERY,
+          fallbackLabelVariables,
+          { storeViewCode: fallbackCode },
+        );
+        fallbackAggregations = fallbackData.products.aggregations ?? [];
+      } catch {
+        fallbackAggregations = [];
+      }
+    }
+
+    if (preferredAggregations.length > 0) {
+      aggregations = mergeAggregationLabels(preferredAggregations, aggregations);
+    }
+    if (fallbackAggregations.length > 0) {
+      aggregations = mergeAggregationLabels(aggregations, fallbackAggregations);
+    }
+
+    const labelOverrides = await getAggregationAttributeLabelOverrides(
+      aggregations,
+      preferredCode || primaryCode,
+    );
+    if (labelOverrides.size > 0) {
+      aggregations = aggregations.map((agg) => {
+        const code = agg.attribute_code?.trim();
+        if (!code) return agg;
+        const label = labelOverrides.get(code);
+        if (!label) return agg;
+        return { ...agg, label };
+      });
+    }
   }
   const typeAgg = buildProductTypeAggregation(items);
   if (typeAgg.options?.length) {

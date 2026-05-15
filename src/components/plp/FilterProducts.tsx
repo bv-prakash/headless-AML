@@ -109,20 +109,6 @@ export default function FilterProducts({
     onPendingChange?.(isPending);
   }, [isPending, onPendingChange]);
 
-  useEffect(() => {
-    console.info("[PLP][client] Aggregations by store view", {
-      storeViewCode,
-      labels: (aggregations ?? []).map((agg) => ({
-        attribute_code: agg.attribute_code ?? "",
-        label: agg.label ?? "",
-        option_labels: (agg.options ?? []).map((opt) => ({
-          value: opt.value ?? "",
-          label: opt.label ?? "",
-        })),
-      })),
-    });
-  }, [aggregations, storeViewCode]);
-
   const blocks = useMemo(
     () =>
       (aggregations ?? []).filter((a) => a?.options?.length && a.attribute_code),

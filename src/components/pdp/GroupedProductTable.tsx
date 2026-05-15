@@ -17,6 +17,7 @@ import type {
   AddGroupedToCartVariables,
 } from "@/src/framework/graphql/mutations/cartMutations";
 import type { GroupedProductItem } from "@/src/framework/graphql/queries/productDetail";
+import type { RequisitionListItemsInput } from "@/src/framework/graphql/mutations/requisitionListMutations";
 
 type GroupedProductTableProps = {
   readonly sku: string;
@@ -54,6 +55,15 @@ export default function GroupedProductTable({ sku, productId, productName, items
     ),
     [sorted, quantities],
   );
+
+  /** One requisition line per child the customer set a qty on. */
+  const buildRequisitionItems = useCallback((): ReadonlyArray<RequisitionListItemsInput> | null => {
+    if (selectedItems.length === 0) return null;
+    return selectedItems.map((item) => ({
+      sku: item.product.sku,
+      quantity: quantities[item.product.sku],
+    }));
+  }, [selectedItems, quantities]);
 
   const handleAddToCart = useCallback(() => {
     if (selectedItems.length === 0) {
@@ -148,6 +158,8 @@ export default function GroupedProductTable({ sku, productId, productName, items
           onAddToCart={handleAddToCart}
           showQuantity={false}
           variant="plp"
+          showRequisitionButton
+          buildRequisitionItems={buildRequisitionItems}
         />
       </div>
     </>

@@ -126,6 +126,51 @@ export function normalizeStoreViewCode(raw: string | null | undefined): string |
   return ALLOWED.has(normalized) ? normalized : null;
 }
 
+/**
+ * Loose normalization for early client boot before strict validation can apply.
+ * Keeps known alias mapping but does not require membership in static options.
+ */
+export function normalizeStoreViewCodeLoose(
+  raw: string | null | undefined,
+): string | null {
+  const t = raw?.trim();
+  if (!t) return null;
+  return STORE_VIEW_CODE_ALIASES[t] ?? t;
+}
+
+/**
+ * Client source resolver used by language/store bootstrapping:
+ * prefer cookie, then local storage, then env default.
+ */
+export function resolveStoreViewCodeForClientSources(
+  fromCookie: string | null | undefined,
+  fromStorage: string | null | undefined,
+): string {
+  return (
+    normalizeStoreViewCodeLoose(fromCookie) ??
+    normalizeStoreViewCodeLoose(fromStorage) ??
+    getDefaultStoreViewCodeFromEnv()
+  );
+}
+
+/**
+ * Request/proxy resolver:
+ * prefer strict validated header/cookie values, then loose values, then fallback.
+ */
+export function resolveStoreViewCodeForRequest(
+  fromHeader: string | null | undefined,
+  fromCookie: string | null | undefined,
+  fallback: string,
+): string {
+  return (
+    normalizeStoreViewCode(fromHeader) ??
+    normalizeStoreViewCodeLoose(fromHeader) ??
+    normalizeStoreViewCode(fromCookie) ??
+    normalizeStoreViewCodeLoose(fromCookie) ??
+    fallback
+  );
+}
+
 /** Explicit nav root from config, if any (see {@link StoreViewOption.categoryNavRootId}). */
 export function getCategoryNavRootIdOverride(
   storeViewCode: string,
@@ -259,4 +304,14 @@ export function getStoreViewOptionsForToggle(
   });
 
   return selected.sort((a, b) => a.group.localeCompare(b.group));
+}
+
+/**
+ * Compatibility shim for callers that previously hydrated store views from Magento.
+ * Current setup uses static store view config, so this resolves immediately.
+ */
+export async function hydrateStoreViewOptionsFromMagento(): Promise<
+  readonly StoreViewOption[]
+> {
+  return STORE_VIEW_OPTIONS;
 }

@@ -204,6 +204,27 @@ export default function ConfigurableOptions({
   const variantPrice = matchedVariant?.product?.price_range?.minimum_price?.final_price;
   const isVariantOOS = matchedVariant?.product.stock_status === "OUT_OF_STOCK";
 
+  /**
+   * Builds the per-variant payload for `addProductsToRequisitionList`.
+   * Stable across renders (only depends on the chosen options/values) so the
+   * memoised `AddToCartActions` doesn't churn on every parent re-render.
+   * Magento needs `selected_options` UIDs — the parent SKU alone 500s with
+   * "You need to choose options for your item."
+   */
+  const buildRequisitionItems = useCallback(() => {
+    if (!allSelected) return null;
+    const selectedOptionUids: string[] = [];
+    for (const opt of options) {
+      const chosenIndex = selections[opt.attribute_code];
+      if (chosenIndex == null) continue;
+      const v = opt.values.find(
+        (x) => Number(x.value_index) === Number(chosenIndex),
+      );
+      if (v?.uid) selectedOptionUids.push(v.uid);
+    }
+    return [{ sku: parentSku, selected_options: selectedOptionUids }];
+  }, [allSelected, options, selections, parentSku]);
+
   const handleAddToCart = useCallback(() => {
     if (!matchedVariant) {
       toast.error("Please select all options.");
@@ -293,6 +314,8 @@ export default function ConfigurableOptions({
           onAddToCart={handleAddToCart}
           defaultQuantity={quantity}
           variant="plp"
+          showRequisitionButton
+          buildRequisitionItems={buildRequisitionItems}
         />
       </div>
     </>
