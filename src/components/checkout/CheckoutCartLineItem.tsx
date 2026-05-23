@@ -3,7 +3,7 @@ import { formatPrice } from "@/src/utils/format";
 import ConfigurableItemOptions from "@/src/components/cart/ConfigurableItemOptions";
 import BundleItemOptions from "@/src/components/cart/BundleItemOptions";
 import DownloadableItemOptions from "@/src/components/cart/DownloadableItemOptions";
-import type { CartItem } from "@/src/framework/graphql/mutations/cartMutations";
+import type { CartItem } from "@/src/framework/graphql/cart/types";
 
 type ValidCartItem = CartItem & {
   product: NonNullable<CartItem["product"]>;

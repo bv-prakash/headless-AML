@@ -12,19 +12,19 @@ import { getResolvedCartQuantity } from "@/src/store/cartQuantity";
 import {
   CUSTOMER_REQUISITION_LISTS_PICKER_QUERY,
   type CustomerRequisitionListsPickerResponse,
-  type RequisitionListPickerItem,
-} from "@/src/framework/graphql/queries/requisitionLists";
+} from "@/src/framework/graphql/requisition-lists/queries/getCustomerRequisitionListsPicker";
+import type { RequisitionListPickerItem } from "@/src/framework/graphql/requisition-lists/types";
 import {
   ADD_PRODUCTS_TO_REQUISITION_LIST_MUTATION,
   type AddProductsToRequisitionListResponse,
   type AddProductsToRequisitionListVariables,
   type RequisitionListItemsInput,
-} from "@/src/framework/graphql/mutations/requisitionListMutations";
+} from "@/src/framework/graphql/requisition-lists/mutations/addProductsToRequisitionList";
 import {
-  isFeatureEnabled,
-  STORE_CONFIG_B2B_FEATURES_QUERY,
-  type StoreConfigB2BFeaturesResponse,
-} from "@/src/framework/graphql/queries/storeConfigB2BFeatures";
+  GET_B2B_FEATURES_QUERY,
+  type B2BFeaturesResponse,
+} from "@/src/framework/graphql/b2b-features/queries/getB2BFeatures";
+import { isFeatureEnabled } from "@/src/hooks/useB2BNavGating";
 import { getErrorMessage } from "@/src/utils/errors";
 
 type AddToRequisitionListButtonProps = {
@@ -66,8 +66,8 @@ export default function AddToRequisitionListButton({
    * the first page load. Early-return BEFORE other state/queries keeps the
    * mounted-but-disabled case cost-free.
    */
-  const { data: storeCfg } = useQuery<StoreConfigB2BFeaturesResponse>(
-    STORE_CONFIG_B2B_FEATURES_QUERY,
+  const { data: storeCfg } = useQuery<B2BFeaturesResponse>(
+    GET_B2B_FEATURES_QUERY,
     { fetchPolicy: "cache-first" },
   );
   const featureEnabled = isFeatureEnabled(

@@ -11,26 +11,39 @@ import { openMinicart, setCart } from "@/src/store/slices/cartSlice";
 import { setWishlistCount } from "@/src/store/slices/wishlistSlice";
 import apolloClient from "@/src/framework/graphql/apolloClient";
 import { getErrorMessage } from "@/src/utils/errors";
+import { CUSTOMER_WISHLIST_QUERY } from "@/src/framework/graphql/wishlist/queries/getCustomerWishlist";
 import {
   ADD_WISHLIST_ITEMS_TO_CART_MUTATION,
-  CLEAR_WISHLIST_MUTATION,
-  CUSTOMER_WISHLIST_QUERY,
-  REMOVE_PRODUCTS_FROM_WISHLIST_MUTATION,
-  UPDATE_WISHLIST_ITEMS_MUTATION,
-  getActiveWishlist,
-  normalizeWishlistItemRows,
   type AddWishlistItemsToCartResponse,
   type AddWishlistItemsToCartVariables,
+} from "@/src/framework/graphql/wishlist/mutations/addWishlistItemsToCart";
+import {
+  CLEAR_WISHLIST_MUTATION,
   type ClearWishlistResponse,
   type ClearWishlistVariables,
-  type CustomerWishlistItemRow,
-  type CustomerWishlistResponse,
+} from "@/src/framework/graphql/wishlist/mutations/clearWishlist";
+import {
+  REMOVE_PRODUCTS_FROM_WISHLIST_MUTATION,
   type RemoveProductsFromWishlistResponse,
   type RemoveProductsFromWishlistVariables,
+} from "@/src/framework/graphql/wishlist/mutations/removeProductsFromWishlist";
+import {
+  UPDATE_WISHLIST_ITEMS_MUTATION,
   type UpdateProductsInWishlistResponse,
   type UpdateProductsInWishlistVariables,
-} from "@/src/framework/graphql/mutations/wishlistMutations";
-import { CUSTOMER_CART_QUERY, type CustomerCartQueryResponse } from "@/src/framework/graphql/mutations/cartMutations";
+} from "@/src/framework/graphql/wishlist/mutations/updateWishlistItems";
+import type {
+  CustomerWishlistItemRow,
+  CustomerWishlistResponse,
+} from "@/src/framework/graphql/wishlist/types";
+import {
+  getActiveWishlist,
+  normalizeWishlistItemRows,
+} from "@/src/components/wishlist/wishlistHelpers";
+import {
+  CUSTOMER_CART_QUERY,
+  type CustomerCartQueryResponse,
+} from "@/src/framework/graphql/cart/queries/getCustomerCart";
 import PageLoader from "@/src/components/common/PageLoader";
 
 const BTN_PRIMARY =

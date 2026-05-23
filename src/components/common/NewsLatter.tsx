@@ -8,7 +8,7 @@ import {
   NEWSLETTER_SUBSCRIBE_MUTATION,
   type NewsletterSubscribeVariables,
   type NewsletterSubscribeResponse,
-} from "@/src/framework/graphql/mutations/newslatterSubscribe";
+} from "@/src/framework/graphql/newsletter/mutations/subscribeNewsletter";
 
 type NewsletterFormValues = {
   email: string;

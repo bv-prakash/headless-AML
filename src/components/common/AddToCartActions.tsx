@@ -6,7 +6,7 @@ import QuantitySelector from "@/src/components/common/QuantitySelector";
 import Button from "@/src/components/common/Button";
 import { useAddToCompare } from "@/src/hooks/useAddToCompare";
 import { useAddToWishlist } from "@/src/hooks/useAddToWishlist";
-import type { RequisitionListItemsInput } from "@/src/framework/graphql/mutations/requisitionListMutations";
+import type { RequisitionListItemsInput } from "@/src/framework/graphql/requisition-lists/mutations/addProductsToRequisitionList";
 
 /**
  * Lazy-loaded — the button pulls in Apollo queries for storeConfig + customer

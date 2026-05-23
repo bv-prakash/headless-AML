@@ -1,6 +1,6 @@
 import Link from "next/link";
-import type { CustomerOrderDetail, CustomerOrderLineItem } from "@/src/framework/graphql/queries/customerOrders";
-import { formatOrderMoney, lineRowTotalMoney } from "@/src/framework/graphql/queries/customerOrders";
+import type { CustomerOrderDetail, CustomerOrderLineItem } from "@/src/framework/graphql/customer-orders/types";
+import { formatOrderMoney, lineRowTotalMoney } from "@/src/components/account/customer-orders/orderFormat";
 import {
   ORDER_DETAIL_TABLE_CELL,
   ORDER_DETAIL_TABLE_HEAD,

@@ -7,8 +7,8 @@ import {
   CREATE_REQUISITION_LIST_MUTATION,
   type CreateRequisitionListResponse,
   type CreateRequisitionListVariables,
-} from "@/src/framework/graphql/mutations/requisitionListMutations";
-import type { RequisitionListRow } from "@/src/framework/graphql/queries/requisitionLists";
+} from "@/src/framework/graphql/requisition-lists/mutations/createRequisitionList";
+import type { RequisitionListRow } from "@/src/framework/graphql/requisition-lists/types";
 import { getErrorMessage } from "@/src/utils/errors";
 
 type CreateRequisitionListModalProps = {

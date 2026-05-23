@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { StructureNode } from "@/src/framework/graphql/queries/companyStructure";
+import type { StructureNode } from "@/src/framework/graphql/company-structure/types";
 
 /** Rotating triangle used by team rows' expand/collapse toggle. */
 export function Chevron({ open }: { readonly open: boolean }) {

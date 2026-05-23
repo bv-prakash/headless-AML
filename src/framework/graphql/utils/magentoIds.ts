@@ -48,3 +48,17 @@ export function idVariants(id: string): ReadonlyArray<string> {
   if (encoded) out.add(encoded);
   return Array.from(out);
 }
+
+/**
+ * Normalise an id to the base64 UID form that Magento's `ID`-typed
+ * mutation arguments (e.g. `target_id`, `updateCompanyUser.input.id`)
+ * expect. Raw integer strings get encoded; already-base64 values pass
+ * through unchanged.
+ */
+export function toMagentoUid(
+  value: string | null | undefined,
+): string | null {
+  if (value == null || value === "") return null;
+  if (/^\d+$/.test(value)) return tryBase64Encode(value) ?? value;
+  return value;
+}

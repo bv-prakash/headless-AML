@@ -1,4 +1,4 @@
-import type { B2BFeatureKey } from "@/src/framework/graphql/queries/storeConfigB2BFeatures";
+import type { B2BFeatureKey } from "@/src/hooks/useB2BNavGating";
 
 export type AccountNavItem = {
   readonly href: string;

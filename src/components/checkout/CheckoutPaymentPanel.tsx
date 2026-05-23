@@ -1,7 +1,7 @@
 "use client";
 
 import Button from "@/src/components/common/Button";
-import type { PaymentMethodQuote } from "@/src/framework/graphql/mutations/checkoutMutations";
+import type { PaymentMethodQuote } from "@/src/framework/graphql/checkout/types";
 
 type CheckoutPaymentPanelProps = {
   readonly paymentOptions: readonly PaymentMethodQuote[];

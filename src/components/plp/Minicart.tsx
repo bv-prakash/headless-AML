@@ -22,16 +22,20 @@ import { isStaleCartError } from "@/src/utils/errors";
 import MinicartItem from "@/src/components/cart/MinicartItem";
 import {
   CART_QUERY,
-  REMOVE_CART_ITEM_MUTATION,
-  UPDATE_CART_ITEM_MUTATION,
-  type CartItem,
   type CartQueryResponse,
   type CartQueryVariables,
+} from "@/src/framework/graphql/cart/queries/getCart";
+import {
+  REMOVE_CART_ITEM_MUTATION,
   type RemoveCartItemResponse,
   type RemoveCartItemVariables,
+} from "@/src/framework/graphql/cart/mutations/removeCartItem";
+import {
+  UPDATE_CART_ITEM_MUTATION,
   type UpdateCartItemResponse,
   type UpdateCartItemVariables,
-} from "@/src/framework/graphql/mutations/cartMutations";
+} from "@/src/framework/graphql/cart/mutations/updateCartItem";
+import type { CartItem } from "@/src/framework/graphql/cart/types";
 import { writeCartQueryToCache } from "@/src/framework/graphql/writeCartQueryCache";
 
 type ValidCartItem = CartItem & {

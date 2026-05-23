@@ -3,7 +3,7 @@ import Link from "next/link";
 import { InformationBox } from "@/src/components/account/InformationBox";
 import { AddressStreetLines } from "@/src/components/account/address/shared/AddressStreetLines";
 import { getBillingAddress, getShippingAddress } from "@/src/utils/addressHelpers";
-import type { CustomerAddressNode } from "@/src/framework/graphql/queries/customerInfo";
+import type { CustomerAddressNode } from "@/src/framework/graphql/customer/types";
 
 const ACTION_LINK_CLASS =
   "action text-theme-primary flex no-wrap gap-2 items-baseline leading-[17px]";

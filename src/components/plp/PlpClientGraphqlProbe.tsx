@@ -9,7 +9,7 @@ import {
   toMagentoProductsByCategoryVariables,
   type MagentoProductsByCategoryVariables,
   type ProductListSortKey,
-} from "@/src/framework/graphql/queries/plpCatalogGraphql";
+} from "@/src/framework/graphql/plp/plpCatalogGraphql";
 
 function decodeCategoryUid(uid: string | null | undefined): string | null {
   const t = uid?.trim();

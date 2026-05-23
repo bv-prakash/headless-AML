@@ -1,4 +1,4 @@
-import type { ConfigurableCartOption } from "@/src/framework/graphql/mutations/cartMutations";
+import type { ConfigurableCartOption } from "@/src/framework/graphql/cart/types";
 
 type Props = {
   readonly options: readonly ConfigurableCartOption[];

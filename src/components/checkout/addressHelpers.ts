@@ -1,7 +1,7 @@
-import type { CartAddressInput } from "@/src/framework/graphql/mutations/checkoutMutations";
-import type { CreateCustomerAddressInput } from "@/src/framework/graphql/mutations/customerAddressMutations";
-import type { CustomerAddressNode } from "@/src/framework/graphql/queries/customerInfo";
-import type { DirectoryRegionNode } from "@/src/framework/graphql/queries/countryRegions";
+import type { CartAddressInput } from "@/src/framework/graphql/checkout/types";
+import type { CreateCustomerAddressInput } from "@/src/framework/graphql/customer-addresses/mutations/createCustomerAddress";
+import type { CustomerAddressNode } from "@/src/framework/graphql/customer/types";
+import type { DirectoryRegionNode } from "@/src/framework/graphql/customer-addresses/queries/getCountryRegions";
 import type { AddressFormState } from "@/src/components/checkout/addressTypes";
 
 /**

@@ -1,4 +1,4 @@
-import { getHomePage } from "@/src/framework/graphql/queries";
+import { getHomePage } from "@/src/framework/graphql/cms/queries/getHomePage";
 import HomePageShell from "@/src/components/pagebuilder/HomePageShell";
 import { decodePageBuilderHtmlBlocks } from "@/src/utils/pagebuilder/decodePageBuilderHtmlBlocks";
 import { sanitizeMagentoCmsHtml } from "@/src/utils/pagebuilder/sanitizeMagentoCmsHtml";

@@ -1,7 +1,7 @@
 import type {
   CustomerOrderShipment,
   CustomerOrderShipmentItem,
-} from "@/src/framework/graphql/queries/customerOrders";
+} from "@/src/framework/graphql/customer-orders/types";
 import {
   ORDER_DETAIL_TABLE_CELL,
   ORDER_DETAIL_TABLE_HEAD,

@@ -15,21 +15,25 @@ import {
   totalPagesFor,
 } from "@/src/utils/listPagination";
 import {
-  COMPANY_USERS_QUERY,
-  buildEmailToEntityIdMap,
-  userDisplayName,
-  type CompanyUserRow,
+  GET_COMPANY_USERS_QUERY,
   type CompanyUsersResponse,
   type CompanyUsersVariables,
-} from "@/src/framework/graphql/queries/companyUsers";
+} from "@/src/framework/graphql/company-users/queries/getCompanyUsers";
 import {
   DELETE_COMPANY_USER_MUTATION,
-  type CompanyUserStatus,
   type DeleteCompanyUserResponse,
-} from "@/src/framework/graphql/mutations/companyMutations";
+} from "@/src/framework/graphql/company-users/mutations/deleteCompanyUser";
+import type {
+  CompanyUserRow,
+  CompanyUserStatus,
+} from "@/src/framework/graphql/company-users/types";
+import {
+  buildEmailToEntityIdMap,
+  userDisplayName,
+} from "@/src/components/account/company-users/userUtils";
 import { CompanyUsersTable } from "@/src/components/account/company/CompanyUsersTable";
 import { CompanyUserModal } from "@/src/components/account/company/CompanyUserModal";
-import type { StructureNode } from "@/src/framework/graphql/queries/companyStructure";
+import type { StructureNode } from "@/src/framework/graphql/company-structure/types";
 
 type ViewMode = "active" | "inactive";
 
@@ -108,7 +112,7 @@ export default function CompanyUsersPageContent() {
   const { data, loading, error, refetch } = useQuery<
     CompanyUsersResponse,
     CompanyUsersVariables
-  >(COMPANY_USERS_QUERY, {
+  >(GET_COMPANY_USERS_QUERY, {
     variables,
     /** `no-cache` like the structure query: `Customer.id` comes back null,
      *  and Apollo's `keyFields: ["id"]` would otherwise merge sibling rows

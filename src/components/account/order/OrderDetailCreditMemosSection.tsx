@@ -1,5 +1,5 @@
-import type { CustomerOrderCreditMemo } from "@/src/framework/graphql/queries/customerOrders";
-import { formatOrderMoney } from "@/src/framework/graphql/queries/customerOrders";
+import type { CustomerOrderCreditMemo } from "@/src/framework/graphql/customer-orders/types";
+import { formatOrderMoney } from "@/src/components/account/customer-orders/orderFormat";
 import {
   ORDER_DETAIL_TABLE_CELL,
   ORDER_DETAIL_TABLE_HEAD,

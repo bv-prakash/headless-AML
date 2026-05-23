@@ -14,7 +14,7 @@ import { useClickOutside } from "@/src/hooks/useClickOutside";
 import {
   REVOKE_CUSTOMER_TOKEN_MUTATION,
   type RevokeCustomerTokenResponse,
-} from "@/src/framework/graphql/mutations/authMutations";
+} from "@/src/framework/graphql/auth/mutations/revokeCustomerToken";
 import { resetApolloStoreAfterAuthChange } from "@/src/framework/graphql/invalidateCustomerSession";
 
 export default function HeaderAuth() {

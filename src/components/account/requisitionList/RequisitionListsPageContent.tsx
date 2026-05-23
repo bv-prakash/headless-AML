@@ -12,7 +12,7 @@ import {
   CUSTOMER_REQUISITION_LISTS_QUERY,
   type CustomerRequisitionListsResponse,
   type CustomerRequisitionListsVariables,
-} from "@/src/framework/graphql/queries/requisitionLists";
+} from "@/src/framework/graphql/requisition-lists/queries/getCustomerRequisitionLists";
 import { getErrorMessage } from "@/src/utils/errors";
 import {
   buildListPaginationQueryString,

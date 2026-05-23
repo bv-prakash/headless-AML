@@ -19,7 +19,7 @@ import type { AddressFormState } from "@/src/components/checkout/addressTypes";
 import {
   COUNTRY_REGIONS_QUERY,
   type CountryRegionsResponse,
-} from "@/src/framework/graphql/queries/countryRegions";
+} from "@/src/framework/graphql/customer-addresses/queries/getCountryRegions";
 
 export type ShippingAddressFieldsHandle = {
   readonly triggerValidation: () => Promise<boolean>;

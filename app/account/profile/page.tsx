@@ -6,18 +6,18 @@ import { useQuery, useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { AccountPageTitle } from "@/src/components/account/AccountPageTitle";
 import PageLoader from "@/src/components/common/PageLoader";
-import { CUSTOMER_INFO_QUERY } from "@/src/framework/graphql/queries";
+import { CUSTOMER_INFO_QUERY } from "@/src/framework/graphql/customer/queries/getCustomerInfo";
 import {
 	UPDATE_CUSTOMER_PROFILE_MUTATION,
+	type UpdateCustomerProfileVariables,
+	type UpdateCustomerProfileResponse,
+} from "@/src/framework/graphql/auth/mutations/updateCustomerProfile";
+import {
 	CHANGE_CUSTOMER_PASSWORD_MUTATION,
-} from "@/src/framework/graphql/mutations/authMutations";
-import type { CustomerForCheckoutResponse } from "@/src/framework/graphql/queries/customerInfo";
-import type {
-	UpdateCustomerProfileVariables,
-	UpdateCustomerProfileResponse,
-	ChangeCustomerPasswordVariables,
-	ChangeCustomerPasswordResponse,
-} from "@/src/framework/graphql/mutations/authMutations";
+	type ChangeCustomerPasswordVariables,
+	type ChangeCustomerPasswordResponse,
+} from "@/src/framework/graphql/auth/mutations/changeCustomerPassword";
+import type { CustomerForCheckoutResponse } from "@/src/framework/graphql/customer/types";
 
 type ProfileFormData = {
 	firstname: string;

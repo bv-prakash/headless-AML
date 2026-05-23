@@ -2,13 +2,13 @@
 
 import React, { useMemo, memo } from "react";
 import Link from "next/link";
-import type { CustomerOrderListItem } from "@/src/framework/graphql/queries/customerOrders";
+import type { CustomerOrderListItem } from "@/src/framework/graphql/customer-orders/types";
 import {
   formatOrderDateShort,
   formatOrderMoney,
   orderDisplayId,
   orderPoNumber,
-} from "@/src/framework/graphql/queries/customerOrders";
+} from "@/src/components/account/customer-orders/orderFormat";
 
 type OrdersTableProps = {
   orders?: readonly CustomerOrderListItem[] | null;

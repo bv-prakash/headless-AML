@@ -5,11 +5,9 @@ import Link from "next/link";
 import { useQuery } from "@apollo/client/react";
 import { useAppSelector, useAppDispatch } from "@/src/store/hooks";
 import { setWishlistCount } from "@/src/store/slices/wishlistSlice";
-import {
-  CUSTOMER_WISHLIST_QUERY,
-  type CustomerWishlistResponse,
-  getActiveWishlist,
-} from "@/src/framework/graphql/mutations/wishlistMutations";
+import { CUSTOMER_WISHLIST_QUERY } from "@/src/framework/graphql/wishlist/queries/getCustomerWishlist";
+import type { CustomerWishlistResponse } from "@/src/framework/graphql/wishlist/types";
+import { getActiveWishlist } from "@/src/components/wishlist/wishlistHelpers";
 
 export default function WishlistIcon() {
   const dispatch = useAppDispatch();

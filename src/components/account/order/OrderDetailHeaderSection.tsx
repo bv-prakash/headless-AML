@@ -1,9 +1,9 @@
-import type { CustomerOrderDetail } from "@/src/framework/graphql/queries/customerOrders";
+import type { CustomerOrderDetail } from "@/src/framework/graphql/customer-orders/types";
 import {
   formatOrderDate,
   orderDisplayId,
   orderPoNumber,
-} from "@/src/framework/graphql/queries/customerOrders";
+} from "@/src/components/account/customer-orders/orderFormat";
 
 export type OrderDetailHeaderSectionProps = {
   readonly order: CustomerOrderDetail;

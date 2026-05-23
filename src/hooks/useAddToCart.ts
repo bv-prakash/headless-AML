@@ -17,7 +17,7 @@ import {
 import apolloClient from "@/src/framework/graphql/apolloClient";
 import { store } from "@/src/store/store";
 import { writeCartQueryToCache } from "@/src/framework/graphql/writeCartQueryCache";
-import type { CartData } from "@/src/framework/graphql/mutations/cartMutations";
+import type { CartData } from "@/src/framework/graphql/cart/types";
 
 type MutationFn = (cartId: string) => Promise<CartData | null | undefined>;
 const ADD_TO_CART_TIMEOUT_MS = 12_000;

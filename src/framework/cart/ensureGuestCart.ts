@@ -2,7 +2,7 @@ import apolloClient from "@/src/framework/graphql/apolloClient";
 import {
   CREATE_EMPTY_CART_MUTATION,
   type CreateEmptyCartResponse,
-} from "@/src/framework/graphql/mutations/cartMutations";
+} from "@/src/framework/graphql/cart/mutations/createEmptyCart";
 import { CART_ID_KEY } from "@/src/constants/storageKeys";
 import { getScopedStoredValue } from "@/src/utils/storage";
 

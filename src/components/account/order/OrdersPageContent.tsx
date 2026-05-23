@@ -7,12 +7,12 @@ import { AccountPageTitle } from "@/src/components/account/AccountPageTitle";
 import { OrdersTable } from "@/src/components/account/order/OrdersTable";
 import { AccountPager } from "@/src/components/common/AccountPager";
 import PageLoader from "@/src/components/common/PageLoader";
-import {
-  CUSTOMER_ORDERS_QUERY,
-  formatCustomerFirstLast,
-  type CustomerOrdersData,
-  type CustomerOrdersVariables,
-} from "@/src/framework/graphql/queries/customerOrders";
+import { CUSTOMER_ORDERS_QUERY } from "@/src/framework/graphql/customer-orders/queries/getCustomerOrders";
+import type {
+  CustomerOrdersData,
+  CustomerOrdersVariables,
+} from "@/src/framework/graphql/customer-orders/types";
+import { formatCustomerFirstLast } from "@/src/components/account/customer-orders/orderFormat";
 import { getErrorMessage } from "@/src/utils/errors";
 import {
   buildListPaginationQueryString,

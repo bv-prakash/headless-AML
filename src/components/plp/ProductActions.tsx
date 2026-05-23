@@ -9,12 +9,14 @@ import { useAddToCart } from "@/src/hooks/useAddToCart";
 import AddToCartActions from "@/src/components/common/AddToCartActions";
 import {
   ADD_TO_CART_MUTATION,
-  ADD_VIRTUAL_TO_CART_MUTATION,
   type AddToCartResponse,
   type AddToCartVariables,
+} from "@/src/framework/graphql/cart/mutations/addToCart";
+import {
+  ADD_VIRTUAL_TO_CART_MUTATION,
   type AddVirtualToCartResponse,
   type AddVirtualToCartVariables,
-} from "@/src/framework/graphql/mutations/cartMutations";
+} from "@/src/framework/graphql/cart/mutations/addVirtualToCart";
 
 const NEEDS_OPTIONS_TYPES = [
   "ConfigurableProduct",

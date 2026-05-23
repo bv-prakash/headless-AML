@@ -1,5 +1,7 @@
-import { getCategoryBreadcrumbs } from "@/src/framework/graphql/queries/breadcrumbs";
-import type { CategoryBreadcrumbsData } from "@/src/framework/graphql/queries/breadcrumbs";
+import {
+  getCategoryBreadcrumbs,
+  type CategoryBreadcrumbsData,
+} from "@/src/framework/graphql/category/queries/getCategoryBreadcrumbs";
 import { Breadcrumbs } from "@/src/components/common/Breadcrumbs";
 import type { BreadcrumbItem } from "@/src/components/common/Breadcrumbs";
 import { plpHrefFromMagentoCategoryUrlPath } from "@/src/utils/plpPaths";

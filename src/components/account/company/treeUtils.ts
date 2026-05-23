@@ -1,4 +1,4 @@
-import type { StructureNode } from "@/src/framework/graphql/queries/companyStructure";
+import type { StructureNode } from "@/src/framework/graphql/company-structure/types";
 
 /** Depth-first walk of a forest. The visitor sees every node exactly once,
  *  along with its already-resolved parent. */

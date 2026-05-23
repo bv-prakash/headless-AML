@@ -1,7 +1,7 @@
 import React, { useMemo, memo } from "react";
 import Link from "next/link";
 import { AddressStreetLines } from "@/src/components/account/address/shared/AddressStreetLines";
-import type { CustomerAddressNode } from "@/src/framework/graphql/queries/customerInfo";
+import type { CustomerAddressNode } from "@/src/framework/graphql/customer/types";
 
 type AddressTableProps = {
   addresses?: readonly CustomerAddressNode[] | null;

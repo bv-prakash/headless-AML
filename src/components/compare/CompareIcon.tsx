@@ -9,7 +9,7 @@ import {
   COMPARE_LIST_QUERY,
   type CompareListQueryResponse,
   type CompareListQueryVariables,
-} from "@/src/framework/graphql/mutations/compareMutations";
+} from "@/src/framework/graphql/compare/queries/getCompareList";
 
 export default function CompareIcon() {
   const dispatch = useAppDispatch();

@@ -11,7 +11,7 @@ import {
   SEARCH_RESULTS_PAGE_SIZE,
   type ProductSearchResponse,
   type ProductSearchVariables,
-} from "@/src/framework/graphql/queries/searchProducts";
+} from "@/src/framework/graphql/search/queries/productSearch";
 
 const MIN_CHARS = 2;
 const DEBOUNCE_MS = 350;

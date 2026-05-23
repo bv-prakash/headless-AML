@@ -7,18 +7,20 @@ import { AccountPageTitle } from "@/src/components/account/AccountPageTitle";
 import PageLoader from "@/src/components/common/PageLoader";
 import { getErrorMessage } from "@/src/utils/errors";
 import {
-  COMPANY_STRUCTURE_QUERY,
-  buildStructureTree,
-  toMagentoUid,
+  GET_COMPANY_STRUCTURE_QUERY,
   type CompanyStructureResponse,
-  type StructureNode,
-} from "@/src/framework/graphql/queries/companyStructure";
+} from "@/src/framework/graphql/company-structure/queries/getCompanyStructure";
+import type { StructureNode } from "@/src/framework/graphql/company-structure/types";
+import { buildStructureTree } from "@/src/components/account/company-structure/structureTree";
+import { toMagentoUid } from "@/src/framework/graphql/utils/magentoIds";
 import {
   DELETE_COMPANY_TEAM_MUTATION,
-  DELETE_COMPANY_USER_MUTATION,
   type DeleteCompanyTeamResponse,
+} from "@/src/framework/graphql/company-structure/mutations/deleteCompanyTeam";
+import {
+  DELETE_COMPANY_USER_MUTATION,
   type DeleteCompanyUserResponse,
-} from "@/src/framework/graphql/mutations/companyMutations";
+} from "@/src/framework/graphql/company-users/mutations/deleteCompanyUser";
 import { CompanyStructureTree } from "@/src/components/account/company/CompanyStructureTree";
 import { CompanyStructureToolbar } from "@/src/components/account/company/CompanyStructureToolbar";
 import { CompanyTeamModal } from "@/src/components/account/company/CompanyTeamModal";
@@ -68,7 +70,7 @@ function resolveCreateTargetId(
 
 export default function CompanyStructurePageContent() {
   const { data, loading, error, refetch } = useQuery<CompanyStructureResponse>(
-    COMPANY_STRUCTURE_QUERY,
+    GET_COMPANY_STRUCTURE_QUERY,
     {
       /** `no-cache`: Magento returns `Customer.id = null` for every user
        *  in the structure, and our Apollo `Customer: { keyFields: ["id"] }`

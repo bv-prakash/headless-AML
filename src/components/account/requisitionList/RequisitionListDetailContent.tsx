@@ -15,30 +15,40 @@ import { RenameRequisitionListModal } from "@/src/components/account/requisition
 import { RequisitionListItemsTable } from "@/src/components/account/requisitionList/RequisitionListItemsTable";
 import {
   CUSTOMER_REQUISITION_LIST_DETAIL_QUERY,
-  CUSTOMER_REQUISITION_LISTS_PICKER_QUERY,
-  formatRequisitionListActivity,
   type CustomerRequisitionListDetailResponse,
   type CustomerRequisitionListDetailVariables,
+} from "@/src/framework/graphql/requisition-lists/queries/getCustomerRequisitionListDetail";
+import {
+  CUSTOMER_REQUISITION_LISTS_PICKER_QUERY,
   type CustomerRequisitionListsPickerResponse,
-  type RequisitionListItem,
-} from "@/src/framework/graphql/queries/requisitionLists";
+} from "@/src/framework/graphql/requisition-lists/queries/getCustomerRequisitionListsPicker";
+import type { RequisitionListItem } from "@/src/framework/graphql/requisition-lists/types";
+import { formatRequisitionListActivity } from "@/src/components/account/requisitionList/requisitionListUtils";
 import {
   COPY_ITEMS_BETWEEN_REQUISITION_LISTS_MUTATION,
-  DELETE_REQUISITION_LIST_ITEMS_MUTATION,
-  DELETE_REQUISITION_LIST_MUTATION,
-  MOVE_ITEMS_BETWEEN_REQUISITION_LISTS_MUTATION,
-  UPDATE_REQUISITION_LIST_ITEMS_MUTATION,
   type CopyItemsBetweenRequisitionListsResponse,
   type CopyItemsBetweenRequisitionListsVariables,
+} from "@/src/framework/graphql/requisition-lists/mutations/copyItemsBetweenRequisitionLists";
+import {
+  DELETE_REQUISITION_LIST_ITEMS_MUTATION,
   type DeleteRequisitionListItemsResponse,
   type DeleteRequisitionListItemsVariables,
+} from "@/src/framework/graphql/requisition-lists/mutations/deleteRequisitionListItems";
+import {
+  DELETE_REQUISITION_LIST_MUTATION,
   type DeleteRequisitionListResponse,
   type DeleteRequisitionListVariables,
+} from "@/src/framework/graphql/requisition-lists/mutations/deleteRequisitionList";
+import {
+  MOVE_ITEMS_BETWEEN_REQUISITION_LISTS_MUTATION,
   type MoveItemsBetweenRequisitionListsResponse,
   type MoveItemsBetweenRequisitionListsVariables,
+} from "@/src/framework/graphql/requisition-lists/mutations/moveItemsBetweenRequisitionLists";
+import {
+  UPDATE_REQUISITION_LIST_ITEMS_MUTATION,
   type UpdateRequisitionListItemsResponse,
   type UpdateRequisitionListItemsVariables,
-} from "@/src/framework/graphql/mutations/requisitionListMutations";
+} from "@/src/framework/graphql/requisition-lists/mutations/updateRequisitionListItems";
 import { getErrorMessage } from "@/src/utils/errors";
 
 type RequisitionListDetailContentProps = {

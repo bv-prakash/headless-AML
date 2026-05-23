@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useClickOutside } from "@/src/hooks/useClickOutside";
-import type { RequisitionListPickerItem } from "@/src/framework/graphql/queries/requisitionLists";
+import type { RequisitionListPickerItem } from "@/src/framework/graphql/requisition-lists/types";
 
 export type MoveCopyMode = "move" | "copy";
 

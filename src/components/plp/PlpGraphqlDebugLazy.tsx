@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { ProductListSortKey } from "@/src/framework/graphql/queries/plpCatalogGraphql";
+import type { ProductListSortKey } from "@/src/framework/graphql/plp/plpCatalogGraphql";
 
 const PlpClientGraphqlProbe = dynamic(
   () => import("./PlpClientGraphqlProbe"),

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback, useMemo } from "react";
 import Script from "next/script";
-import type { MediaGalleryItem } from "@/src/framework/graphql/queries/productDetail";
+import type { MediaGalleryItem } from "@/src/framework/graphql/pdp/types";
 import { pdpZoomOptionsString } from "@/src/config/magicZoom";
 
 type ProductGalleryProps = {

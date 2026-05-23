@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import CompanyRolesPageContent from "@/src/components/account/company/CompanyRolesPageContent";
+import RolesListPage from "@/src/components/account/roles-and-permissions/RolesListPage";
 import PageLoader from "@/src/components/common/PageLoader";
 
 export default function MyAccountRolesPage() {
@@ -12,7 +12,7 @@ export default function MyAccountRolesPage() {
         />
       }
     >
-      <CompanyRolesPageContent />
+      <RolesListPage />
     </Suspense>
   );
 }

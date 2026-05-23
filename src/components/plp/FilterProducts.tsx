@@ -11,7 +11,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   FACET_PARAM_PREFIX,
   type ProductAggregation,
-} from "@/src/framework/graphql/queries/products";
+} from "@/src/framework/graphql/plp/queries/getProductsByCategory";
 import { useLanguageTranslation } from "@/src/config/language";
 import { useAppSelector } from "@/src/store/hooks";
 import { selectStoreViewCode } from "@/src/store/selectors";

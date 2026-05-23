@@ -20,10 +20,10 @@ import {
   type AddBundleToCartResponse,
   type AddBundleToCartVariables,
   type BundleOptionInput,
-} from "@/src/framework/graphql/mutations/cartMutations";
-import type { BundleItem } from "@/src/framework/graphql/queries/productDetail";
+} from "@/src/framework/graphql/cart/mutations/addBundleToCart";
+import type { BundleItem } from "@/src/framework/graphql/pdp/types";
 import { encodeOptionUid } from "@/src/utils/magentoOptionUid";
-import type { RequisitionListItemsInput } from "@/src/framework/graphql/mutations/requisitionListMutations";
+import type { RequisitionListItemsInput } from "@/src/framework/graphql/requisition-lists/mutations/addProductsToRequisitionList";
 
 type BundleOptionsProps = {
   readonly sku: string;

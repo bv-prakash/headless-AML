@@ -13,14 +13,14 @@ import {
   REORDER_ITEMS_MUTATION,
   type ReorderItemsResponse,
   type ReorderItemsVariables,
-} from "@/src/framework/graphql/mutations/orderMutations";
-import {
-  CUSTOMER_ORDER_DETAIL_QUERY,
-  type CustomerOrderDetail,
-  type CustomerOrderDetailData,
-  type CustomerOrderDetailVariables,
-  formatCustomerFirstLast,
-} from "@/src/framework/graphql/queries/customerOrders";
+} from "@/src/framework/graphql/customer-orders/mutations/reorderItems";
+import { CUSTOMER_ORDER_DETAIL_QUERY } from "@/src/framework/graphql/customer-orders/queries/getCustomerOrderDetail";
+import type {
+  CustomerOrderDetail,
+  CustomerOrderDetailData,
+  CustomerOrderDetailVariables,
+} from "@/src/framework/graphql/customer-orders/types";
+import { formatCustomerFirstLast } from "@/src/components/account/customer-orders/orderFormat";
 import PageLoader from "@/src/components/common/PageLoader";
 import { OrderInformationBlock } from "@/src/components/account/order/OrderInformationBlock";
 import { OrderDetailCreditMemosSection } from "@/src/components/account/order/OrderDetailCreditMemosSection";

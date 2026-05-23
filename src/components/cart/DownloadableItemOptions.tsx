@@ -1,4 +1,4 @@
-import type { DownloadableCartLink } from "@/src/framework/graphql/mutations/cartMutations";
+import type { DownloadableCartLink } from "@/src/framework/graphql/cart/types";
 
 type Props = {
   readonly links: readonly DownloadableCartLink[];

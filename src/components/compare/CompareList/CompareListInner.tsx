@@ -11,12 +11,14 @@ import { stripHtml } from "@/src/utils/html";
 import { formatPrice } from "@/src/utils/format";
 import {
   COMPARE_LIST_QUERY,
-  REMOVE_FROM_COMPARE_LIST_MUTATION,
   type CompareListQueryResponse,
   type CompareListQueryVariables,
+} from "@/src/framework/graphql/compare/queries/getCompareList";
+import {
+  REMOVE_FROM_COMPARE_LIST_MUTATION,
   type RemoveFromCompareListResponse,
   type RemoveFromCompareListVariables,
-} from "@/src/framework/graphql/mutations/compareMutations";
+} from "@/src/framework/graphql/compare/mutations/removeFromCompareList";
 import { CompareListSkeleton } from "./CompareListSkeleton";
 
 export function CompareListInner() {

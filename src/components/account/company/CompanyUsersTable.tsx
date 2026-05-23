@@ -1,10 +1,8 @@
 "use client";
 
 import { memo } from "react";
-import {
-  userDisplayName,
-  type CompanyUserRow,
-} from "@/src/framework/graphql/queries/companyUsers";
+import type { CompanyUserRow } from "@/src/framework/graphql/company-users/types";
+import { userDisplayName } from "@/src/components/account/company-users/userUtils";
 
 type Props = {
   readonly rows: ReadonlyArray<CompanyUserRow>;

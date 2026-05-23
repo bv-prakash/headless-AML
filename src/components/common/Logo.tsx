@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { getStoreLogo } from "@/src/framework/graphql";
+import { getStoreLogo } from "@/src/framework/graphql/store/queries/getStoreLogo";
 import Link from "next/link";
 
 type LogoProps = {

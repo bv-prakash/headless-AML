@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import CompanyRoleFormPageContent from "@/src/components/account/company/CompanyRoleFormPageContent";
+import RoleFormPage from "@/src/components/account/roles-and-permissions/RoleFormPage";
 import PageLoader from "@/src/components/common/PageLoader";
 
 export default function MyAccountAddRolePage() {
@@ -12,7 +12,7 @@ export default function MyAccountAddRolePage() {
         />
       }
     >
-      <CompanyRoleFormPageContent mode="create" />
+      <RoleFormPage mode="create" />
     </Suspense>
   );
 }

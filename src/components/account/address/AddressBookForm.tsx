@@ -17,18 +17,20 @@ import {
 import { emptyAddress, type AddressFormState } from "@/src/components/checkout/addressTypes";
 import {
   CREATE_CUSTOMER_ADDRESS_MUTATION,
-  UPDATE_CUSTOMER_ADDRESS_MUTATION,
   type CreateCustomerAddressResponse,
   type CreateCustomerAddressVariables,
+} from "@/src/framework/graphql/customer-addresses/mutations/createCustomerAddress";
+import {
+  UPDATE_CUSTOMER_ADDRESS_MUTATION,
   type UpdateCustomerAddressResponse,
   type UpdateCustomerAddressVariables,
-} from "@/src/framework/graphql/mutations/customerAddressMutations";
-import { CUSTOMER_INFO_QUERY } from "@/src/framework/graphql/queries";
-import type { CustomerForCheckoutResponse } from "@/src/framework/graphql/queries/customerInfo";
+} from "@/src/framework/graphql/customer-addresses/mutations/updateCustomerAddress";
+import { CUSTOMER_INFO_QUERY } from "@/src/framework/graphql/customer/queries/getCustomerInfo";
+import type { CustomerForCheckoutResponse } from "@/src/framework/graphql/customer/types";
 import {
   COUNTRY_REGIONS_QUERY,
   type CountryRegionsResponse,
-} from "@/src/framework/graphql/queries/countryRegions";
+} from "@/src/framework/graphql/customer-addresses/queries/getCountryRegions";
 import { getErrorMessage } from "@/src/utils/errors";
 
 const BTN_PRIMARY =

@@ -7,7 +7,7 @@ import {
   UPDATE_REQUISITION_LIST_MUTATION,
   type UpdateRequisitionListResponse,
   type UpdateRequisitionListVariables,
-} from "@/src/framework/graphql/mutations/requisitionListMutations";
+} from "@/src/framework/graphql/requisition-lists/mutations/updateRequisitionList";
 import { getErrorMessage } from "@/src/utils/errors";
 
 type RenameRequisitionListModalProps = {

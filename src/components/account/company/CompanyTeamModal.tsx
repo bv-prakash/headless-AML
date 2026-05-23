@@ -6,17 +6,19 @@ import { toast } from "react-toastify";
 import { getErrorMessage } from "@/src/utils/errors";
 import {
   CREATE_COMPANY_TEAM_MUTATION,
-  UPDATE_COMPANY_TEAM_MUTATION,
   type CreateCompanyTeamInput,
   type CreateCompanyTeamResponse,
+} from "@/src/framework/graphql/company-structure/mutations/createCompanyTeam";
+import {
+  UPDATE_COMPANY_TEAM_MUTATION,
   type UpdateCompanyTeamInput,
   type UpdateCompanyTeamResponse,
-} from "@/src/framework/graphql/mutations/companyMutations";
-import {
-  toMagentoUid,
-  type CompanyStructureTeamEntity,
-  type StructureNode,
-} from "@/src/framework/graphql/queries/companyStructure";
+} from "@/src/framework/graphql/company-structure/mutations/updateCompanyTeam";
+import type {
+  CompanyStructureTeamEntity,
+  StructureNode,
+} from "@/src/framework/graphql/company-structure/types";
+import { toMagentoUid } from "@/src/framework/graphql/utils/magentoIds";
 import { FormModal } from "@/src/components/account/company/FormModal";
 import { TextAreaField, TextField } from "@/src/components/account/company/FormFields";
 

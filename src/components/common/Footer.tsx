@@ -1,5 +1,5 @@
-import { getCmsBlocksByIdentifiers } from "@/src/framework/graphql/queries/cmsBlocks";
-import { getStoreConfig } from "@/src/framework/graphql/queries/storeConfig";
+import { getCmsBlocksByIdentifiers } from "@/src/framework/graphql/cms/queries/getCmsBlocks";
+import { getStoreConfig } from "@/src/framework/graphql/store/queries/getStoreConfig";
 import { getServerStoreViewCode } from "@/src/framework/store/getActiveStoreCode";
 import { decodeHtmlEntities } from "@/src/utils/decodeHtmlEntities";
 import { sanitizeMagentoCmsHtml } from "@/src/utils/pagebuilder/sanitizeMagentoCmsHtml";

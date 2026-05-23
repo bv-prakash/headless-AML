@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import {
-  getProductByUrlKey,
-  type ProductDetail,
-  type BundleItem,
-  type GroupedProductItem,
-} from "@/src/framework/graphql/queries/productDetail";
+import { getProductByUrlKey } from "@/src/framework/graphql/pdp/queries/getProductByUrlKey";
+import type {
+  ProductDetail,
+  BundleItem,
+  GroupedProductItem,
+} from "@/src/framework/graphql/pdp/types";
 import {
   pickSearchParamPositiveInt,
   pickSearchParamString,
@@ -22,7 +22,7 @@ import BundleOptions from "@/src/components/pdp/BundleOptions";
 import GroupedProductTable from "@/src/components/pdp/GroupedProductTable";
 import DownloadableLinks from "@/src/components/pdp/DownloadableLinks";
 import ServerBreadcrumbs from "@/src/components/plp/ServerBreadcrumbs";
-import { getCategoryBreadcrumbs } from "@/src/framework/graphql/queries/breadcrumbs";
+import { getCategoryBreadcrumbs } from "@/src/framework/graphql/category/queries/getCategoryBreadcrumbs";
 import { getServerStoreViewCode } from "@/src/framework/store/getActiveStoreCode";
 import { getFallbackStoreViewCode } from "@/src/config/storeViews";
 

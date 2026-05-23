@@ -1,4 +1,4 @@
-import { getCategoryTreeForNav } from "@/src/framework/graphql/queries/categoryList";
+import { getCategoryTreeForNav } from "@/src/framework/graphql/category/queries/getCategoryList";
 import { getServerStoreViewCode } from "@/src/framework/store/getActiveStoreCode";
 import CategoryNavClient from "./CategoryNavClient";
 import Link from "next/link";

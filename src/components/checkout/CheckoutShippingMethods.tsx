@@ -1,6 +1,6 @@
 "use client";
 
-import type { ShippingMethodOnAddress } from "@/src/framework/graphql/mutations/checkoutMutations";
+import type { ShippingMethodOnAddress } from "@/src/framework/graphql/checkout/types";
 import {
   shippingMethodKey,
   shippingMethodLabel,

@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useMemo, type CSSProperties, type ReactNode } from "react";
-import type { StructureNode } from "@/src/framework/graphql/queries/companyStructure";
+import type { StructureNode } from "@/src/framework/graphql/company-structure/types";
 import { Chevron, NodeIcon } from "@/src/components/account/company/treeIcons";
 import { NodeDetailsTooltip } from "@/src/components/account/company/NodeDetailsTooltip";
 

@@ -3,10 +3,8 @@
 import { useState } from "react";
 import FilterProducts from "./FilterProducts";
 import PLPMainColumn from "./PLPMainColumn";
-import type {
-  ProductAggregation,
-  ProductListSortKey,
-} from "@/src/framework/graphql/queries/products";
+import type { ProductAggregation } from "@/src/framework/graphql/plp/queries/getProductsByCategory";
+import type { ProductListSortKey } from "@/src/framework/graphql/plp/plpCatalogGraphql";
 import type { PLPContentProduct } from "./types";
 
 type PLPShopLayoutProps = {

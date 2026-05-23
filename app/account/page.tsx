@@ -7,8 +7,8 @@ import { InformationBox } from "@/src/components/account/InformationBox";
 import { AddressBook } from "@/src/components/account/address/AddressBook";
 import { DashboardRecentOrders } from "@/src/components/account/DashboardRecentOrders";
 import PageLoader from "@/src/components/common/PageLoader";
-import { CUSTOMER_INFO_QUERY } from "@/src/framework/graphql/queries";
-import type { CustomerForCheckoutResponse } from "@/src/framework/graphql/queries/customerInfo";
+import { CUSTOMER_INFO_QUERY } from "@/src/framework/graphql/customer/queries/getCustomerInfo";
+import type { CustomerForCheckoutResponse } from "@/src/framework/graphql/customer/types";
 
 export default function MyAccountDashboardPage() {
 	const { data, loading } = useQuery<CustomerForCheckoutResponse>(CUSTOMER_INFO_QUERY);

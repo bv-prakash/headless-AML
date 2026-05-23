@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { CUSTOMER_TOKEN_KEY } from "@/src/constants/storageKeys";
 import { getStoredValue } from "@/src/utils/storage";
-import type { CompanyAdvancedSettings } from "@/src/framework/graphql/queries/companyProfile";
+import type { CompanyAdvancedSettings } from "@/src/framework/graphql/company-profile/types";
 
 type State = {
   readonly data: CompanyAdvancedSettings | null;

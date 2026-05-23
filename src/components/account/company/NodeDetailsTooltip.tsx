@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import type { StructureNode } from "@/src/framework/graphql/queries/companyStructure";
+import type { StructureNode } from "@/src/framework/graphql/company-structure/types";
 
 type DetailRow = { readonly label: string; readonly value: string };
 

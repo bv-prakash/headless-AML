@@ -2,10 +2,8 @@
 
 import { memo } from "react";
 import Link from "next/link";
-import {
-  formatRequisitionListActivity,
-  type RequisitionListRow,
-} from "@/src/framework/graphql/queries/requisitionLists";
+import type { RequisitionListRow } from "@/src/framework/graphql/requisition-lists/types";
+import { formatRequisitionListActivity } from "@/src/components/account/requisitionList/requisitionListUtils";
 
 type RequisitionListsTableProps = {
   readonly rows?: ReadonlyArray<RequisitionListRow> | null;

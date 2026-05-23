@@ -3,10 +3,8 @@
 import { memo, useId } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  formatRequisitionListPrice,
-  type RequisitionListItem,
-} from "@/src/framework/graphql/queries/requisitionLists";
+import type { RequisitionListItem } from "@/src/framework/graphql/requisition-lists/types";
+import { formatRequisitionListPrice } from "@/src/components/account/requisitionList/requisitionListUtils";
 
 type RequisitionListItemsTableProps = {
   readonly items?: ReadonlyArray<RequisitionListItem> | null;

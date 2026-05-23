@@ -3,7 +3,7 @@
 import PLPProductCard from "./PLPProductCard";
 import SortingProduct from "./SortingProduct";
 import Pagination from "./Pagination";
-import type { ProductListSortKey } from "@/src/framework/graphql/queries/products";
+import type { ProductListSortKey } from "@/src/framework/graphql/plp/plpCatalogGraphql";
 import type { PLPContentProduct } from "./types";
 
 type PLPMainColumnProps = {

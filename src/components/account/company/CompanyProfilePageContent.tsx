@@ -6,12 +6,14 @@ import { InformationBox } from "@/src/components/account/InformationBox";
 import PageLoader from "@/src/components/common/PageLoader";
 import { getErrorMessage } from "@/src/utils/errors";
 import {
-  COMPANY_PROFILE_QUERY,
+  GET_COMPANY_PROFILE_QUERY,
+  type CompanyProfileResponse,
+} from "@/src/framework/graphql/company-profile/queries/getCompanyProfile";
+import {
   formatPersonName,
   paymentMethodLabel,
   shippingMethodLabel,
-  type CompanyProfileResponse,
-} from "@/src/framework/graphql/queries/companyProfile";
+} from "@/src/components/account/company-profile/profileLabels";
 import { useCompanyShippingMethods } from "@/src/hooks/useCompanyShippingMethods";
 
 /** Block heading reused across the account section (Dashboard, Address Book, etc.). */
@@ -40,7 +42,7 @@ function InfoRow({
 
 export default function CompanyProfilePageContent() {
   const { data, loading, error, refetch } = useQuery<CompanyProfileResponse>(
-    COMPANY_PROFILE_QUERY,
+    GET_COMPANY_PROFILE_QUERY,
     { fetchPolicy: "cache-and-network" },
   );
 

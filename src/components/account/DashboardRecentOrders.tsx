@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { useQuery } from "@apollo/client/react";
+import { CUSTOMER_DASHBOARD_RECENT_ORDERS_QUERY } from "@/src/framework/graphql/customer-orders/queries/getDashboardRecentOrders";
+import type {
+  CustomerDashboardRecentOrderItem,
+  CustomerDashboardRecentOrdersData,
+} from "@/src/framework/graphql/customer-orders/types";
 import {
-  CUSTOMER_DASHBOARD_RECENT_ORDERS_QUERY,
-  type CustomerDashboardRecentOrderItem,
-  type CustomerDashboardRecentOrdersData,
   formatOrderDateShort,
   formatOrderMoney,
   orderDisplayId,
   orderRowCreatedByDisplay,
-} from "@/src/framework/graphql/queries/customerOrders";
+} from "@/src/components/account/customer-orders/orderFormat";
 import { getErrorMessage } from "@/src/utils/errors";
 
 const TH = "px-4 py-3 text-left font-bold uppercase bg-f0f0f0 border-b-2 border-aaa";

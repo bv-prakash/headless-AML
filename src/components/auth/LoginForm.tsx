@@ -18,7 +18,7 @@ import {
   GENERATE_CUSTOMER_TOKEN_MUTATION,
   type GenerateCustomerTokenResponse,
   type GenerateCustomerTokenVariables,
-} from "@/src/framework/graphql/mutations/authMutations";
+} from "@/src/framework/graphql/auth/mutations/generateCustomerToken";
 import { safeRedirectPath } from "@/src/utils/safeRedirectPath";
 import {
   STORE_VIEW_OPTIONS,

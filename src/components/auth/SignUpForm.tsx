@@ -16,12 +16,14 @@ import { CART_ID_KEY } from "@/src/constants/storageKeys";
 import { getScopedStoredValue } from "@/src/utils/storage";
 import {
   CREATE_CUSTOMER_MUTATION,
-  GENERATE_CUSTOMER_TOKEN_MUTATION,
   type CreateCustomerResponse,
   type CreateCustomerVariables,
+} from "@/src/framework/graphql/auth/mutations/createCustomer";
+import {
+  GENERATE_CUSTOMER_TOKEN_MUTATION,
   type GenerateCustomerTokenResponse,
   type GenerateCustomerTokenVariables,
-} from "@/src/framework/graphql/mutations/authMutations";
+} from "@/src/framework/graphql/auth/mutations/generateCustomerToken";
 const PASSWORD_MIN_LENGTH = 8;
 
 type SignUpFormValues = {

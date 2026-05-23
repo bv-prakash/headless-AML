@@ -1,5 +1,5 @@
-import type { CustomerOrderDetail } from "@/src/framework/graphql/queries/customerOrders";
-import { formatAddressLines } from "@/src/framework/graphql/queries/customerOrders";
+import type { CustomerOrderDetail } from "@/src/framework/graphql/customer-orders/types";
+import { formatAddressLines } from "@/src/components/account/customer-orders/orderFormat";
 
 const BLOCK_TITLE =
   "block-title font-normal text-black text-lg leading-[23px] md:text-2xl md:leading-[30px] mb-[15px] md:mb-5";

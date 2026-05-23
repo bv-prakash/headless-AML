@@ -16,17 +16,20 @@ import BundleItemOptions from "@/src/components/cart/BundleItemOptions";
 import DownloadableItemOptions from "@/src/components/cart/DownloadableItemOptions";
 import {
   CART_QUERY,
-  REMOVE_CART_ITEM_MUTATION,
-  UPDATE_CART_ITEM_MUTATION,
-  type CartItem,
   type CartQueryResponse,
   type CartQueryVariables,
+} from "@/src/framework/graphql/cart/queries/getCart";
+import {
+  REMOVE_CART_ITEM_MUTATION,
   type RemoveCartItemResponse,
   type RemoveCartItemVariables,
+} from "@/src/framework/graphql/cart/mutations/removeCartItem";
+import {
+  UPDATE_CART_ITEM_MUTATION,
   type UpdateCartItemResponse,
   type UpdateCartItemVariables,
-  type CartData,
-} from "@/src/framework/graphql/mutations/cartMutations";
+} from "@/src/framework/graphql/cart/mutations/updateCartItem";
+import type { CartItem, CartData } from "@/src/framework/graphql/cart/types";
 import { buildProductEditHref } from "@/src/utils/params";
 import { writeCartQueryToCache } from "@/src/framework/graphql/writeCartQueryCache";
 

@@ -3,7 +3,7 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { ProductListSortKey } from "@/src/framework/graphql/queries/products";
+import type { ProductListSortKey } from "@/src/framework/graphql/plp/plpCatalogGraphql";
 import { useLanguageTranslation } from "@/src/config/language";
 
 export type SortOption = {

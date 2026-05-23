@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import CompanyRoleFormPageContent from "@/src/components/account/company/CompanyRoleFormPageContent";
+import RoleFormPage from "@/src/components/account/roles-and-permissions/RoleFormPage";
 
 export default function MyAccountEditRolePage() {
   const params = useParams();
@@ -20,5 +20,5 @@ export default function MyAccountEditRolePage() {
     );
   }
 
-  return <CompanyRoleFormPageContent mode="edit" roleId={roleId} />;
+  return <RoleFormPage mode="edit" roleId={roleId} />;
 }

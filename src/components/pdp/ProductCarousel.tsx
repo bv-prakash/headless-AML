@@ -8,7 +8,7 @@ import "swiper/css/navigation";
 
 import PLPProductCard from "@/src/components/plp/PLPProductCard";
 import { stripHtml } from "@/src/utils/html";
-import type { RelatedProduct } from "@/src/framework/graphql/queries/productDetail";
+import type { RelatedProduct } from "@/src/framework/graphql/pdp/types";
 
 type ProductCarouselProps = {
   readonly title: string;

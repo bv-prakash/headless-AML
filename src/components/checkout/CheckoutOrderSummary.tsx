@@ -3,9 +3,8 @@
 import { useId, useMemo, useState } from "react";
 import { formatPrice } from "@/src/utils/format";
 import CheckoutCartLineItem from "@/src/components/checkout/CheckoutCartLineItem";
-import type { CartData } from "@/src/framework/graphql/mutations/cartMutations";
-import type { CartItem } from "@/src/framework/graphql/mutations/cartMutations";
-import type { MoneyAmount } from "@/src/framework/graphql/mutations/checkoutMutations";
+import type { CartData, CartItem } from "@/src/framework/graphql/cart/types";
+import type { MoneyAmount } from "@/src/framework/graphql/checkout/types";
 
 type ValidCartItem = CartItem & {
   product: NonNullable<CartItem["product"]>;

@@ -1,11 +1,9 @@
 // import Breadcrumbs from "../common/Breadcrumbs";
 import PLPShopLayout from "./PLPShopLayout";
-import type { CategoryBreadcrumbsData } from "@/src/framework/graphql/queries/breadcrumbs";
+import type { CategoryBreadcrumbsData } from "@/src/framework/graphql/category/queries/getCategoryBreadcrumbs";
 import { stripHtml } from "@/src/utils/html";
-import type {
-  ProductAggregation,
-  ProductListSortKey,
-} from "@/src/framework/graphql/queries/products";
+import type { ProductAggregation } from "@/src/framework/graphql/plp/queries/getProductsByCategory";
+import type { ProductListSortKey } from "@/src/framework/graphql/plp/plpCatalogGraphql";
 import type { PLPContentProduct } from "./types";
 import PlpGraphqlDebugLazy from "./PlpGraphqlDebugLazy";
 import ServerBreadcrumbs from "./ServerBreadcrumbs";

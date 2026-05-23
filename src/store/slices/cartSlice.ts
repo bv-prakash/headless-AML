@@ -5,7 +5,7 @@ import {
   setScopedStoredValue,
   removeScopedStoredValue,
 } from "@/src/utils/storage";
-import type { CartData } from "@/src/framework/graphql/mutations/cartMutations";
+import type { CartData } from "@/src/framework/graphql/cart/types";
 
 type CartState = {
   cartId: string | null;

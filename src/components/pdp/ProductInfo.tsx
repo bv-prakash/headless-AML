@@ -1,5 +1,5 @@
 import { formatPrice } from "@/src/utils/format";
-import type { ProductDetail } from "@/src/framework/graphql/queries/productDetail";
+import type { ProductDetail } from "@/src/framework/graphql/pdp/types";
 import { decodeHtmlEntities } from "@/src/utils/decodeHtmlEntities";
 import { hasVisibleContent } from "@/src/utils/html";
 import { sanitizeMagentoCmsHtml } from "@/src/utils/pagebuilder/sanitizeMagentoCmsHtml";

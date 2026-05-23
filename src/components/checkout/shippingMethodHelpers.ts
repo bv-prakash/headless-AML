@@ -1,5 +1,5 @@
 import { formatPrice } from "@/src/utils/format";
-import type { ShippingMethodOnAddress } from "@/src/framework/graphql/mutations/checkoutMutations";
+import type { ShippingMethodOnAddress } from "@/src/framework/graphql/checkout/types";
 
 /** Stable key for carrier + method (codes are delimiter-safe in Magento). */
 export function shippingMethodKey(m: ShippingMethodOnAddress): string {

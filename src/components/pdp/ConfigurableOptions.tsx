@@ -20,11 +20,11 @@ import {
   ADD_CONFIGURABLE_TO_CART_MUTATION,
   type AddConfigurableToCartResponse,
   type AddConfigurableToCartVariables,
-} from "@/src/framework/graphql/mutations/cartMutations";
+} from "@/src/framework/graphql/cart/mutations/addConfigurableToCart";
 import type {
   ConfigurableOption,
   ConfigurableVariant,
-} from "@/src/framework/graphql/queries/productDetail";
+} from "@/src/framework/graphql/pdp/types";
 import {
   deriveSelectionsFromConfigurableStoreRow,
   findConfigurableVariantBySku,

@@ -1,14 +1,14 @@
 import { notFound } from "next/navigation";
 import PLPContent from "@/src/components/plp/PLPContent";
-import { resolveCategoryFromSlug } from "@/src/framework/graphql/queries/categoryList";
-import { getCategoryBreadcrumbs } from "@/src/framework/graphql/queries/breadcrumbs";
+import { resolveCategoryFromSlug } from "@/src/framework/graphql/category/queries/getCategoryList";
+import { getCategoryBreadcrumbs } from "@/src/framework/graphql/category/queries/getCategoryBreadcrumbs";
 import {
   getProductsByCategory,
   parseFacetSearchParams,
   parseProductListSortParam,
   type ProductAggregation,
-} from "@/src/framework/graphql/queries/products";
-import { getStoreConfig } from "@/src/framework/graphql/queries/storeConfig";
+} from "@/src/framework/graphql/plp/queries/getProductsByCategory";
+import { getStoreConfig } from "@/src/framework/graphql/store/queries/getStoreConfig";
 import { getServerStoreViewCode } from "@/src/framework/store/getActiveStoreCode";
 import { parsePageParam } from "@/src/utils/params";
 import { getFallbackStoreViewCode } from "@/src/config/storeViews";

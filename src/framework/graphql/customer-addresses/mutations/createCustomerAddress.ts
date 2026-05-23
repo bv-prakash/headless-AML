@@ -1,0 +1,55 @@
+import { gql } from "@apollo/client";
+
+/**
+ * Requires a **customer** Bearer token (`Authorization: Bearer …`).
+ *
+ * Minimal shape (no `region` in input) — Magento may still require
+ * `region` for some countries; the checkout builder adds it when the
+ * form collects state/region.
+ */
+export const CREATE_CUSTOMER_ADDRESS_MUTATION = gql`
+  mutation CreateCustomerAddress($input: CustomerAddressInput!) {
+    createCustomerAddress(input: $input) {
+      id
+      country_code
+      street
+      telephone
+      postcode
+      city
+      default_shipping
+      default_billing
+    }
+  }
+`;
+
+/** Matches the minimal GraphQL example; `region` is not part of this
+ *  type (see checkout payload type in `addressHelpers`). */
+export type CreateCustomerAddressInput = {
+  readonly country_code: string;
+  readonly street: readonly string[];
+  readonly telephone: string;
+  readonly postcode: string;
+  readonly city: string;
+  readonly firstname: string;
+  readonly lastname: string;
+  readonly company?: string;
+  readonly default_shipping?: boolean;
+  readonly default_billing?: boolean;
+};
+
+export type CreateCustomerAddressVariables = {
+  readonly input: CreateCustomerAddressInput;
+};
+
+export type CreateCustomerAddressResponse = {
+  createCustomerAddress: {
+    readonly id: number;
+    readonly country_code?: string | null;
+    readonly street?: readonly string[] | null;
+    readonly telephone?: string | null;
+    readonly postcode?: string | null;
+    readonly city?: string | null;
+    readonly default_shipping?: boolean | null;
+    readonly default_billing?: boolean | null;
+  };
+};

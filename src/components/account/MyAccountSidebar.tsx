@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
-import { useB2BNavGating } from "@/src/framework/graphql/queries/storeConfigB2BFeatures";
+import { useB2BNavGating } from "@/src/hooks/useB2BNavGating";
 import { NAV_ITEMS } from "./AccountNavItems";
 
 export function MyAccountSidebar() {

@@ -10,7 +10,7 @@ import {
   CONTACT_US_MUTATION,
   type ContactUsResponse,
   type ContactUsVariables,
-} from "@/src/framework/graphql/mutations/contactUsMutation";
+} from "@/src/framework/graphql/contact-us/mutations/contactUs";
 
 const INPUT_CLASS =
   "input-text w-full h-11 px-4 text-base border rounded bg-white/95 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-theme-primary";
