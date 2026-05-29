@@ -68,13 +68,13 @@ import {
   sameAddressId,
   toCartAddressInput,
   toCreateCustomerAddressInput,
-} from "@/src/components/checkout/addressHelpers";
+} from "@/src/components/checkout/address/addressHelpers";
 import {
   parseShippingMethodKey,
   shippingMethodKey,
   shippingMethodLabel,
-} from "@/src/components/checkout/shippingMethodHelpers";
-import { emptyAddress } from "@/src/components/checkout/addressTypes";
+} from "@/src/components/checkout/shipping/shippingMethodHelpers";
+import { emptyAddress } from "@/src/components/checkout/address/addressTypes";
 
 export function useCheckoutForm() {
   const router = useRouter();

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import CompanyProfilePageContent from "@/src/components/account/company/CompanyProfilePageContent";
-import PageLoader from "@/src/components/common/PageLoader";
+import CompanyProfilePageContent from "@/src/components/account/company-profile/CompanyProfilePageContent";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 
 export default function MyAccountCompanyProfilePage() {
   return (

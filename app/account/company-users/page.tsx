@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import CompanyUsersPageContent from "@/src/components/account/company/CompanyUsersPageContent";
-import PageLoader from "@/src/components/common/PageLoader";
+import CompanyUsersPageContent from "@/src/components/account/company-users/CompanyUsersPageContent";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 
 export default function MyAccountCompanyUsersPage() {
   return (

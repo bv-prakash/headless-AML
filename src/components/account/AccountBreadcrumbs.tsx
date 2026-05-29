@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Breadcrumbs } from "../common/Breadcrumbs";
+import { Breadcrumbs } from "@/src/components/common/navigation/Breadcrumbs";
 import { NAV_ITEMS } from "./AccountNavItems";
 
 export function AccountBreadcrumbs() {

@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
-import Button from "@/src/components/common/Button";
+import Button from "@/src/components/common/controls/Button";
 import { emailValidation } from "@/src/utils/validation";
 import { getErrorMessage } from "@/src/utils/errors";
 import {

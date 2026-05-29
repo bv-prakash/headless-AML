@@ -3,7 +3,6 @@ import { formatProductTypeLabel } from "@/src/framework/graphql/constants/produc
 import {
   getLanguageCodeForStoreView,
   normalizeStoreViewCode,
-  getWebsiteCodeForStoreView,
 } from "@/src/config/storeViews";
 import {
   PLP_PRODUCTS_BY_CATEGORY_QUERY,
@@ -430,16 +429,6 @@ export async function getProductsByCategory(
   const typeAgg = buildProductTypeAggregation(items);
   if (typeAgg.options?.length) {
     aggregations = [...aggregations, typeAgg];
-  }
-
-  if (process.env.NODE_ENV !== "production") {
-    console.info("[PLP] Aggregations by store context", {
-      storeViewCode: storeViewCode?.trim() ?? "",
-      preferredStoreViewCode: aggregationLabelPreferredStoreViewCode?.trim() ?? "",
-      fallbackStoreViewCode: aggregationLabelFallbackStoreViewCode?.trim() ?? "",
-      websiteCode: getWebsiteCodeForStoreView(storeViewCode?.trim() ?? ""),
-      aggregationCount: aggregations.length,
-    });
   }
 
   return { ...data.products, items, aggregations };

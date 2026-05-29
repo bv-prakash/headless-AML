@@ -44,7 +44,7 @@ import {
   CUSTOMER_CART_QUERY,
   type CustomerCartQueryResponse,
 } from "@/src/framework/graphql/cart/queries/getCustomerCart";
-import PageLoader from "@/src/components/common/PageLoader";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 
 const BTN_PRIMARY =
   "inline-flex items-center justify-center py-2 px-4 text-sm font-bold uppercase bg-theme-primary text-white border-0 cursor-pointer hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed";

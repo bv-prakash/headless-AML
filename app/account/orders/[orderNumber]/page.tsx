@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { AccountPageTitle } from "@/src/components/account/AccountPageTitle";
-import { OrderDetailContent } from "@/src/components/account/order/OrderDetailContent";
+import { OrderDetailContent } from "@/src/components/account/orders/OrderDetailContent";
 
 export default function OrderDetailPage() {
   const params = useParams();

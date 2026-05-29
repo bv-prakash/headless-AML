@@ -1,4 +1,3 @@
-import { toast } from "react-toastify";
 import { store } from "@/src/store/store";
 import { logout } from "@/src/store/slices/authSlice";
 import { clearWishlist } from "@/src/store/slices/wishlistSlice";

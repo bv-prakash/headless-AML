@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import RolesListPage from "@/src/components/account/roles-and-permissions/RolesListPage";
-import PageLoader from "@/src/components/common/PageLoader";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 
 export default function MyAccountRolesPage() {
   return (

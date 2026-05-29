@@ -7,14 +7,14 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import ShippingAddressFields, {
   type ShippingAddressFieldsHandle,
-} from "@/src/components/checkout/ShippingAddressFields";
+} from "@/src/components/checkout/address/ShippingAddressFields";
 import {
   customerAddressToFormState,
   resolveDirectoryRegionId,
   sameAddressId,
   toCreateCustomerAddressInput,
-} from "@/src/components/checkout/addressHelpers";
-import { emptyAddress, type AddressFormState } from "@/src/components/checkout/addressTypes";
+} from "@/src/components/checkout/address/addressHelpers";
+import { emptyAddress, type AddressFormState } from "@/src/components/checkout/address/addressTypes";
 import {
   CREATE_CUSTOMER_ADDRESS_MUTATION,
   type CreateCustomerAddressResponse,

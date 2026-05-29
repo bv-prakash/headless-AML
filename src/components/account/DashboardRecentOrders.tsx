@@ -12,7 +12,7 @@ import {
   formatOrderMoney,
   orderDisplayId,
   orderRowCreatedByDisplay,
-} from "@/src/components/account/customer-orders/orderFormat";
+} from "@/src/components/account/orders/orderFormat";
 import { getErrorMessage } from "@/src/utils/errors";
 
 const TH = "px-4 py-3 text-left font-bold uppercase bg-f0f0f0 border-b-2 border-aaa";

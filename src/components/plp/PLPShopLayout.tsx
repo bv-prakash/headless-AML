@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import FilterProducts from "./FilterProducts";
+import FilterProducts from "./filters/FilterProducts";
 import PLPMainColumn from "./PLPMainColumn";
 import type { ProductAggregation } from "@/src/framework/graphql/plp/queries/getProductsByCategory";
 import type { ProductListSortKey } from "@/src/framework/graphql/plp/plpCatalogGraphql";

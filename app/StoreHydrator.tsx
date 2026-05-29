@@ -19,7 +19,7 @@ import {
   SESSION_EXPIRED_TOAST_KEY,
 } from "@/src/framework/graphql/invalidateCustomerSession";
 import GuestCartPrefetch from "@/src/components/cart/GuestCartPrefetch";
-import PageLoader from "@/src/components/common/PageLoader";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 
 /**
  * Separate hydration component to allow better code splitting
@@ -31,7 +31,6 @@ export function StoreHydrator({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
     void (async () => {
       store.dispatch(hydrateAuth());
       store.dispatch(hydrateCompare());
@@ -58,10 +57,6 @@ export function StoreHydrator({ children }: { children: ReactNode }) {
       } catch {}
       setHydrated(true);
     })();
-
-    return () => {
-      cancelled = true;
-    };
   }, [router, startTransition]);
 
   if (!hydrated) {

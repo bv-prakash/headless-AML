@@ -7,9 +7,9 @@ import {
   getHomeThemeId,
   getLanguageCodeForStoreView,
 } from "@/src/config/storeViews";
-import { LazyHeader } from "@/src/components/common/LazyHeader";
-import { LazyFooter } from "@/src/components/common/LazyFooter";
-import ClientToastContainer from "@/src/components/common/ClientToastContainer";
+import { LazyHeader } from "@/src/components/layout/LazyHeader";
+import { LazyFooter } from "@/src/components/layout/LazyFooter";
+import ClientToastContainer from "@/src/components/common/toast/ClientToastContainer";
 import Providers from "./Providers";
 import { getServerStoreViewCode } from "@/src/framework/store/getActiveStoreCode";
 import {

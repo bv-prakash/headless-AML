@@ -6,8 +6,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { AccountPageTitle } from "@/src/components/account/AccountPageTitle";
-import { AccountPager } from "@/src/components/common/AccountPager";
-import PageLoader from "@/src/components/common/PageLoader";
+import { AccountPager } from "@/src/components/common/navigation/AccountPager";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 import { getErrorMessage } from "@/src/utils/errors";
 import {
   buildListPaginationQueryString,

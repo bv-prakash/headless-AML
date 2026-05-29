@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import PageLoader from "@/src/components/common/PageLoader";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 import PLPShopLayout from "@/src/components/plp/PLPShopLayout";
 import { searchProducts } from "@/src/framework/graphql/search/queries/searchProducts";
 import { stripHtml } from "@/src/utils/html";

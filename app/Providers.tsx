@@ -6,7 +6,7 @@ import { ApolloProvider } from "@apollo/client/react";
 import { apolloClient } from "@/src/framework/graphql";
 import { store } from "@/src/store/store";
 import { StoreHydrator } from "./StoreHydrator";
-import { StoreViewDocumentSync } from "@/src/components/common/StoreViewDocumentSync";
+import { StoreViewDocumentSync } from "@/src/components/store-view/StoreViewDocumentSync";
 
 export default function Providers({
   children,

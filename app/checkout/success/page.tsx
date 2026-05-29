@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Breadcrumbs } from "@/src/components/common/Breadcrumbs";
-import OrderSuccessContent from "@/src/components/checkout/OrderSuccessContent";
-import PageLoader from "@/src/components/common/PageLoader";
+import { Breadcrumbs } from "@/src/components/common/navigation/Breadcrumbs";
+import OrderSuccessContent from "@/src/components/checkout/success/OrderSuccessContent";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 
 export const metadata: Metadata = {
   title: "Order complete",

@@ -3,16 +3,16 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useCheckoutForm } from "@/src/components/checkout/useCheckoutForm";
-import CheckoutOrderSummary from "@/src/components/checkout/CheckoutOrderSummary";
+import CheckoutOrderSummary from "@/src/components/checkout/order-summary/CheckoutOrderSummary";
 import CheckoutStepIndicator from "@/src/components/checkout/CheckoutStepIndicator";
 import CheckoutGuestEmail from "@/src/components/checkout/CheckoutGuestEmail";
-import ShippingAddressFields from "@/src/components/checkout/ShippingAddressFields";
-import BillingAddressFields from "@/src/components/checkout/BillingAddressFields";
-import CheckoutSavedAddresses from "@/src/components/checkout/CheckoutSavedAddresses";
-import CheckoutShippingMethods from "@/src/components/checkout/CheckoutShippingMethods";
-import CheckoutPaymentPanel from "@/src/components/checkout/CheckoutPaymentPanel";
+import ShippingAddressFields from "@/src/components/checkout/address/ShippingAddressFields";
+import BillingAddressFields from "@/src/components/checkout/address/BillingAddressFields";
+import CheckoutSavedAddresses from "@/src/components/checkout/address/CheckoutSavedAddresses";
+import CheckoutShippingMethods from "@/src/components/checkout/shipping/CheckoutShippingMethods";
+import CheckoutPaymentPanel from "@/src/components/checkout/payment/CheckoutPaymentPanel";
 import CheckoutFormActions from "@/src/components/checkout/CheckoutFormActions";
-import NewShippingAddressModal from "@/src/components/checkout/NewShippingAddressModal";
+import NewShippingAddressModal from "@/src/components/checkout/address/NewShippingAddressModal";
 import CheckoutLoadingSpinner from "@/src/components/checkout/CheckoutLoadingSpinner";
 
 export default function CheckoutForm() {

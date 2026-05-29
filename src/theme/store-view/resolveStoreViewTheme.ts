@@ -1,5 +1,4 @@
 import type { StoreViewTheme, StoreViewUiComponentKey } from "@/src/theme/store-view/types";
-import { STORE_VIEW_UI_COMPONENTS } from "@/src/theme/store-view/types";
 import { BASE_STORE_VIEW_THEME } from "@/src/theme/store-view/themes/base.theme";
 import {
   STORE_VIEW_THEME_OVERRIDES,
@@ -44,12 +43,4 @@ export function isStoreComponentEnabled(
   const theme = resolveStoreViewTheme(storeViewCode);
   const v = theme.components?.[key];
   return v !== false;
-}
-
-/** For debugging / admin tools. */
-export function listComponentFlags(storeViewCode: string): Record<StoreViewUiComponentKey, boolean> {
-  const theme = resolveStoreViewTheme(storeViewCode);
-  return Object.fromEntries(
-    STORE_VIEW_UI_COMPONENTS.map((k) => [k, isStoreComponentEnabled(k, storeViewCode)]),
-  ) as Record<StoreViewUiComponentKey, boolean>;
 }

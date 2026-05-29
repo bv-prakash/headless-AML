@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
-import PageLoader from "@/src/components/common/PageLoader";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 import { getErrorMessage } from "@/src/utils/errors";
 import { AclTree } from "@/src/components/account/roles-and-permissions/AclTree";
 import {

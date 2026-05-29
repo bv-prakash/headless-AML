@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import OrdersPageContent from "@/src/components/account/order/OrdersPageContent";
-import PageLoader from "@/src/components/common/PageLoader";
+import OrdersPageContent from "@/src/components/account/orders/OrdersPageContent";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 
 export default function MyAccountOrdersPage() {
   return (

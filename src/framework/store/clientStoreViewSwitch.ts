@@ -34,12 +34,29 @@ export function applyClientStoreViewState({
   return true;
 }
 
+/**
+ * Two navigation modes:
+ *  - **Soft refresh** (no `redirectTo`): same route, re-fetch RSC with the new
+ *    `magento_store_view` cookie so Header/Footer/CMS render against the new store.
+ *  - **Hard navigation** (with `redirectTo`): used by the cross-website signed-in
+ *    switch. Next.js's Client Router Cache keeps the root layout (Header/Logo/Footer)
+ *    and any prefetched RSC for the destination, so a plain `router.push` would
+ *    render the new URL with the *previous* store's Header/CMS. A full page load
+ *    re-issues every request with the new cookie and rebuilds Apollo/Magento server
+ *    caches from scratch — which is exactly what we want when the customer is
+ *    being signed out of one website and signed into another.
+ */
 export function refreshAfterStoreViewChange(
   router: RouterLike,
   options: { redirectTo?: string } = {},
 ): void {
   if (options.redirectTo) {
+    if (typeof window !== "undefined") {
+      window.location.assign(options.redirectTo);
+      return;
+    }
     router.push(options.redirectTo);
+    router.refresh();
   } else {
     router.refresh();
   }

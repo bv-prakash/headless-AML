@@ -1,4 +1,4 @@
-import PageLoader from "@/src/components/common/PageLoader";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 
 export default function CheckoutLoading() {
   return (

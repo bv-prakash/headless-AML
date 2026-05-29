@@ -64,13 +64,6 @@ const CategoryPage = async ({ params, searchParams }: CategoryPageProps) => {
   const currentPage = parsePageParam(sp.page);
   const filterFacets = parseFacetSearchParams(sp);
 
-  const debugPlpRaw = sp.debug_plp;
-  const debugPlpFlag = Array.isArray(debugPlpRaw)
-    ? debugPlpRaw[0]
-    : debugPlpRaw;
-  const showPlpGraphqlDebug =
-    debugPlpFlag === "1" || debugPlpFlag === "true";
-
   let [{ items, aggregations, total_count }, breadcrumbsData] =
     await Promise.all([
       getProductsByCategory({
@@ -154,17 +147,6 @@ const CategoryPage = async ({ params, searchParams }: CategoryPageProps) => {
       breadcrumbsData={breadcrumbsData}
       currentPage={currentPage}
       totalPages={totalPages}
-      plpGraphqlDebug={
-        showPlpGraphqlDebug
-          ? {
-              filterFacets,
-              pageSize: gridPerPage,
-              currentPage,
-              categoryUid: effectiveCategory.uid,
-              storeViewCode: effectiveStoreViewCode,
-            }
-          : undefined
-      }
     />
   );
 };

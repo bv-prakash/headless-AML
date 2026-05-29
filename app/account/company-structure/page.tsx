@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import CompanyStructurePageContent from "@/src/components/account/company/CompanyStructurePageContent";
-import PageLoader from "@/src/components/common/PageLoader";
+import CompanyStructurePageContent from "@/src/components/account/company-structure/CompanyStructurePageContent";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 
 export default function MyAccountCompanyStructurePage() {
   return (

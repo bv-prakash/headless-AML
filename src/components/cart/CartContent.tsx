@@ -10,10 +10,10 @@ import { selectCartPageProps } from "@/src/store/selectors";
 import { setCart, clearCart } from "@/src/store/slices/cartSlice";
 import { formatPrice } from "@/src/utils/format";
 import { isStaleCartError } from "@/src/utils/errors";
-import QuantitySelector from "@/src/components/common/QuantitySelector";
-import ConfigurableItemOptions from "@/src/components/cart/ConfigurableItemOptions";
-import BundleItemOptions from "@/src/components/cart/BundleItemOptions";
-import DownloadableItemOptions from "@/src/components/cart/DownloadableItemOptions";
+import QuantitySelector from "@/src/components/common/controls/QuantitySelector";
+import ConfigurableItemOptions from "@/src/components/cart/item-options/ConfigurableItemOptions";
+import BundleItemOptions from "@/src/components/cart/item-options/BundleItemOptions";
+import DownloadableItemOptions from "@/src/components/cart/item-options/DownloadableItemOptions";
 import {
   CART_QUERY,
   type CartQueryResponse,

@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import RequisitionListDetailContent from "@/src/components/account/requisitionList/RequisitionListDetailContent";
+import RequisitionListDetailContent from "@/src/components/account/requisition-lists/RequisitionListDetailContent";
 
 export default function RequisitionListDetailPage() {
   const params = useParams();

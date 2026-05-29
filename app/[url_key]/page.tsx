@@ -11,16 +11,16 @@ import {
   pickSearchParamString,
 } from "@/src/utils/params";
 import { stripHtml } from "@/src/utils/html";
-import ProductGallery from "@/src/components/pdp/ProductGallery";
-import ProductInfo from "@/src/components/pdp/ProductInfo";
-import ProductDescription from "@/src/components/pdp/ProductDescription";
-import ProductCarousel from "@/src/components/pdp/ProductCarousel";
-import { PDP_ADD_TO_CART_WRAP_CLASS } from "@/src/components/pdp/pdpAddToCartSection";
-import ProductActions from "@/src/components/plp/ProductActions";
-import ConfigurableOptions from "@/src/components/pdp/ConfigurableOptions";
-import BundleOptions from "@/src/components/pdp/BundleOptions";
-import GroupedProductTable from "@/src/components/pdp/GroupedProductTable";
-import DownloadableLinks from "@/src/components/pdp/DownloadableLinks";
+import ProductGallery from "@/src/components/pdp/sections/ProductGallery";
+import ProductInfo from "@/src/components/pdp/sections/ProductInfo";
+import ProductDescription from "@/src/components/pdp/sections/ProductDescription";
+import ProductCarousel from "@/src/components/pdp/sections/ProductCarousel";
+import { PDP_ADD_TO_CART_WRAP_CLASS } from "@/src/components/pdp/options/pdpAddToCartSection";
+import ProductActions from "@/src/components/plp/product-card/ProductActions";
+import ConfigurableOptions from "@/src/components/pdp/options/ConfigurableOptions";
+import BundleOptions from "@/src/components/pdp/options/BundleOptions";
+import GroupedProductTable from "@/src/components/pdp/options/GroupedProductTable";
+import DownloadableLinks from "@/src/components/pdp/options/DownloadableLinks";
 import ServerBreadcrumbs from "@/src/components/plp/ServerBreadcrumbs";
 import { getCategoryBreadcrumbs } from "@/src/framework/graphql/category/queries/getCategoryBreadcrumbs";
 import { getServerStoreViewCode } from "@/src/framework/store/getActiveStoreCode";

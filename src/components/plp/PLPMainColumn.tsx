@@ -1,8 +1,8 @@
 "use client";
 
-import PLPProductCard from "./PLPProductCard";
-import SortingProduct from "./SortingProduct";
-import Pagination from "./Pagination";
+import PLPProductCard from "./product-card/PLPProductCard";
+import SortingProduct from "./sort/SortingProduct";
+import Pagination from "./pagination/Pagination";
 import type { ProductListSortKey } from "@/src/framework/graphql/plp/plpCatalogGraphql";
 import type { PLPContentProduct } from "./types";
 

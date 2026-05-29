@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import { AccountPageTitle } from "@/src/components/account/AccountPageTitle";
-import PageLoader from "@/src/components/common/PageLoader";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 import { CUSTOMER_INFO_QUERY } from "@/src/framework/graphql/customer/queries/getCustomerInfo";
 import {
 	UPDATE_CUSTOMER_NEWSLETTER_MUTATION,

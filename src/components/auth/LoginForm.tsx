@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import Button from "@/src/components/common/Button";
+import Button from "@/src/components/common/controls/Button";
 import { emailValidation } from "@/src/utils/validation";
 import { useAppDispatch, useAppSelector } from "@/src/store/hooks";
 import { store } from "@/src/store/store";

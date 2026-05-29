@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import RequisitionListsPageContent from "@/src/components/account/requisitionList/RequisitionListsPageContent";
-import PageLoader from "@/src/components/common/PageLoader";
+import RequisitionListsPageContent from "@/src/components/account/requisition-lists/RequisitionListsPageContent";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 
 export default function MyAccountRequisitionListsPage() {
   return (

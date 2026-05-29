@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import AddressesPageContent from "@/src/components/account/address/AddressesPageContent";
-import PageLoader from "@/src/components/common/PageLoader";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 
 export default function MyAccountAddressesPage() {
   return (

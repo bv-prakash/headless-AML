@@ -21,7 +21,6 @@ export { STORE_VIEW_THEME_OVERRIDES } from "@/src/theme/store-view/themes/store-
 export {
   resolveStoreViewTheme,
   isStoreComponentEnabled,
-  listComponentFlags,
 } from "@/src/theme/store-view/resolveStoreViewTheme";
 export {
   applyStoreViewThemeToRoot,
