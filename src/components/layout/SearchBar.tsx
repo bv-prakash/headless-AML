@@ -78,7 +78,7 @@ export default function SearchBar({ className }: { className?: string }) {
   return (
     <div
       ref={wrapperRef}
-      className={`relative z-100 min-w-0 flex-1 max-w-[420px] ${className ? className : ""}`}
+      className={`max-md:absolute max-md:bottom-2.5 max-lg-custom:z-[9] max-md:top-auto max-md:right-0 max-md:px-[15px] max-md:left-0 md:relative md:w-[260px] xl-custom:w-[420px]! ${className ? className : ""}`}
     >
       {/* Input */}
       <div className="relative">
@@ -137,7 +137,7 @@ export default function SearchBar({ className }: { className?: string }) {
         <div
           id="search-results-dropdown"
           role="listbox"
-          className="absolute top-full left-0 w-full pt-2.5 mt-1 bg-white border border-gray-200 rounded shadow-lg z-110 max-h-[480px] overflow-y-auto"
+          className="absolute top-full max-md:w-[calc(100%-30px)] max-md:left-1/2 left-0 max-md:transform max-md:-translate-x-1/2  w-full pt-2.5 mt-1 bg-white border border-gray-200 rounded shadow-lg z-110 max-h-[480px] overflow-y-auto"
         >
           {loading && items.length === 0 && (
             <div className="flex items-center justify-center py-8">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import {
@@ -42,8 +42,6 @@ export default function StoreViewToggle() {
   const code = useAppSelector(selectStoreViewCode);
   const { language } = useLanguageTranslation();
   const isLoggedIn = useAppSelector((s) => s.auth.isLoggedIn);
-  const detailsRef = useRef<HTMLDetailsElement>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [pending, setPending] = useState<PendingSwitch | null>(null);
   const [storeViewsRevision, setStoreViewsRevision] = useState(0);
 
@@ -53,22 +51,6 @@ export default function StoreViewToggle() {
     });
   }, []);
 
-  useEffect(() => {
-    if (!menuOpen) return;
-    const close = () => detailsRef.current?.removeAttribute("open");
-    const onPointerDown = (e: PointerEvent) => {
-      if (!detailsRef.current?.contains(e.target as Node)) close();
-    };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [menuOpen]);
 
   const current = useMemo(
     () => STORE_VIEW_OPTIONS.find((o) => o.code === code) ?? STORE_VIEW_OPTIONS[0],
@@ -120,7 +102,6 @@ export default function StoreViewToggle() {
 
   const pick = useCallback(
     (nextCode: string) => {
-      detailsRef.current?.removeAttribute("open");
       if (nextCode === code) return;
 
       const next =
@@ -174,56 +155,31 @@ export default function StoreViewToggle() {
   if (!current) return null;
 
   return (
-    <>
-    <details
-      ref={detailsRef}
-      className="relative shrink-0 group z-50"
-      onToggle={(e) => setMenuOpen(e.currentTarget.open)}
-    >
-      <summary
-        className="flex cursor-pointer list-none items-center gap-2 rounded border border-theme-header-border px-2.5 py-1.5 text-xs bg-white text-black shadow-sm opacity-95 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-theme-primary [&::-webkit-details-marker]:hidden"
-        aria-label="Store view"
-      >
-        <span className="hidden font-semibold sm:inline">Store</span>
-        <span className="max-w-[120px] truncate sm:max-w-[200px]" title={`${current.group} — ${current.label}`}>
-          {current.group}
-        </span>
-        <i
-          className="icon-back-arrow text-sm leading-none before:font-bold transition-transform -rotate-90 opacity-70"
-          aria-hidden
-        />
-      </summary>
-      <ul
-        className="absolute right-0 mt-1 max-h-72 min-w-[min(100vw-2rem,280px)] overflow-auto rounded border border-aaa bg-white py-1 shadow-lg sm:min-w-[280px]"
-        role="listbox"
-        aria-label="Choose store view"
-      >
+    <div className="space-y-2">
+      <div className="grid gap-2">
         {toggleOptions.map((o) => (
-          <li key={o.code} role="presentation">
-            <button
-              type="button"
-              role="option"
-              aria-selected={o.code === code}
-              className={`flex w-full flex-col cursor-pointer items-start gap-0.5 px-3 py-2.5 text-left text-xs transition-colors hover:bg-f0f0f0 ${
-                o.code === code ? "bg-f0f0f0 font-semibold text-black" : "text-gray-800"
-              }`}
-              onClick={() => pick(o.code)}
-            >
-              <span className="font-semibold text-black">{o.group}</span>
-              <span className="text-[11px] leading-snug text-gray-600">{o.label}</span>
-            </button>
-          </li>
+          <button
+            key={o.code}
+            type="button"
+            className={`flex items-center justify-between rounded border px-3 py-2  text-sm transition duration-150 ${
+              o.code === code
+                ? "border-theme-primary bg-theme-primary text-white"
+                : "border-gray-200 bg-white text-gray-800 hover:border-theme-primary hover:bg-gray-50"
+            }`}
+            onClick={() => pick(o.code)}
+          >
+            <span>{o.group}</span>
+          </button>
         ))}
-      </ul>
-    </details>
-    {pending ? (
-      <StoreSwitchConfirmDialog
-        pending={pending}
-        onConfirm={confirmPending}
-        onCancel={cancelPending}
-      />
-    ) : null}
-    </>
+      </div>
+      {pending ? (
+        <StoreSwitchConfirmDialog
+          pending={pending}
+          onConfirm={confirmPending}
+          onCancel={cancelPending}
+        />
+      ) : null}
+    </div>
   );
 }
 

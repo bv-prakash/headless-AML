@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLanguageTranslation } from "@/src/config/language";
 import {
@@ -19,8 +19,6 @@ export default function LanguageSwitcher() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const storeViewCode = useAppSelector(selectStoreViewCode);
-  const detailsRef = useRef<HTMLDetailsElement>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [storeViewsRevision, setStoreViewsRevision] = useState(0);
 
   useEffect(() => {
@@ -28,23 +26,6 @@ export default function LanguageSwitcher() {
       setStoreViewsRevision((prev) => prev + 1);
     });
   }, []);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const close = () => detailsRef.current?.removeAttribute("open");
-    const onPointerDown = (e: PointerEvent) => {
-      if (!detailsRef.current?.contains(e.target as Node)) close();
-    };
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [menuOpen]);
 
   const languageOptions = useMemo(
     () => getLanguageOptionsForStoreView(storeViewCode),
@@ -57,12 +38,8 @@ export default function LanguageSwitcher() {
       languageOptions[0],
     [code, languageOptions, storeViewCode],
   );
-  const languageLabel = getTranslation("Language");
-  const langShortLabel = getTranslation("Lang");
-  const chooseLanguageLabel = getTranslation("Choose language");
 
   const onChange = (nextStoreViewCode: string, nextCode: string) => {
-    detailsRef.current?.removeAttribute("open");
     const storeChanged = applyClientStoreViewState({
       dispatch,
       nextStoreViewCode,
@@ -77,52 +54,27 @@ export default function LanguageSwitcher() {
   if (languageOptions.length < 2) return null;
 
   return (
-    <details
-      ref={detailsRef}
-      className="relative shrink-0 group z-50"
-      onToggle={(e) => setMenuOpen(e.currentTarget.open)}
-    >
-      <summary
-        className="flex cursor-pointer list-none items-center gap-2 rounded border border-theme-header-border px-2.5 py-1.5 text-xs bg-white text-black shadow-sm opacity-95 hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-theme-primary [&::-webkit-details-marker]:hidden"
-        aria-label={languageLabel}
-      >
-        <span className="hidden font-semibold sm:inline">{langShortLabel}</span>
-        <span className="max-w-[100px] truncate">
-          {current?.languageLabel ?? "English"}
-        </span>
-        <i
-          className="icon-back-arrow text-sm leading-none before:font-bold transition-transform -rotate-90 opacity-70"
-          aria-hidden
-        />
-      </summary>
-      <ul
-        className="absolute right-0 mt-1 min-w-[180px] overflow-auto rounded border border-aaa bg-white py-1 shadow-lg"
-        role="listbox"
-        aria-label={chooseLanguageLabel}
-      >
-        {languageOptions.map((option) => (
-          <li key={option.storeViewCode} role="presentation">
+    <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-2 h-9 items-center gap-2 rounded-full border border-theme-header-border bg-white p-1 text-[11px] font-semibold text-gray-700 shadow-sm">
+        {languageOptions.map((option, index) => {
+          const active = option.storeViewCode === current?.storeViewCode;
+          return (
             <button
+              key={option.storeViewCode}
               type="button"
-              role="option"
-              aria-selected={option.storeViewCode === storeViewCode}
-              className={`flex w-full items-center justify-between gap-2 cursor-pointer px-3 py-2 text-left text-xs transition-colors hover:bg-f0f0f0 ${
-                option.storeViewCode === storeViewCode
-                  ? "bg-f0f0f0 font-semibold text-black"
-                  : "text-gray-800"
+              aria-pressed={active}
+              className={`relative z-10 min-w-[72px] rounded-full px-3 py-1 transition cursor-pointer ${
+                active
+                  ? "bg-theme-primary text-white"
+                  : "text-gray-700 hover:bg-gray-100"
               }`}
-              onClick={() =>
-                onChange(option.storeViewCode, option.languageCode)
-              }
+              onClick={() => onChange(option.storeViewCode, option.languageCode)}
             >
-              <span>{option.languageLabel}</span>
-              <span className="text-[11px] text-gray-600">
-                {option.nativeLanguageLabel}
-              </span>
+              {option.languageLabel}
             </button>
-          </li>
-        ))}
-      </ul>
-    </details>
+          );
+        })}
+      </div>
+    </div>
   );
 }

@@ -5,6 +5,15 @@ import { decodeHtmlEntities } from "@/src/utils/decodeHtmlEntities";
 import { sanitizeMagentoCmsHtml } from "@/src/utils/pagebuilder/sanitizeMagentoCmsHtml";
 
 import NewsLatter from "./NewsLatter";
+import ClientOnly from "../common/ClientOnly";
+import { isStoreComponentEnabled } from "@/src/theme/store-view/resolveStoreViewTheme";
+import StoreLanguageToggleGroup from "../store-view/StoreLanguageToggleGroup";
+import CompareIcon from "../compare/CompareIcon";
+import Link from "next/link";
+import { ShowOnMobile } from "../common/Responsive";
+import WishlistIcon from "../wishlist/WishlistIcon";
+
+const globalWhiteImage ="../globe-white.svg";
 
 const FOOTER_CMS_IDENTIFIERS = [
   "footer-left",
@@ -39,8 +48,19 @@ const Footer = async () => {
 
   const copyrightHtml = storeConfig.copyright?.trim();
 
+  function HeaderIconsPlaceholder() {
   return (
-    <footer className={`text-white border-t-2 md:border-t-4 ${storeViewCode === "prizmlighting_store_view" ? "bg-theme-body-bg border-theme-body-bg" : "bg-theme-secondary border-theme-primary"}`}>
+    <div className="flex items-center gap-5">
+      <span className="w-[22px] h-[22px]" />
+      <span className="w-[22px] h-[22px]" />
+      <span className="w-[22px] h-[22px]" />
+      <span className="w-[26px] h-[26px]" />
+    </div>
+  );
+}
+
+  return (
+    <footer className={`text-white border-t-2 md:border-t-4 max-md:mb-12.5 ${storeViewCode === "prizmlighting_store_view" ? "bg-theme-body-bg border-theme-body-bg" : "bg-theme-secondary border-theme-primary"}`}>
       <div className="container pt-10 pb-[25px] lg-custom:flex lg-custom:flex-wrap">
         {footerLeftBlock ? (
           <div
@@ -73,7 +93,7 @@ const Footer = async () => {
             ) : null}
           </div>
         </div>
-        <small className="copyright-text block text-xs mt-5 lg:mt-10">
+        <small className="copyright-text max-md:border-t max-md:mt-[25px] max-md:pt-5.5 max-md:text-center block text-xs mt-5 lg:mt-10">
           {copyrightHtml ? (
             <span
               dangerouslySetInnerHTML={{
@@ -85,6 +105,21 @@ const Footer = async () => {
           )}
         </small>
       </div>
+      <ShowOnMobile breakpoint={767}>
+        <div className="bg-theme-secondary text-center text-white text-xs py-[15px] grid grid-cols-4 justify-items-center m-0 border-t border-[rgba(255,255,255,0.25)] fixed left-0 right-0 bottom-0 z-[99] w-full">
+          <ClientOnly fallback={<HeaderIconsPlaceholder />}>
+            <StoreLanguageToggleGroup className="flex item-center justify-center w-full text-center border-r border-white" imageSrc={globalWhiteImage} />
+            {isStoreComponentEnabled("compareIcon", storeViewCode) ? <CompareIcon className="flex item-center justify-center w-full border-r border-white text-center" /> : null}
+            {isStoreComponentEnabled("wishlistIcon", storeViewCode) ? <WishlistIcon /> : null}
+          </ClientOnly>
+          <Link
+              href="/contact-us"
+              className={`relative flex items-center gap-1 hover:text-theme-primary transition-colors`}
+            >
+              <i className="icon-call2 text-[22px] leading-1" aria-hidden="true" />
+            </Link>
+        </div>
+      </ShowOnMobile>
     </footer>
   );
 };

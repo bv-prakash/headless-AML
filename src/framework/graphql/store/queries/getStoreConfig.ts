@@ -1,7 +1,7 @@
 import { cache } from "react";
 import {
   MagentoGraphqlError,
-  magentoGraphqlFetch,
+  magentoGraphqlFetchSafe,
 } from "@/src/framework/graphql/magentoGraphqlFetch";
 import { getServerStoreViewCode } from "@/src/framework/store/getActiveStoreCode";
 
@@ -81,28 +81,28 @@ export const getStoreConfig = cache(
   async (explicitStoreViewCode?: string): Promise<StoreConfig> => {
     const code =
       explicitStoreViewCode?.trim() || (await getServerStoreViewCode());
-    try {
-      const data = await magentoGraphqlFetch<StoreConfigResponse>(
-        STORE_CONFIG_QUERY,
-        {},
-        {
-          storeViewCode: code,
-          /** `storeConfig` rarely changes — 5 min / store view keeps Magento out of the hot path. */
-          cacheTtlMs: 5 * 60 * 1000,
-          serveStaleOnError: true,
-        },
-      );
-      return data.storeConfig ?? FALLBACK_STORE_CONFIG;
-    } catch (err) {
-      if (err instanceof MagentoGraphqlError && err.isPhpFatal) {
-        if (process.env.NODE_ENV !== "production") {
-          console.warn(
-            `[storeConfig] Magento PHP fatal for store "${code}" — rendering with defaults.`,
-          );
-        }
-        return FALLBACK_STORE_CONFIG;
-      }
-      throw err;
+    const result = await magentoGraphqlFetchSafe<StoreConfigResponse>(
+      STORE_CONFIG_QUERY,
+      {},
+      {
+        storeViewCode: code,
+        /** `storeConfig` rarely changes — 5 min / store view keeps Magento out of the hot path. */
+        cacheTtlMs: 5 * 60 * 1000,
+        serveStaleOnError: true,
+      },
+    );
+
+    if (result.ok) {
+      return result.data.storeConfig ?? FALLBACK_STORE_CONFIG;
     }
+
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        `[storeConfig] Magento GraphQL failure for store "${code}" — rendering with defaults.`,
+        result.error.message,
+      );
+    }
+
+    return FALLBACK_STORE_CONFIG;
   },
 );

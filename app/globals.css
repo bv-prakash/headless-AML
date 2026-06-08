@@ -8,16 +8,7 @@
 @import "../src/style/pdp.css";
 @import "../src/style/companyStructureTree.css";
 
-/*
- * Store-view colors (single source of truth in TS: `src/theme/store-view/themes/base.theme.ts`
- * + `store-overrides.ts`) are copied onto `<html>` as CSS variables at runtime
- * (`storeViewThemeToHtmlStyle` / `applyStoreViewThemeToRoot` via `THEME_CSS_VARS`).
- *
- * Use in plain CSS:  background: var(--theme-header-bg);
- * Use in Tailwind:   bg-theme-header-bg  text-theme-header-fg  border-theme-header-border
- *   (aliases below in @theme point Tailwind utilities at these variables.)
- * Arbitrary fallback: bg-[var(--theme-header-bg)]
- */
+
 :root {
   --background: #ffffff;
   --foreground: #000000;
@@ -155,7 +146,7 @@ body {
 h1,
 h2 {
   font-family: var(--store-font-heading);
-  @apply text-xl leading-[1.1] mt-0 md:text-[26px] lg-custom:text-[32px]!;
+  @apply text-xl leading-[1.1] mt-0 md:text-[26px] lg-custom:text-[32px]! font-semibold;
 }
 
 /* Page loader (see `PageLoader` component) */
@@ -166,11 +157,20 @@ h2 {
 
 /* PageBuilder */
 .pagebuilder-mobile-hidden {
-  @apply hidden md:block;
+  @apply hidden! md:block!;
 }
 
 .pagebuilder-mobile-only {
-  @apply block md:hidden!;
+  @apply block! md:hidden!;
+}
+
+
+.pagebuilder-column-line {
+  @apply max-md:flex-wrap!;
+}
+
+.pagebuilder-column {
+  @apply max-md:w-full! max-md:basis-full!;
 }
 
 /* Form elements */

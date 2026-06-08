@@ -50,11 +50,11 @@ const NewsLatter = () => {
         SUBSCRIBE TO OUR MAILING LIST
       </div>
       <form
-        className="form subscribe flex flex-nowrap gap-2 items-baseline"
+        className="form subscribe flex flex-nowrap items-baseline"
         onSubmit={handleSubmit(onSubmit)}
         noValidate
       >
-        <div className="field newsletter mr-0 md:mr-[5px] w-full">
+        <div className="field newsletter rtl:ml-0 ltr:mr-0 rtl:md:ml-[5px] ltr:md:mr-[5px] w-full">
           <div className="control">
             <label htmlFor="newsletter" className="newslatter-label sr-only">
               Subscribe
@@ -82,7 +82,7 @@ const NewsLatter = () => {
             )}
           </div>
         </div>
-        <div className="actions ml-2.5 w-auto lg:min-w-[120px]">
+        <div className="actions rtl:mr-2.5 ltr:ml-2.5 min-w-[100px] w-auto lg:min-w-[120px]">
           <button
             type="submit"
             disabled={isSubmitting}
