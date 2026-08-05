@@ -10,7 +10,7 @@ import {
   ADD_TO_WISHLIST_MUTATION,
   type AddToWishlistResponse,
   type AddToWishlistVariables,
-} from "@/src/framework/graphql/mutations/wishlistMutations";
+} from "@/src/framework/graphql/wishlist/mutations/addToWishlist";
 
 const DEFAULT_WISHLIST_ID = "0";
 

@@ -1,6 +1,10 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { WISHLIST_COUNT_KEY } from "@/src/constants/storageKeys";
-import { getStoredValue, setStoredValue, removeStoredValue } from "@/src/utils/storage";
+import {
+  getScopedStoredValue,
+  setScopedStoredValue,
+  removeScopedStoredValue,
+} from "@/src/utils/storage";
 
 type WishlistState = {
   itemCount: number;
@@ -16,14 +20,17 @@ const wishlistSlice = createSlice({
   reducers: {
     setWishlistCount(state, action: PayloadAction<number>) {
       state.itemCount = action.payload;
-      setStoredValue(WISHLIST_COUNT_KEY, String(action.payload));
+      setScopedStoredValue(WISHLIST_COUNT_KEY, String(action.payload));
     },
     clearWishlist(state) {
       state.itemCount = 0;
-      removeStoredValue(WISHLIST_COUNT_KEY);
+      removeScopedStoredValue(WISHLIST_COUNT_KEY);
     },
     hydrateWishlist(state) {
-      const count = parseInt(getStoredValue(WISHLIST_COUNT_KEY) ?? "0", 10);
+      const count = parseInt(
+        getScopedStoredValue(WISHLIST_COUNT_KEY) ?? "0",
+        10,
+      );
       state.itemCount = isNaN(count) ? 0 : count;
     },
   },

@@ -1,29 +1,30 @@
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
 import type { Metadata } from "next";
-import {
-  getProductByUrlKey,
-  type ProductDetail,
-  type BundleItem,
-  type GroupedProductItem,
-} from "@/src/framework/graphql/queries/productDetail";
+import { getProductByUrlKey } from "@/src/framework/graphql/pdp/queries/getProductByUrlKey";
+import type {
+  ProductDetail,
+  BundleItem,
+  GroupedProductItem,
+} from "@/src/framework/graphql/pdp/types";
 import {
   pickSearchParamPositiveInt,
   pickSearchParamString,
 } from "@/src/utils/params";
 import { stripHtml } from "@/src/utils/html";
-import PageLoader from "@/src/components/common/PageLoader";
-import ProductGallery from "@/src/components/pdp/ProductGallery";
-import ProductInfo from "@/src/components/pdp/ProductInfo";
-import ProductDescription from "@/src/components/pdp/ProductDescription";
-import ProductCarousel from "@/src/components/pdp/ProductCarousel";
-import { PDP_ADD_TO_CART_WRAP_CLASS } from "@/src/components/pdp/pdpAddToCartSection";
-import ProductActions from "@/src/components/plp/ProductActions";
-import ConfigurableOptions from "@/src/components/pdp/ConfigurableOptions";
-import BundleOptions from "@/src/components/pdp/BundleOptions";
-import GroupedProductTable from "@/src/components/pdp/GroupedProductTable";
-import DownloadableLinks from "@/src/components/pdp/DownloadableLinks";
+import ProductGallery from "@/src/components/pdp/sections/ProductGallery";
+import ProductInfo from "@/src/components/pdp/sections/ProductInfo";
+import ProductDescription from "@/src/components/pdp/sections/ProductDescription";
+import ProductCarousel from "@/src/components/pdp/sections/ProductCarousel";
+import { PDP_ADD_TO_CART_WRAP_CLASS } from "@/src/components/pdp/options/pdpAddToCartSection";
+import ProductActions from "@/src/components/plp/product-card/ProductActions";
+import ConfigurableOptions from "@/src/components/pdp/options/ConfigurableOptions";
+import BundleOptions from "@/src/components/pdp/options/BundleOptions";
+import GroupedProductTable from "@/src/components/pdp/options/GroupedProductTable";
+import DownloadableLinks from "@/src/components/pdp/options/DownloadableLinks";
 import ServerBreadcrumbs from "@/src/components/plp/ServerBreadcrumbs";
+import { getCategoryBreadcrumbs } from "@/src/framework/graphql/category/queries/getCategoryBreadcrumbs";
+import { getServerStoreViewCode } from "@/src/framework/store/getActiveStoreCode";
+import { getFallbackStoreViewCode } from "@/src/config/storeViews";
 
 type PDPPageProps = {
   params: Promise<{ url_key: string }>;
@@ -37,7 +38,12 @@ export async function generateMetadata({
   params,
 }: PDPPageProps): Promise<Metadata> {
   const { url_key } = await params;
-  const product = await getProductByUrlKey(url_key);
+  const storeViewCode = await getServerStoreViewCode();
+  const fallbackStoreViewCode = getFallbackStoreViewCode(storeViewCode);
+  const product = await getProductByUrlKey(url_key, {
+    storeViewCode,
+    fallbackStoreViewCode,
+  });
 
   if (!product) {
     return { title: "Product Not Found" };
@@ -75,29 +81,37 @@ export default async function PDPPage({ params, searchParams }: PDPPageProps) {
   const sp = (await searchParams) ?? {};
   const editSku = pickSearchParamString(sp.sku);
   const editQty = pickSearchParamPositiveInt(sp.qty);
+  const storeViewKey = await getServerStoreViewCode();
+  const fallbackStoreViewCode = getFallbackStoreViewCode(storeViewKey);
 
-  const product = await getProductByUrlKey(url_key);
+  const product = await getProductByUrlKey(url_key, {
+    storeViewCode: storeViewKey,
+    fallbackStoreViewCode,
+  });
 
   if (!product) notFound();
 
   const category = product.categories?.[0] ?? null;
   const categoryId = category ? String(category.id) : null;
+  const breadcrumbsData =
+    categoryId != null
+      ? await getCategoryBreadcrumbs(categoryId, { storeViewCode: storeViewKey })
+      : null;
   const hasTypeSpecificActions =
     isConfigurable(product) || isBundle(product) || isGrouped(product) || isDownloadable(product);
   const showSimpleActions = !hasTypeSpecificActions;
 
   return (
-    <Suspense
-      fallback={
-        <PageLoader label="Loading product…" minHeightClassName="min-h-[50vh]" />
-      }
-    >
-      {/* Breadcrumbs */}
-      {categoryId && (
+    <>
+      {categoryId && breadcrumbsData ? (
         <div className="container mt-5 mb-5 lg-custom:mb-12.5!">
-          <ServerBreadcrumbs categoryId={categoryId} productName={product.name} />
+          <ServerBreadcrumbs
+            categoryId={categoryId}
+            productName={product.name}
+            prefetched={breadcrumbsData}
+          />
         </div>
-      )}
+      ) : null}
 
       {/* Product main section */}
       <div className="container relative mb-8 lg-custom:mb-12!">
@@ -176,6 +190,7 @@ export default async function PDPPage({ params, searchParams }: PDPPageProps) {
                 stockStatus={product.stock_status}
                 showQuantity
                 initialQty={editQty}
+                showRequisitionButton
                 overrideStyles={PDP_ADD_TO_CART_WRAP_CLASS}
               />
             )}
@@ -191,19 +206,31 @@ export default async function PDPPage({ params, searchParams }: PDPPageProps) {
 
         {/* Related Products */}
         {product.related_products && product.related_products.length > 0 && (
-          <ProductCarousel title="Related Products" products={product.related_products} />
+          <ProductCarousel
+            key={`related-${storeViewKey}`}
+            title="Related Products"
+            products={product.related_products}
+          />
         )}
 
         {/* Upsell Products */}
         {product.upsell_products && product.upsell_products.length > 0 && (
-          <ProductCarousel title="ACCESSORIES" products={product.upsell_products} />
+          <ProductCarousel
+            key={`upsell-${storeViewKey}`}
+            title="ACCESSORIES"
+            products={product.upsell_products}
+          />
         )}
 
         {/* Cross-sell Products */}
         {product.crosssell_products && product.crosssell_products.length > 0 && (
-          <ProductCarousel title="Frequently Bought Together" products={product.crosssell_products} />
+          <ProductCarousel
+            key={`crosssell-${storeViewKey}`}
+            title="Frequently Bought Together"
+            products={product.crosssell_products}
+          />
         )}
       </div>
-    </Suspense>
+    </>
   );
 }

@@ -1,7 +1,11 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { CART_ID_KEY, CART_COUNT_KEY } from "@/src/constants/storageKeys";
-import { getStoredValue, setStoredValue, removeStoredValue } from "@/src/utils/storage";
-import type { CartData } from "@/src/framework/graphql/mutations/cartMutations";
+import {
+  getScopedStoredValue,
+  setScopedStoredValue,
+  removeScopedStoredValue,
+} from "@/src/utils/storage";
+import type { CartData } from "@/src/framework/graphql/cart/types";
 
 type CartState = {
   cartId: string | null;
@@ -27,13 +31,13 @@ const cartSlice = createSlice({
   reducers: {
     setCartId(state, action: PayloadAction<string>) {
       state.cartId = action.payload;
-      setStoredValue(CART_ID_KEY, action.payload);
+      setScopedStoredValue(CART_ID_KEY, action.payload);
     },
     setCart(state, action: PayloadAction<CartData>) {
       const cart = action.payload;
       state.cart = cart as typeof state.cart;
       state.totalQuantity = cart.total_quantity;
-      setStoredValue(CART_COUNT_KEY, String(cart.total_quantity));
+      setScopedStoredValue(CART_COUNT_KEY, String(cart.total_quantity));
       const freshQuantities: Record<string, number> = {};
       const skuTotals: Record<string, number> = {};
       for (const item of cart.items) {
@@ -61,12 +65,12 @@ const cartSlice = createSlice({
       state.cart = null;
       state.open = false;
       state.quantities = {};
-      removeStoredValue(CART_ID_KEY);
-      removeStoredValue(CART_COUNT_KEY);
+      removeScopedStoredValue(CART_ID_KEY);
+      removeScopedStoredValue(CART_COUNT_KEY);
     },
     hydrateCart(state) {
-      const cartId = getStoredValue(CART_ID_KEY);
-      const count = parseInt(getStoredValue(CART_COUNT_KEY) ?? "0", 10);
+      const cartId = getScopedStoredValue(CART_ID_KEY);
+      const count = parseInt(getScopedStoredValue(CART_COUNT_KEY) ?? "0", 10);
       state.cartId = cartId;
       state.totalQuantity = isNaN(count) ? 0 : count;
       state.hydrated = true;

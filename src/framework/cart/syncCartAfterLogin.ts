@@ -1,12 +1,14 @@
 import apolloClient from "@/src/framework/graphql/apolloClient";
 import {
   CUSTOMER_CART_QUERY,
-  MERGE_CARTS_MUTATION,
-  type CartData,
   type CustomerCartQueryResponse,
+} from "@/src/framework/graphql/cart/queries/getCustomerCart";
+import {
+  MERGE_CARTS_MUTATION,
   type MergeCartsResponse,
   type MergeCartsVariables,
-} from "@/src/framework/graphql/mutations/cartMutations";
+} from "@/src/framework/graphql/cart/mutations/mergeCarts";
+import type { CartData } from "@/src/framework/graphql/cart/types";
 import { writeCartQueryToCache } from "@/src/framework/graphql/writeCartQueryCache";
 import type { AppDispatch } from "@/src/store/store";
 import { clearCart, setCart, setCartId } from "@/src/store/slices/cartSlice";

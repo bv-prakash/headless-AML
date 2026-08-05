@@ -73,21 +73,42 @@ function buildRemotePatterns(): NextConfig["images"] {
 }
 
 const nextConfig: NextConfig = {
+  /**
+   * Pin Turbopack to this project so a stray `package.json` / `package-lock.json`
+   * higher up the tree (e.g. in `~` or in `magento-headless-project/`) doesn't
+   * get auto-selected as the workspace root. Without this, the CSS resolver
+   * starts above `headless-aml` and fails to find `tailwindcss`.
+   *
+   * @see https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory
+   */
+  turbopack: {
+    root: __dirname,
+  },
   images: {
     ...buildRemotePatterns(),
     formats: ["image/avif", "image/webp"],
   },
-  // Optimize package imports - only import necessary exports
+  /**
+   * Next 16 + Turbopack can disagree with the browser on `serveStreamingMetadata`, so
+   * `Next.MetadataOutlet` renders `<Suspense>` on one side and a non-Suspense tree on
+   * the other → recoverable hydration mismatch (`__next_outlet_boundary__`).
+   *
+   * Matching every real User-Agent here forces the non-streaming metadata path for
+   * normal document loads (same tree server + client). Tags still resolve; only the
+   * streaming wrapper shape changes. If you need streaming metadata for crawlers,
+   * narrow this regex or use `npm run dev:webpack` while debugging.
+   *
+   * @see `next/dist/lib/metadata/metadata.js` (`createMetadataComponents` / `MetadataOutlet`)
+   */
+  htmlLimitedBots: /.*/,
   experimental: {
-    optimizePackageImports: [
-      "@apollo/client",
-      "react-toastify",
-      "swiper",
-      "react-redux",
-      "@reduxjs/toolkit",
-    ],
     // Faster incremental builds
     staticGenerationRetryCount: 1,
+    /**
+     * Do **not** enable `optimizePackageImports` for `@apollo/client` / `swiper` / `react-redux`
+     * here — Next can strip exports that Apollo links rely on at runtime, which breaks cart,
+     * checkout, PLP `ProductActions`, and other GraphQL flows after a “perf” change.
+     */
   },
   // Better page loading for faster development
   onDemandEntries: {
@@ -99,3 +120,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+

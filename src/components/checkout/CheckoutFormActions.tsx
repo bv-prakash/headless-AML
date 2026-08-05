@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Button from "@/src/components/common/Button";
+import Button from "@/src/components/common/controls/Button";
 
 type CheckoutFormActionsProps = {
   readonly checkoutStep: "shipping" | "payment";

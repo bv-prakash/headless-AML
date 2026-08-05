@@ -3,14 +3,14 @@
 import { useForm } from "react-hook-form";
 import { useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
-import Button from "@/src/components/common/Button";
+import Button from "@/src/components/common/controls/Button";
 import { emailValidation } from "@/src/utils/validation";
 import { getErrorMessage } from "@/src/utils/errors";
 import {
   CONTACT_US_MUTATION,
   type ContactUsResponse,
   type ContactUsVariables,
-} from "@/src/framework/graphql/mutations/contactUsMutation";
+} from "@/src/framework/graphql/contact-us/mutations/contactUs";
 
 const INPUT_CLASS =
   "input-text w-full h-11 px-4 text-base border rounded bg-white/95 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-theme-primary";
@@ -58,7 +58,7 @@ export default function ContactUsForm() {
 
   const onSubmit = async (values: ContactUsFormValues) => {
     try {
-      const { data, errors } = await contactUsMut({
+      const { data, error: gqlError } = await contactUsMut({
         variables: {
           input: {
             name: values.name.trim(),
@@ -69,8 +69,8 @@ export default function ContactUsForm() {
         },
       });
 
-      if (errors?.length) {
-        toast.error(errors.map((e) => e.message).join(" "));
+      if (gqlError) {
+        toast.error(getErrorMessage(gqlError, "Your message could not be sent."));
         return;
       }
 

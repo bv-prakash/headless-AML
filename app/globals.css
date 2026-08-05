@@ -1,12 +1,29 @@
 @import "tailwindcss";
-@import "../src/style/home.css";
+/* Home PageBuilder: must stay in this graph so `@apply` sees `@theme` (Tailwind v4). Store-specific tweaks: `html[data-home-theme="…"]` in theme files + `getHomeThemeId` in layout. */
+@import "../src/style/defaultTheme/home.css";
+@import "../src/style/proluxeTheme/home.css";
+@import "../src/style/prizmTheme/home.css";
 @import "../src/style/footer.css";
 @import "../src/style/icons.css";
 @import "../src/style/pdp.css";
+@import "../src/style/companyStructureTree.css";
+
 
 :root {
   --background: #ffffff;
-  --foreground: #000;
+  --foreground: #000000;
+  /* Defaults = base.theme.ts; non-default stores override on <html> from store-overrides.ts */
+  --theme-header-bg: #ffffff;
+  --theme-header-fg: #000000;
+  --theme-header-border: #384c60;
+  --theme-body-bg: #ffffff;
+  --theme-surface: #ffffff;
+  /* Match base.theme.ts colors.theme* — SSR / no-js before <html> inline theme */
+  --theme-themePrimary: #384c60;
+  --theme-themeSecondary: #002941;
+  --theme-themeTextColor: #000;
+  --store-font-body: "proxima-nova", ui-sans-serif, system-ui, sans-serif;
+  --store-font-heading: var(--store-font-body);
 }
 
 @font-face {
@@ -55,8 +72,17 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-proxima-nova: "proxima-nova", sans-serif;
-  --color-theme-primary: #384c60;
-  --color-theme-secondary: #002941;
+  --font-icomoon: "icomoon", sans-serif;
+  /* Bridge TS theme.colors.* → Tailwind: bg-theme-header-bg, text-theme-header-fg, etc. */
+  --color-theme-header-bg: var(--theme-header-bg);
+  --color-theme-header-fg: var(--theme-header-fg);
+  --color-theme-header-border: var(--theme-header-border);
+  --color-theme-body-bg: var(--theme-body-bg);
+  --color-theme-surface: var(--theme-surface);
+  /* brand.primary in TS sets --color-theme-primary on <html>; keep build-time fallback here */
+  --color-theme-primary: var(--theme-themePrimary);
+  --color-theme-secondary: var(--theme-themeSecondary);
+  --color-theme-text-color: var(--theme-themeTextColor);
   --color-light-green: #03a64a;
   --color-light-red: #ea6161;
   --color-aaa: #aaa;
@@ -82,12 +108,14 @@
 
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: "proxima-nova", sans-serif;
+  background: var(--theme-body-bg, var(--background));
+  color: var(--theme-themeTextColor, var(--foreground));
+  font-family: var(--store-font-body);
 
   @apply text-base leading-[1.3] font-normal lg-custom:text-lg!;
 }
+
+/* Store view: add rules under html[data-store-view="your_store_code"] { … } (see layout + StoreViewDocumentSync). */
 
 /* Account order detail: `window.print()` — show only `.order-print-root`, hide global chrome */
 @media print {
@@ -117,7 +145,8 @@ body {
 
 h1,
 h2 {
-  @apply text-xl leading-[1.1] mt-0 md:text-[26px] lg-custom:text-[32px]!;
+  font-family: var(--store-font-heading);
+  @apply text-xl leading-[1.1] mt-0 md:text-[26px] lg-custom:text-[32px]! font-semibold;
 }
 
 /* Page loader (see `PageLoader` component) */
@@ -128,11 +157,20 @@ h2 {
 
 /* PageBuilder */
 .pagebuilder-mobile-hidden {
-  @apply hidden md:block;
+  @apply hidden! md:block!;
 }
 
 .pagebuilder-mobile-only {
-  @apply block md:hidden!;
+  @apply block! md:hidden!;
+}
+
+
+.pagebuilder-column-line {
+  @apply max-md:flex-wrap!;
+}
+
+.pagebuilder-column {
+  @apply max-md:w-full! max-md:basis-full!;
 }
 
 /* Form elements */

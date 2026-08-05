@@ -1,9 +1,9 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { COMPARE_UID_KEY, COMPARE_COUNT_KEY } from "@/src/constants/storageKeys";
 import {
-  getStoredValue,
-  setStoredValue,
-  removeStoredValue,
+  getScopedStoredValue,
+  setScopedStoredValue,
+  removeScopedStoredValue,
 } from "@/src/utils/storage";
 
 type CompareState = {
@@ -24,7 +24,7 @@ const compareSlice = createSlice({
   reducers: {
     setCompareCount(state, action: PayloadAction<number>) {
       state.itemCount = action.payload;
-      setStoredValue(COMPARE_COUNT_KEY, String(action.payload));
+      setScopedStoredValue(COMPARE_COUNT_KEY, String(action.payload));
     },
     updateCompare(
       state,
@@ -32,18 +32,18 @@ const compareSlice = createSlice({
     ) {
       state.uid = action.payload.uid;
       state.itemCount = action.payload.itemCount;
-      setStoredValue(COMPARE_UID_KEY, action.payload.uid);
-      setStoredValue(COMPARE_COUNT_KEY, String(action.payload.itemCount));
+      setScopedStoredValue(COMPARE_UID_KEY, action.payload.uid);
+      setScopedStoredValue(COMPARE_COUNT_KEY, String(action.payload.itemCount));
     },
     clearCompare(state) {
       state.uid = null;
       state.itemCount = 0;
-      removeStoredValue(COMPARE_UID_KEY);
-      removeStoredValue(COMPARE_COUNT_KEY);
+      removeScopedStoredValue(COMPARE_UID_KEY);
+      removeScopedStoredValue(COMPARE_COUNT_KEY);
     },
     hydrateCompare(state) {
-      const uid = getStoredValue(COMPARE_UID_KEY);
-      const count = parseInt(getStoredValue(COMPARE_COUNT_KEY) ?? "0", 10);
+      const uid = getScopedStoredValue(COMPARE_UID_KEY);
+      const count = parseInt(getScopedStoredValue(COMPARE_COUNT_KEY) ?? "0", 10);
       state.uid = uid;
       state.itemCount = isNaN(count) ? 0 : count;
       state.hydrated = true;

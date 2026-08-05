@@ -1,7 +1,38 @@
-import config from "@/src/config/config";
+import { cache } from "react";
+import {
+  getDefaultStoreViewCodeFromEnv,
+  hydrateStoreViewOptionsFromMagento,
+  resolveStoreViewCodeForRequest,
+  normalizeStoreViewCode,
+  STORE_VIEW_COOKIE_NAME,
+} from "@/src/config/storeViews";
 
-const DEFAULT_STORE_CODE = "default";
+export { normalizeStoreViewCode, STORE_VIEW_COOKIE_NAME };
+export { resolveStoreViewCodeForRequest };
 
+/**
+ * Fallback when no per-request store is available (env / build defaults).
+ * @deprecated Prefer {@link getDefaultStoreViewCodeFromEnv} — name kept for existing imports.
+ */
 export function getActiveStoreCode(): string {
-  return config.commerce.storeCode?.trim() || DEFAULT_STORE_CODE;
+  return getDefaultStoreViewCodeFromEnv();
 }
+
+export { getDefaultStoreViewCodeFromEnv };
+
+/**
+ * Resolves store view for server `fetch` / Apollo during a request (reads cookie set by the client toggle).
+ * Wrapped in `cache` so parallel server components await the same resolution once per request.
+ */
+export const getServerStoreViewCode = cache(async (): Promise<string> => {
+  await hydrateStoreViewOptionsFromMagento();
+  const fallback = getDefaultStoreViewCodeFromEnv();
+  try {
+    const { cookies } = await import("next/headers");
+    const jar = await cookies();
+    const raw = jar.get(STORE_VIEW_COOKIE_NAME)?.value;
+    return resolveStoreViewCodeForRequest(raw, null, fallback);
+  } catch {
+    return fallback;
+  }
+});

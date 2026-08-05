@@ -1,25 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import Button from "@/src/components/common/Button";
+import Button from "@/src/components/common/controls/Button";
 import { emailValidation } from "@/src/utils/validation";
-import { useAppDispatch } from "@/src/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/src/store/hooks";
 import { store } from "@/src/store/store";
 import { login } from "@/src/store/slices/authSlice";
 import { applySyncedCart, syncCartAfterLogin } from "@/src/framework/cart/syncCartAfterLogin";
 import { CART_ID_KEY } from "@/src/constants/storageKeys";
-import { getStoredValue } from "@/src/utils/storage";
+import { getScopedStoredValue } from "@/src/utils/storage";
 import {
   GENERATE_CUSTOMER_TOKEN_MUTATION,
   type GenerateCustomerTokenResponse,
   type GenerateCustomerTokenVariables,
-} from "@/src/framework/graphql/mutations/authMutations";
+} from "@/src/framework/graphql/auth/mutations/generateCustomerToken";
 import { safeRedirectPath } from "@/src/utils/safeRedirectPath";
+import {
+  getHydratedStoreViewOptions,
+} from "@/src/config/storeViews";
+import { selectStoreViewCode } from "@/src/store/selectors";
+
+/**
+ * Magento returns a generic "account sign-in was incorrect" for either a wrong password
+ * *or* a customer that belongs to a different website. We match on these common shapes so
+ * we can tell the shopper their account may simply belong to another store — far more
+ * actionable than "incorrect" on a multi-website storefront.
+ */
+function looksLikeCrossWebsiteLogin(message: string): boolean {
+  const m = message.toLowerCase();
+  return (
+    m.includes("sign-in was incorrect") ||
+    m.includes("sign in was incorrect") ||
+    m.includes("account is disabled") ||
+    m.includes("not a valid customer") ||
+    m.includes("no such entity")
+  );
+}
 
 type LoginFormValues = {
   email: string;
@@ -35,6 +56,21 @@ export default function LoginForm() {
     searchParams.get("redirect"),
     "/",
   );
+
+  const storeViewCode = useAppSelector(selectStoreViewCode);
+  const activeStore = useMemo(
+    () => {
+      const options = getHydratedStoreViewOptions();
+      return options.find((o) => o.code === storeViewCode) ?? options[0];
+    },
+    [storeViewCode],
+  );
+  const activeStoreGroup = activeStore?.group ?? "this store";
+
+  const reason = searchParams.get("reason");
+  const storeFromQuery = searchParams.get("store")?.trim() || null;
+  const showStoreChangedBanner = reason === "store_changed";
+  const showCredentialMismatch = reason === "store_mismatch";
 
   const {
     register,
@@ -62,7 +98,7 @@ export default function LoginForm() {
       dispatch(login({ token }));
 
       const guestCartId =
-        store.getState().cart.cartId ?? getStoredValue(CART_ID_KEY);
+        store.getState().cart.cartId ?? getScopedStoredValue(CART_ID_KEY);
 
       router.push(redirectAfterLogin);
 
@@ -78,9 +114,17 @@ export default function LoginForm() {
         toast.success("Signed in successfully.");
       })();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Login failed. Please try again.";
-      toast.error(message);
+      const raw = err instanceof Error ? err.message : String(err);
+      if (looksLikeCrossWebsiteLogin(raw)) {
+        const hint = `These credentials aren't valid on ${activeStoreGroup}. Make sure you've selected the store where your account was created, then try again.`;
+        toast.error(hint);
+        const nextParams = new URLSearchParams(searchParams.toString());
+        nextParams.set("reason", "store_mismatch");
+        nextParams.set("store", activeStoreGroup);
+        router.replace(`/sign-in?${nextParams.toString()}`);
+      } else {
+        toast.error(raw || "Login failed. Please try again.");
+      }
     }
   };
 
@@ -92,6 +136,27 @@ export default function LoginForm() {
     >
       <fieldset className="fieldset login">
         <legend className="sr-only">Customer Login</legend>
+
+        {showStoreChangedBanner ? (
+          <div
+            role="status"
+            className="mb-5 rounded border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900"
+          >
+            You switched to{" "}
+            <strong>{storeFromQuery ?? activeStoreGroup}</strong>. Accounts are
+            specific to each store — please sign in with credentials for this store.
+          </div>
+        ) : null}
+        {showCredentialMismatch ? (
+          <div
+            role="alert"
+            className="mb-5 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900"
+          >
+            Those credentials don't match <strong>{storeFromQuery ?? activeStoreGroup}</strong>.
+            If your account was created on a different store, please change the store
+            from the header first, then sign in.
+          </div>
+        ) : null}
 
         <div className="field email mb-5">
           <div className="control">

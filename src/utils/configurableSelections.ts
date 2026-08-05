@@ -1,7 +1,7 @@
 import type {
   ConfigurableOption,
   ConfigurableVariant,
-} from "@/src/framework/graphql/queries/productDetail";
+} from "@/src/framework/graphql/pdp/types";
 
 function normalizeAttrKey(code: string): string {
   return code.toLowerCase().replace(/[^a-z0-9]/g, "");

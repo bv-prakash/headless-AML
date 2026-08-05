@@ -25,15 +25,15 @@
   }
   
   .footer-left-block .footer-links .footer-links-column .footer-title a {
-    @apply text-white hover:text-dbdcda transition-colors duration-300 ;
+    @apply text-white hover:text-dbdcda transition-colors duration-300;
   }
   
   .footer-left-block .footer-links .footer-links-column a {
-    @apply mb-[2px] block text-white/50 text-sm leading-[1.3] hover:text-dbdcda transition-colors duration-300 ;
+    @apply mb-[2px] block text-white/50 text-sm leading-[1.3] hover:text-dbdcda transition-colors duration-300;
   }
   
   .footer-service-block .footer-service {
-    @apply text-sm leading-[1.4] sm:flex sm:flex-wrap md:text-xs ;
+    @apply  text-[10px] leading-[1.4] sm:flex sm:flex-wrap md:text-xs;
   }
   
   .footer-service-block .footer-service .service-column {

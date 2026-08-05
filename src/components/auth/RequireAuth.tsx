@@ -23,8 +23,7 @@ export default function RequireAuth({ children }: RequireAuthProps) {
   useEffect(() => {
     if (!mounted || !hydrated) return;
     if (isLoggedIn) return;
-    const redirect = pathname ? `?redirect=${encodeURIComponent(pathname)}` : "";
-    router.replace(`/sign-in${redirect}`);
+    router.replace("/");
   }, [mounted, hydrated, isLoggedIn, pathname, router]);
 
   if (!mounted || !hydrated) {

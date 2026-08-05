@@ -1,6 +1,7 @@
 import React, { useMemo, memo } from "react";
 import Link from "next/link";
-import type { CustomerAddressNode } from "@/src/framework/graphql/queries/customerInfo";
+import { AddressStreetLines } from "@/src/components/account/address/shared/AddressStreetLines";
+import type { CustomerAddressNode } from "@/src/framework/graphql/customer/types";
 
 type AddressTableProps = {
   addresses?: readonly CustomerAddressNode[] | null;
@@ -32,7 +33,7 @@ const CLASS = {
   EMPTY_TEXT: "text-gray-500",
   TR: "border-b border-ccc hover:bg-f4f4f4",
   THEAD: "bg-f0f0f0 border-b-2 border-aaa",
-  ACTION_LINK: "action text-theme-primary flex items-center gap-2text-xs md:text-sm",
+  ACTION_LINK: "action text-theme-primary flex items-center gap-2 text-xs md:text-sm",
   ACTION_BTN: "action text-light-red hover:underline text-xs md:text-sm disabled:opacity-50",
   ACTION_CONTAINER: "flex gap-2 justify-center flex-wrap",
 } as const;
@@ -58,15 +59,7 @@ const getAddressField = (address: CustomerAddressNode, field: string): React.Rea
     case "lastname":
       return address.lastname || "-";
     case "streetaddress":
-      return address.street && address.street.length > 0 ? (
-        <div className="space-y-1">
-          {address.street.map((line, idx) => (
-            <p key={idx}>{line}</p>
-          ))}
-        </div>
-      ) : (
-        "-"
-      );
+      return address.street?.length ? <AddressStreetLines street={address.street} /> : "-";
     case "city":
       return address.city || "-";
     case "country":

@@ -6,22 +6,24 @@ import { useForm } from "react-hook-form";
 import { useMutation } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import Button from "@/src/components/common/Button";
+import Button from "@/src/components/common/controls/Button";
 import { emailValidation } from "@/src/utils/validation";
 import { useAppDispatch } from "@/src/store/hooks";
 import { store } from "@/src/store/store";
 import { login } from "@/src/store/slices/authSlice";
 import { applySyncedCart, syncCartAfterLogin } from "@/src/framework/cart/syncCartAfterLogin";
 import { CART_ID_KEY } from "@/src/constants/storageKeys";
-import { getStoredValue } from "@/src/utils/storage";
+import { getScopedStoredValue } from "@/src/utils/storage";
 import {
   CREATE_CUSTOMER_MUTATION,
-  GENERATE_CUSTOMER_TOKEN_MUTATION,
   type CreateCustomerResponse,
   type CreateCustomerVariables,
+} from "@/src/framework/graphql/auth/mutations/createCustomer";
+import {
+  GENERATE_CUSTOMER_TOKEN_MUTATION,
   type GenerateCustomerTokenResponse,
   type GenerateCustomerTokenVariables,
-} from "@/src/framework/graphql/mutations/authMutations";
+} from "@/src/framework/graphql/auth/mutations/generateCustomerToken";
 const PASSWORD_MIN_LENGTH = 8;
 
 type SignUpFormValues = {
@@ -92,7 +94,7 @@ export default function SignUpForm() {
         );
 
         const guestCartId =
-          store.getState().cart.cartId ?? getStoredValue(CART_ID_KEY);
+          store.getState().cart.cartId ?? getScopedStoredValue(CART_ID_KEY);
 
         router.push("/");
 

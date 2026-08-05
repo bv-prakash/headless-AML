@@ -23,9 +23,7 @@
       "@/*": ["./*"]
     },
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "types": ["next", "next/image-types/global"],
-    "typeRoots": ["./node_modules/@types"]
+    "experimentalDecorators": true
   },
   "include": [
     "next-env.d.ts",

@@ -1,0 +1,389 @@
+/*
+ * Company structure tree — jstree-flavoured visual with explicit "group"
+ * affordances for teams (CompanyTeam nodes) so members read as a contained
+ * cluster rather than an arbitrary indent level.
+ *
+ * Section map (search by heading to navigate):
+ *   1. Container & lists
+ *   2. Connectors (dotted L-lines)
+ *   3. Row anchor (label, hover, selection)
+ *   4. Disclosure icon (open / closed / leaf)
+ *   5. Theme icons (team / user / admin avatar)
+ *   6. Group affordances (team chip + member group container)
+ *   7. Admin row (root) styling
+ *
+ * Colour strategy: `currentColor` for every line / outline so the tree
+ * adapts to whichever page theme it's dropped into. Theme-coloured
+ * accents use the existing `--theme-themePrimary` CSS variable.
+ */
+
+
+/* ────────────────────────────────────────────────────────────── */
+/* 1. Container & lists                                           */
+/* ────────────────────────────────────────────────────────────── */
+
+.jstree {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  line-height: 1.4;
+  color: inherit;
+}
+
+.jstree .jstree-children {
+  margin: 0;
+  padding-left: 28px;
+  list-style: none;
+}
+
+.jstree-node {
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* ────────────────────────────────────────────────────────────── */
+/* 2. Connectors (dotted L-lines)                                 */
+/* ────────────────────────────────────────────────────────────── */
+
+/* Vertical line — runs the full height of every nested node. */
+.jstree-node::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -16px;
+  border-left: 1px dotted currentColor;
+  opacity: 0.35;
+}
+
+/* Horizontal stub — meets the disclosure icon centre. */
+.jstree-node::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: -16px;
+  width: 14px;
+  border-top: 1px dotted currentColor;
+  opacity: 0.35;
+}
+
+/* Last sibling: clip the vertical at the L so it doesn't hang. */
+.jstree-node.is-last::before {
+  bottom: auto;
+  height: 16px;
+}
+
+/* Top-level rows live above the company root — no parent connector. */
+.jstree > .jstree-node::before,
+.jstree > .jstree-node::after {
+  display: none;
+}
+
+
+/* ────────────────────────────────────────────────────────────── */
+/* 3. Row anchor                                                  */
+/* ────────────────────────────────────────────────────────────── */
+
+.jstree-anchor {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  min-height: 28px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  background: transparent;
+}
+
+.jstree-anchor:hover {
+  background: rgba(127, 127, 127, 0.12);
+}
+
+.jstree-anchor.jstree-clicked,
+.jstree-node[aria-selected="true"] > .jstree-anchor {
+  background: rgba(127, 127, 127, 0.28);
+  border-color: rgba(127, 127, 127, 0.45);
+}
+
+.jstree-anchor:focus-visible {
+  outline: 2px solid var(--theme-themePrimary, #384c60);
+  outline-offset: 1px;
+}
+
+.jstree-anchor .me-suffix {
+  margin-left: 4px;
+  opacity: 0.7;
+  font-weight: 400;
+  font-size: 0.9em;
+}
+
+
+/* ────────────────────────────────────────────────────────────── */
+/* 4. Disclosure icon (open / closed / leaf)                      */
+/* ────────────────────────────────────────────────────────────── */
+
+.jstree-ocl {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  z-index: 1; /* sit on top of the dotted connector */
+  margin-right: 2px;
+  border-radius: 50%;
+  background: transparent;
+  font-style: normal;
+}
+
+.jstree-node.jstree-leaf > .jstree-ocl {
+  cursor: default;
+}
+
+.jstree-node.jstree-leaf > .jstree-ocl::before {
+  content: "";
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.35;
+}
+
+/* Subtle ring for the open/close marker — keeps the dotted connector readable. */
+.jstree-node.jstree-open > .jstree-ocl,
+.jstree-node.jstree-closed > .jstree-ocl {
+  box-shadow: inset 0 0 0 1px currentColor;
+  opacity: 0.7;
+}
+
+.jstree-node.jstree-open > .jstree-ocl:hover,
+.jstree-node.jstree-closed > .jstree-ocl:hover {
+  opacity: 1;
+}
+
+/* Chevron drawn from two borders rotated 45° — scales with font size. */
+.jstree-node.jstree-open > .jstree-ocl::before,
+.jstree-node.jstree-closed > .jstree-ocl::before {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+}
+
+.jstree-node.jstree-open > .jstree-ocl::before {
+  transform: translateY(-1px) rotate(45deg);
+}
+
+.jstree-node.jstree-closed > .jstree-ocl::before {
+  transform: translate(-1px, 0) rotate(-45deg);
+}
+
+
+/* ────────────────────────────────────────────────────────────── */
+/* 5. Theme icons (team / user / admin avatar)                    */
+/* ────────────────────────────────────────────────────────────── */
+
+.jstree-themeicon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  opacity: 0.85;
+  font-style: normal;
+  /* Hard guardrails — Tailwind v4's preflight gives `svg { display: block }`
+   * which under some cascade-layer orderings lets unsized SVGs balloon to
+   * the container width. We constrain the slot itself as a backstop. */
+  overflow: hidden;
+}
+
+.jstree-themeicon > svg {
+  /* `!important` because Tailwind v4's base layer applies `svg` rules that
+   * win over our descendant selector on some setups. The SVG also carries
+   * explicit `width`/`height` HTML attributes (NodeIcon component) which
+   * win for replaced elements, but this is the belt to its suspenders. */
+  width: 16px !important;
+  height: 16px !important;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+.jstree-anchor.company-admin .jstree-themeicon,
+.jstree-anchor .icon-company {
+  opacity: 1;
+}
+
+
+/* ────────────────────────────────────────────────────────────── */
+/* 6. Group affordances                                           */
+/*    Team rows render as a "group chip" with a distinctive       */
+/*    background + bold label, and their open children render     */
+/*    inside a tinted container with a left rail so members read  */
+/*    as a cluster.                                               */
+/* ────────────────────────────────────────────────────────────── */
+
+/*
+ * Team chip — `.is-group` is set on `<a>` for CompanyTeam rows. We use a
+ * very light theme-primary tint so the chip survives both light and dark
+ * page backgrounds without further overrides.
+ */
+.jstree-anchor.is-group {
+  background: color-mix(in srgb, var(--theme-themePrimary, #384c60) 8%, transparent);
+  border-color: color-mix(in srgb, var(--theme-themePrimary, #384c60) 28%, transparent);
+  font-weight: 600;
+  padding-right: 12px;
+}
+
+.jstree-anchor.is-group:hover {
+  background: color-mix(in srgb, var(--theme-themePrimary, #384c60) 14%, transparent);
+}
+
+.jstree-anchor.is-group.jstree-clicked,
+.jstree-node[aria-selected="true"] > .jstree-anchor.is-group {
+  background: color-mix(in srgb, var(--theme-themePrimary, #384c60) 22%, transparent);
+  border-color: var(--theme-themePrimary, #384c60);
+}
+
+/*
+ * Member count badge next to the team name — pure CSS via a `<span>` the
+ * tree component renders when `node.children.length > 0`.
+ */
+.jstree-anchor .group-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 6px;
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--theme-themePrimary, #384c60);
+  background: color-mix(in srgb, var(--theme-themePrimary, #384c60) 18%, transparent);
+}
+
+/*
+ * Open team's member container — sits inside the parent `<li>` (after the
+ * anchor) and groups its `.jstree-children` visually. The left rail and
+ * tint together make "these rows belong to this group" obvious without
+ * needing extra outline boxes.
+ */
+.jstree-group-body {
+  position: relative;
+  margin: 4px 0 4px 8px;
+  padding: 4px 0 4px 0;
+  background: color-mix(in srgb, var(--theme-themePrimary, #384c60) 4%, transparent);
+  border-radius: 4px;
+}
+
+.jstree-group-body::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  width: 2px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--theme-themePrimary, #384c60) 35%, transparent);
+}
+
+/* Empty group hint — rendered when a team has no members yet. */
+.jstree-group-empty {
+  padding: 6px 10px 6px 28px;
+  font-size: 12px;
+  color: currentColor;
+  opacity: 0.6;
+  font-style: italic;
+}
+
+
+/* ────────────────────────────────────────────────────────────── */
+/* 7. Admin row (root)                                            */
+/*    The company admin is the permanent top-of-tree: it never    */
+/*    collapses, so we hide its disclosure slot, paint a large    */
+/*    circular avatar, and drop a solid (non-dotted) rail down    */
+/*    into its inheritors so the descent reads as authoritative.  */
+/* ────────────────────────────────────────────────────────────── */
+
+/* Hide the chevron slot completely — the admin can't be collapsed. */
+.jstree-node.is-root > .jstree-ocl {
+  display: none;
+}
+
+/* Bigger top-line spacing so the admin reads as a header, not a row. */
+.jstree-node.is-root {
+  padding-bottom: 4px;
+}
+
+/*
+ * "Inheritance rail" — a solid coloured line dropping from below the
+ * admin's avatar into the children list, replacing the dotted vertical
+ * for direct descendants. Makes the "everyone inherits from admin" intent
+ * unambiguous. The dotted lines resume for grandchildren / sub-teams.
+ */
+.jstree-node.is-root > .jstree-children {
+  position: relative;
+  padding-left: 36px;
+  margin-top: 4px;
+}
+
+.jstree-node.is-root > .jstree-children::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 18px;
+  border-left: 2px solid currentColor;
+  opacity: 0.35;
+}
+
+/* Inheritors reuse the dotted L (horizontal stub) but bypass the vertical
+ * — the solid rail handles that for the admin's direct children. */
+.jstree-node.is-root > .jstree-children > .jstree-node::before {
+  display: none;
+}
+
+.jstree-node.is-root > .jstree-children > .jstree-node::after {
+  left: -18px;
+  width: 18px;
+  border-top: 1px dotted currentColor;
+  opacity: 0.45;
+}
+
+.jstree-anchor.company-admin {
+  font-weight: 600;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.jstree-anchor.company-admin .jstree-themeicon {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  opacity: 0.9;
+}
+
+.jstree-anchor.company-admin .jstree-themeicon > svg {
+  /* Same guardrails as the base SVG rule — see comment in section 5. */
+  width: 22px !important;
+  height: 22px !important;
+}

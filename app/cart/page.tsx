@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 const CartContent = dynamic(
   () => import("@/src/components/cart/CartContent"),
 );
-import { Breadcrumbs } from "@/src/components/common/Breadcrumbs";
+import { Breadcrumbs } from "@/src/components/common/navigation/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Shopping Cart",

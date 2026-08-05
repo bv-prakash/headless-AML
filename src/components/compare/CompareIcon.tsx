@@ -9,9 +9,9 @@ import {
   COMPARE_LIST_QUERY,
   type CompareListQueryResponse,
   type CompareListQueryVariables,
-} from "@/src/framework/graphql/mutations/compareMutations";
+} from "@/src/framework/graphql/compare/queries/getCompareList";
 
-export default function CompareIcon() {
+export default function CompareIcon({ className }: { className?: string }) {
   const dispatch = useAppDispatch();
   const compareUid = useAppSelector((state) => state.compare.uid);
   const itemCount = useAppSelector((state) => state.compare.itemCount);
@@ -36,7 +36,7 @@ export default function CompareIcon() {
   return (
     <Link
       href="/compare"
-      className="relative flex items-center gap-1 hover:text-theme-primary transition-colors"
+      className={`relative flex items-center gap-1 hover:text-theme-primary transition-colors ${className}`}
       aria-label={`Compare products${itemCount > 0 ? ` (${itemCount} items)` : ""}`}
     >
       <i className="icon-compare text-[22px] leading-1" aria-hidden="true" />

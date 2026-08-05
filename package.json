@@ -17,6 +17,7 @@
     "graphql-tag": "^2.12.6",
     "husky": "^9.1.7",
     "next": "16.2.1",
+    "next-i18next": "^16.0.5",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.72.1",

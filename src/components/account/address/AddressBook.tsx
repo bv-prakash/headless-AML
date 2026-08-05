@@ -1,7 +1,12 @@
 import React, { useMemo, memo } from "react";
+import Link from "next/link";
 import { InformationBox } from "@/src/components/account/InformationBox";
+import { AddressStreetLines } from "@/src/components/account/address/shared/AddressStreetLines";
 import { getBillingAddress, getShippingAddress } from "@/src/utils/addressHelpers";
-import type { CustomerAddressNode } from "@/src/framework/graphql/queries/customerInfo";
+import type { CustomerAddressNode } from "@/src/framework/graphql/customer/types";
+
+const ACTION_LINK_CLASS =
+  "action text-theme-primary flex no-wrap gap-2 items-baseline leading-[17px]";
 
 type AddressBookProps = {
   addresses?: readonly CustomerAddressNode[] | null;
@@ -19,25 +24,16 @@ type AddressBoxProps = {
   actions?: React.ReactNode;
 };
 
-/**
- * Renders formatted address details
- */
 const AddressDisplay = memo(function AddressDisplay({ address }: AddressDisplayProps) {
   if (!address) {
     return <p className="text-gray-500">No address set</p>;
   }
 
-  const { street, city, region, postcode, country_code, telephone } = address;
+  const { city, region, postcode, country_code, telephone } = address;
 
   return (
     <>
-      {street && street.length > 0 && (
-        <>
-          {street.map((line, idx) => (
-            <p key={idx}>{line}</p>
-          ))}
-        </>
-      )}
+      <AddressStreetLines street={address.street} />
       <p>
         <span>{city}</span>
         {region?.region && <span>, {region.region}</span>}
@@ -50,38 +46,54 @@ const AddressDisplay = memo(function AddressDisplay({ address }: AddressDisplayP
 });
 AddressDisplay.displayName = "AddressDisplay";
 
-/**
- * Individual address box component
- */
 const AddressBox = memo(function AddressBox({ title, address, actions }: AddressBoxProps) {
   return (
-    <InformationBox
-      title={title}
-      content={<AddressDisplay address={address} />}
-      actions={actions}
-    />
+    <InformationBox title={title} content={<AddressDisplay address={address} />} actions={actions} />
   );
 });
 AddressBox.displayName = "AddressBox";
 
+function defaultAddressActions(address: CustomerAddressNode | undefined, label: string) {
+  if (address?.id != null) {
+    return (
+      <Link href={`/account/addresses/edit/${address.id}`} className={ACTION_LINK_CLASS}>
+        <i className="icon-edit" aria-hidden="true" />
+        {label}
+      </Link>
+    );
+  }
+  return (
+    <Link href="/account/addresses/new" className={ACTION_LINK_CLASS}>
+      <i className="icon-edit" aria-hidden="true" />
+      Add New Address
+    </Link>
+  );
+}
+
 /**
- * AddressBook component - displays default billing and shipping addresses in card format
+ * Default billing and shipping cards with optional overrides for `actions` slots.
  */
 export const AddressBook = memo(function AddressBook({
   addresses,
   billingActions,
   shippingActions,
 }: AddressBookProps) {
-  // Extract default addresses - memoized to avoid recalculation
-  const { billingAddress, shippingAddress } = useMemo(() => ({
-    billingAddress: getBillingAddress(addresses),
-    shippingAddress: getShippingAddress(addresses),
-  }), [addresses]);
+  const { billingAddress, shippingAddress } = useMemo(
+    () => ({
+      billingAddress: getBillingAddress(addresses),
+      shippingAddress: getShippingAddress(addresses),
+    }),
+    [addresses],
+  );
+
+  const billingResolved = billingActions ?? defaultAddressActions(billingAddress, "Change Billing Address");
+  const shippingResolved =
+    shippingActions ?? defaultAddressActions(shippingAddress, "Change Shipping Address");
 
   return (
     <div className="block-content flex flex-wrap lg:no-wrap lg:gap-10">
-      <AddressBox title="Billing Address" address={billingAddress} actions={billingActions} />
-      <AddressBox title="Shipping Address" address={shippingAddress} actions={shippingActions} />
+      <AddressBox title="Billing Address" address={billingAddress} actions={billingResolved} />
+      <AddressBox title="Shipping Address" address={shippingAddress} actions={shippingResolved} />
     </div>
   );
 });

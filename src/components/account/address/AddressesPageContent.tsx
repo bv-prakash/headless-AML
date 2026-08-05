@@ -7,10 +7,10 @@ import { useQuery } from "@apollo/client/react";
 import { AccountPageTitle } from "@/src/components/account/AccountPageTitle";
 import { AddressBook } from "@/src/components/account/address/AddressBook";
 import { AddressTable } from "@/src/components/account/address/AddressTable";
-import { AccountPager } from "@/src/components/common/AccountPager";
-import PageLoader from "@/src/components/common/PageLoader";
-import { CUSTOMER_INFO_QUERY } from "@/src/framework/graphql/queries";
-import type { CustomerForCheckoutResponse } from "@/src/framework/graphql/queries/customerInfo";
+import { AccountPager } from "@/src/components/common/navigation/AccountPager";
+import PageLoader from "@/src/components/common/loader/PageLoader";
+import { CUSTOMER_INFO_QUERY } from "@/src/framework/graphql/customer/queries/getCustomerInfo";
+import type { CustomerForCheckoutResponse } from "@/src/framework/graphql/customer/types";
 import {
   buildListPaginationQueryString,
   LUMA_ACCOUNT_LIST_PAGINATION,

@@ -13,42 +13,52 @@ import {
   CART_QUERY,
   type CartQueryResponse,
   type CartQueryVariables,
-} from "@/src/framework/graphql/mutations/cartMutations";
+} from "@/src/framework/graphql/cart/queries/getCart";
 import {
   CREATE_CUSTOMER_ADDRESS_MUTATION,
   type CreateCustomerAddressResponse,
-} from "@/src/framework/graphql/mutations/customerAddressMutations";
+} from "@/src/framework/graphql/customer-addresses/mutations/createCustomerAddress";
 import {
   CART_CHECKOUT_OPTIONS_QUERY,
-  SET_BILLING_ADDRESS_ON_CART,
-  SET_GUEST_EMAIL_ON_CART,
-  SET_PAYMENT_METHOD_AND_PLACE_ORDER,
-  SET_SHIPPING_ADDRESSES_ON_CART,
-  SET_SHIPPING_METHODS_ON_CART,
   type CartCheckoutOptionsResponse,
-  type CartAddressInput,
-  type PaymentMethodQuote,
+} from "@/src/framework/graphql/checkout/queries/getCartCheckoutOptions";
+import {
+  SET_BILLING_ADDRESS_ON_CART,
   type SetBillingAddressResponse,
   type SetBillingAddressVariables,
+} from "@/src/framework/graphql/checkout/mutations/setBillingAddressOnCart";
+import {
+  SET_GUEST_EMAIL_ON_CART,
   type SetGuestEmailResponse,
   type SetGuestEmailVariables,
+} from "@/src/framework/graphql/checkout/mutations/setGuestEmailOnCart";
+import {
+  SET_PAYMENT_METHOD_AND_PLACE_ORDER,
   type SetPaymentMethodAndPlaceOrderResponse,
   type SetPaymentMethodAndPlaceOrderVariables,
+} from "@/src/framework/graphql/checkout/mutations/setPaymentMethodAndPlaceOrder";
+import {
+  SET_SHIPPING_ADDRESSES_ON_CART,
   type SetShippingAddressesResponse,
   type SetShippingAddressesVariables,
+} from "@/src/framework/graphql/checkout/mutations/setShippingAddressesOnCart";
+import {
+  SET_SHIPPING_METHODS_ON_CART,
   type SetShippingMethodsResponse,
   type SetShippingMethodsVariables,
-  type ShippingMethodOnAddress,
-  type BillingAddressMutationInput,
-} from "@/src/framework/graphql/mutations/checkoutMutations";
-import {
-  CUSTOMER_INFO_QUERY,
-  type CustomerForCheckoutResponse,
-} from "@/src/framework/graphql/queries/customerInfo";
+} from "@/src/framework/graphql/checkout/mutations/setShippingMethodsOnCart";
+import type {
+  CartAddressInput,
+  PaymentMethodQuote,
+  ShippingMethodOnAddress,
+  BillingAddressMutationInput,
+} from "@/src/framework/graphql/checkout/types";
+import { CUSTOMER_INFO_QUERY } from "@/src/framework/graphql/customer/queries/getCustomerInfo";
+import type { CustomerForCheckoutResponse } from "@/src/framework/graphql/customer/types";
 import {
   COUNTRY_REGIONS_QUERY,
   type CountryRegionsResponse,
-} from "@/src/framework/graphql/queries/countryRegions";
+} from "@/src/framework/graphql/customer-addresses/queries/getCountryRegions";
 import {
   type CreateCustomerAddressMutationVariables,
   findCustomerAddressMatchingForm,
@@ -58,13 +68,13 @@ import {
   sameAddressId,
   toCartAddressInput,
   toCreateCustomerAddressInput,
-} from "@/src/components/checkout/addressHelpers";
+} from "@/src/components/checkout/address/addressHelpers";
 import {
   parseShippingMethodKey,
   shippingMethodKey,
   shippingMethodLabel,
-} from "@/src/components/checkout/shippingMethodHelpers";
-import { emptyAddress } from "@/src/components/checkout/addressTypes";
+} from "@/src/components/checkout/shipping/shippingMethodHelpers";
+import { emptyAddress } from "@/src/components/checkout/address/addressTypes";
 
 export function useCheckoutForm() {
   const router = useRouter();

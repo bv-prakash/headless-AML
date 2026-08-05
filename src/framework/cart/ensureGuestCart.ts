@@ -2,9 +2,9 @@ import apolloClient from "@/src/framework/graphql/apolloClient";
 import {
   CREATE_EMPTY_CART_MUTATION,
   type CreateEmptyCartResponse,
-} from "@/src/framework/graphql/mutations/cartMutations";
+} from "@/src/framework/graphql/cart/mutations/createEmptyCart";
 import { CART_ID_KEY } from "@/src/constants/storageKeys";
-import { getStoredValue } from "@/src/utils/storage";
+import { getScopedStoredValue } from "@/src/utils/storage";
 
 let inflight: Promise<string | null> | null = null;
 
@@ -13,7 +13,7 @@ let inflight: Promise<string | null> | null = null;
  * Concurrent callers share a single in-flight `createEmptyCart` (deduped).
  */
 export async function ensureGuestCartId(): Promise<string | null> {
-  const existing = getStoredValue(CART_ID_KEY);
+  const existing = getScopedStoredValue(CART_ID_KEY);
   if (existing) return existing;
 
   if (!inflight) {

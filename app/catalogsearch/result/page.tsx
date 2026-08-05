@@ -2,16 +2,16 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import PageLoader from "@/src/components/common/PageLoader";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 import PLPShopLayout from "@/src/components/plp/PLPShopLayout";
-import { searchProducts } from "@/src/framework/graphql/queries/searchProducts";
+import { searchProducts } from "@/src/framework/graphql/search/queries/searchProducts";
 import { stripHtml } from "@/src/utils/html";
-import { getStoreConfig } from "@/src/framework/graphql/queries/storeConfig";
+import { getStoreConfig } from "@/src/framework/graphql/store/queries/getStoreConfig";
 import {
   parseFacetSearchParams,
   parseProductListSortParam,
   type ProductAggregation,
-} from "@/src/framework/graphql/queries/products";
+} from "@/src/framework/graphql/plp/queries/getProductsByCategory";
 import { parsePageParam } from "@/src/utils/params";
 
 type SearchPageProps = {

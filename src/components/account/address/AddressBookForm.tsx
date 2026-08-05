@@ -7,28 +7,30 @@ import { useMutation, useQuery } from "@apollo/client/react";
 import { toast } from "react-toastify";
 import ShippingAddressFields, {
   type ShippingAddressFieldsHandle,
-} from "@/src/components/checkout/ShippingAddressFields";
+} from "@/src/components/checkout/address/ShippingAddressFields";
 import {
   customerAddressToFormState,
   resolveDirectoryRegionId,
   sameAddressId,
   toCreateCustomerAddressInput,
-} from "@/src/components/checkout/addressHelpers";
-import { emptyAddress, type AddressFormState } from "@/src/components/checkout/addressTypes";
+} from "@/src/components/checkout/address/addressHelpers";
+import { emptyAddress, type AddressFormState } from "@/src/components/checkout/address/addressTypes";
 import {
   CREATE_CUSTOMER_ADDRESS_MUTATION,
-  UPDATE_CUSTOMER_ADDRESS_MUTATION,
   type CreateCustomerAddressResponse,
   type CreateCustomerAddressVariables,
+} from "@/src/framework/graphql/customer-addresses/mutations/createCustomerAddress";
+import {
+  UPDATE_CUSTOMER_ADDRESS_MUTATION,
   type UpdateCustomerAddressResponse,
   type UpdateCustomerAddressVariables,
-} from "@/src/framework/graphql/mutations/customerAddressMutations";
-import { CUSTOMER_INFO_QUERY } from "@/src/framework/graphql/queries";
-import type { CustomerForCheckoutResponse } from "@/src/framework/graphql/queries/customerInfo";
+} from "@/src/framework/graphql/customer-addresses/mutations/updateCustomerAddress";
+import { CUSTOMER_INFO_QUERY } from "@/src/framework/graphql/customer/queries/getCustomerInfo";
+import type { CustomerForCheckoutResponse } from "@/src/framework/graphql/customer/types";
 import {
   COUNTRY_REGIONS_QUERY,
   type CountryRegionsResponse,
-} from "@/src/framework/graphql/queries/countryRegions";
+} from "@/src/framework/graphql/customer-addresses/queries/getCountryRegions";
 import { getErrorMessage } from "@/src/utils/errors";
 
 const BTN_PRIMARY =
@@ -60,9 +62,12 @@ export function AddressBookForm({ mode, addressId }: AddressBookFormProps) {
   const [shipping, setShipping] = useState<AddressFormState>(() => emptyAddress());
   const [defaultShipping, setDefaultShipping] = useState(false);
   const [defaultBilling, setDefaultBilling] = useState(false);
+  /** Bumped when Apollo row is applied so `ShippingAddressFields` remounts — RHF `defaultValues` only run on mount. */
+  const [fieldsVersion, setFieldsVersion] = useState(0);
 
   const formKey =
     mode === "edit" && addressId != null ? `edit-${addressId}` : "create";
+  const shippingFieldsKey = `${formKey}-v${fieldsVersion}`;
 
   /** Stable identity for when to re-apply Apollo data (avoid re-running on new `existing` object references). */
   const hydrationKey =
@@ -132,6 +137,7 @@ export function AddressBookForm({ mode, addressId }: AddressBookFormProps) {
       setShipping(customerAddressToFormState(existing));
       setDefaultShipping(!!existing.default_shipping);
       setDefaultBilling(!!existing.default_billing);
+      setFieldsVersion((v) => v + 1);
     }
   }, [mode, existing]);
 
@@ -145,12 +151,14 @@ export function AddressBookForm({ mode, addressId }: AddressBookFormProps) {
       setShipping(emptyAddress());
       setDefaultShipping(false);
       setDefaultBilling(false);
+      setFieldsVersion((v) => v + 1);
       return;
     }
     if (existing != null) {
       setShipping(customerAddressToFormState(existing));
       setDefaultShipping(!!existing.default_shipping);
       setDefaultBilling(!!existing.default_billing);
+      setFieldsVersion((v) => v + 1);
     }
   }, [mode, hydrationKey]);
 
@@ -268,7 +276,7 @@ export function AddressBookForm({ mode, addressId }: AddressBookFormProps) {
 
       <form onSubmit={(e) => void onSubmit(e)} className="max-w-2xl space-y-6">
         <ShippingAddressFields
-          key={formKey}
+          key={shippingFieldsKey}
           ref={fieldsRef}
           shipping={shipping}
           setShipping={setShipping}
@@ -284,9 +292,9 @@ export function AddressBookForm({ mode, addressId }: AddressBookFormProps) {
           </button>
         ) : null}
 
-        <fieldset className="border-0 p-0 m-0 space-y-3">
-          <legend className="text-sm font-semibold text-black mb-1">Use as default</legend>
-          <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-800">
+        <fieldset className="border-0 p-0 m-0 space-y-3 mb-3">
+          <legend className="font-semibold text-black mb-1">Use as default</legend>
+          <label className="flex items-center gap-2 cursor-pointer text-gray-800">
             <input
               type="checkbox"
               className="h-4 w-4 rounded border-gray-300 text-theme-primary"
@@ -295,7 +303,7 @@ export function AddressBookForm({ mode, addressId }: AddressBookFormProps) {
             />
             <span>Default shipping address</span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-800">
+          <label className="flex items-center gap-2 cursor-pointer text-gray-800">
             <input
               type="checkbox"
               className="h-4 w-4 rounded border-gray-300 text-theme-primary"

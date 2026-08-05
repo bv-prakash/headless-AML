@@ -1,4 +1,4 @@
-import type { ProductStockStatus } from "@/src/framework/graphql/queries/products";
+import type { ProductStockStatus } from "@/src/framework/graphql/plp/queries/getProductsByCategory";
 
 export type PLPContentProduct = {
   readonly productId: number;

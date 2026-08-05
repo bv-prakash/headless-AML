@@ -1,4 +1,3 @@
-import config from "@/src/config/config";
 import {
   ApolloClient,
   ApolloLink,
@@ -11,6 +10,8 @@ import { CombinedGraphQLErrors } from "@apollo/client/errors";
 import { getGraphqlEndpoint } from "@/src/framework/graphql/getGraphqlEndpoint";
 import { invalidateCustomerSession } from "@/src/framework/graphql/invalidateCustomerSession";
 import { CUSTOMER_TOKEN_KEY } from "@/src/constants/storageKeys";
+import { getServerStoreViewCode } from "@/src/framework/store/getActiveStoreCode";
+import { resolveClientStoreViewCode } from "@/src/framework/store/resolveClientStoreViewCode";
 import { getStoredValue } from "@/src/utils/storage";
 import {
   isStaleCartError,
@@ -28,10 +29,20 @@ if (!uri) {
   );
 }
 
+/**
+ * Server: `cache: "no-store"` so Next’s fetch layer never serves one GraphQL response
+ * for another when only the `Store` header differs (same POST body).
+ */
 const httpLink = new HttpLink({
   uri,
   ...(IS_SERVER
-    ? { fetchOptions: { next: { revalidate: 300 } } as unknown as RequestInit }
+    ? {
+        fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+          fetch(input, {
+            ...init,
+            cache: "no-store",
+          }),
+      }
     : {}),
 });
 
@@ -50,6 +61,11 @@ const errorLink = new ErrorLink(({ error }) => {
   }
 
   if (error instanceof Error) {
+    const msg = error.message ?? "";
+    if (/status code 401|unauthorized/i.test(msg)) {
+      invalidateCustomerSession();
+      return;
+    }
     if (isStaleCartError(error.message)) return;
     if (messagesIndicateInvalidCustomerSession(error.message)) {
       invalidateCustomerSession();
@@ -57,20 +73,23 @@ const errorLink = new ErrorLink(({ error }) => {
   }
 });
 
-const authLink = setContext((_, { headers }) => {
+const authLink = setContext(async (_, { headers }) => {
   const base: Record<string, string> = {
     "Content-Type": "application/json",
     ...((headers as Record<string, string>) ?? {}),
   };
 
-  if (IS_SERVER) {
-    if (config.commerce.storeCode) {
-      base.Store = config.commerce.storeCode;
-    }
-    if (config.commerce.apiKey) {
-      base.Authorization = `Bearer ${config.commerce.apiKey}`;
-    }
-  } else {
+  const storeCode = IS_SERVER
+    ? await getServerStoreViewCode()
+    : resolveClientStoreViewCode();
+  base.Store = storeCode;
+
+  /**
+   * No server-side `Authorization: Bearer <apiKey>` — Magento scopes catalog by token, which
+   * hides products for guest users. Customer mutations attach `X-Customer-Token` below and the
+   * `/api/graphql-proxy` forwards it as a customer Bearer.
+   */
+  if (!IS_SERVER) {
     const token = getStoredValue(CUSTOMER_TOKEN_KEY);
     if (token) {
       base["X-Customer-Token"] = token;
@@ -82,6 +101,7 @@ const authLink = setContext((_, { headers }) => {
 
 const apolloClient = new ApolloClient({
   link: ApolloLink.from([errorLink, authLink, httpLink]),
+  queryDeduplication: true,
   cache: new InMemoryCache({
     typePolicies: {
       /** Same logged-in user from `CustomerWishlist`, `CustomerForCheckout`, etc. */
@@ -113,6 +133,22 @@ const apolloClient = new ApolloClient({
       StoreConfig: { keyFields: [] },
       CompareList: { keyFields: ["uid"] },
       CategoryTree: { keyFields: ["id"] },
+      /**
+       * Company ACL resource nodes appear in TWO unrelated trees:
+       *   - `Company.acl_resources` → master tree of every grantable resource
+       *   - `CompanyRole.permissions` → only the *granted* branches
+       *
+       * Both trees use `CompanyAclResource` and share node ids (e.g.
+       * `Magento_Sales`). With default `__typename:id` normalisation Apollo
+       * would write both into the same cache slot, and the role's smaller
+       * `children` list would overwrite the master tree's children — which
+       * is why the edit form rendered only the granted branches instead of
+       * the full permission tree.
+       *
+       * `keyFields: false` makes these objects embedded values, so each
+       * query keeps its own tree intact.
+       */
+      CompanyAclResource: { keyFields: false },
     },
   }),
   defaultOptions: {

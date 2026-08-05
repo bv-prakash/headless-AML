@@ -1,30 +1,39 @@
-
-import { getCategoryBreadcrumbs } from "@/src/framework/graphql/queries/breadcrumbs";
-import { Breadcrumbs } from "@/src/components/common/Breadcrumbs";
-import type { BreadcrumbItem } from "@/src/components/common/Breadcrumbs";
+import {
+  getCategoryBreadcrumbs,
+  type CategoryBreadcrumbsData,
+} from "@/src/framework/graphql/category/queries/getCategoryBreadcrumbs";
+import { Breadcrumbs } from "@/src/components/common/navigation/Breadcrumbs";
+import type { BreadcrumbItem } from "@/src/components/common/navigation/Breadcrumbs";
+import { plpHrefFromMagentoCategoryUrlPath } from "@/src/utils/plpPaths";
 
 interface ServerBreadcrumbsProps {
   categoryId: string;
   productName?: string;
+  /** When set (e.g. PLP), skips a second `getCategoryBreadcrumbs` round-trip. */
+  prefetched?: CategoryBreadcrumbsData;
 }
 
-export default async function ServerBreadcrumbs({ 
-  categoryId, 
-  productName 
+export default async function ServerBreadcrumbs({
+  categoryId,
+  productName,
+  prefetched,
 }: ServerBreadcrumbsProps) {
-  const { name, breadcrumbs, urlPath } = await getCategoryBreadcrumbs(categoryId);
+  const { name, breadcrumbs, urlPath } =
+    prefetched ?? (await getCategoryBreadcrumbs(categoryId));
   
   // 1. Map parent categories as clickable links
   const trail: BreadcrumbItem[] = breadcrumbs.map((crumb) => ({
     label: crumb.category_name,
-    href: `/products/${crumb.category_url_path ?? ""}`,
+    href: plpHrefFromMagentoCategoryUrlPath(crumb.category_url_path),
   }));
 
   // 2. Add the current category
   if (name) {
     trail.push({
       label: name,
-      href: productName ? `/products/${urlPath}` : undefined,
+      href: productName
+        ? plpHrefFromMagentoCategoryUrlPath(urlPath)
+        : undefined,
     });
   }
 

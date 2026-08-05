@@ -1,4 +1,4 @@
-import type { CustomerAddressNode } from "@/src/framework/graphql/queries/customerInfo";
+import type { CustomerAddressNode } from "@/src/framework/graphql/customer/types";
 
 /**
  * Address utility functions for DRY principle

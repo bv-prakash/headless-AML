@@ -20,8 +20,11 @@ export const LUMA_ACCOUNT_LIST_PAGINATION: ListPaginationConfig = {
   allowedPageSizes: [10, 20, 50],
 };
 
+/** Compatible with `URLSearchParams` and Next.js `useSearchParams()` return value. */
+export type ListSearchParamsLike = Pick<URLSearchParams, "get">;
+
 export function parseListPaginationParams(
-  searchParams: URLSearchParams | ReadonlyURLSearchParams,
+  searchParams: ListSearchParamsLike,
   config: ListPaginationConfig = LUMA_ACCOUNT_LIST_PAGINATION,
 ): { page: number; pageSize: number } {
   const rawP = Number.parseInt(String(searchParams.get(config.pageParam) ?? String(config.defaultPage)), 10);

@@ -1,0 +1,16 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+	<defs>
+		<clipPath clipPathUnits="userSpaceOnUse" id="cp1">
+			<path d="m219.44-20v240h-239.44v-240z"/>
+		</clipPath>
+	</defs>
+	<g id="Clip-Path" clip-path="url(#cp1)">
+		<g>
+			<path stroke="#fff" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="20" d="m9.9 100c0 11.8 2.4 23.5 6.9 34.4 4.5 11 11.1 20.9 19.4 29.2 8.4 8.4 18.3 15 29.2 19.5 10.9 4.6 22.5 6.9 34.3 6.9 11.8 0 23.5-2.3 34.4-6.9 10.9-4.5 20.8-11.1 29.1-19.5 8.4-8.3 15-18.2 19.5-29.2 4.5-10.9 6.8-22.6 6.8-34.4 0-23.9-9.4-46.8-26.3-63.6-16.8-16.9-39.7-26.4-63.5-26.4-23.8 0-46.6 9.5-63.5 26.4-16.8 16.8-26.3 39.7-26.3 63.6z"/>
+			<path stroke="#fff" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="20" d="m15.9 70h167.6"/>
+			<path stroke="#fff" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="20" d="m15.9 130h167.6"/>
+			<path stroke="#fff" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="20" d="m94.7 10c-16.8 27-25.7 58.2-25.7 90 0 31.8 8.9 63 25.7 90"/>
+			<path stroke="#fff" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="20" d="m104.7 10c16.8 27 25.7 58.2 25.7 90 0 31.8-8.9 63-25.7 90"/>
+		</g>
+	</g>
+</svg>

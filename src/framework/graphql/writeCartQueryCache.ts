@@ -1,6 +1,6 @@
 import type { ApolloCache } from "@apollo/client";
-import { CART_QUERY } from "@/src/framework/graphql/mutations/cartMutations";
-import type { CartData } from "@/src/framework/graphql/mutations/cartMutations";
+import { CART_QUERY } from "@/src/framework/graphql/cart/queries/getCart";
+import type { CartData } from "@/src/framework/graphql/cart/types";
 
 /** Keeps `CART_QUERY` aligned with mutation results so badge, minicart, and cart page stay in sync. */
 export function writeCartQueryToCache(

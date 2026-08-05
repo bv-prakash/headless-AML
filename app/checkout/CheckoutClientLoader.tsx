@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import PageLoader from "@/src/components/common/PageLoader";
+import PageLoader from "@/src/components/common/loader/PageLoader";
 
 /** `ssr: false` must live in a Client Component — cart/auth use localStorage after mount */
 const CheckoutContent = dynamic(

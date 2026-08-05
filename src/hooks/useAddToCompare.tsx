@@ -7,12 +7,14 @@ import { invalidateCustomerSession } from "@/src/framework/graphql/invalidateCus
 import { getErrorMessage, isCustomerSessionInvalidError } from "@/src/utils/errors";
 import {
   CREATE_COMPARE_LIST_MUTATION,
-  ADD_TO_COMPARE_LIST_MUTATION,
   type CreateCompareListResponse,
   type CreateCompareListVariables,
+} from "@/src/framework/graphql/compare/mutations/createCompareList";
+import {
+  ADD_TO_COMPARE_LIST_MUTATION,
   type AddToCompareListResponse,
   type AddToCompareListVariables,
-} from "@/src/framework/graphql/mutations/compareMutations";
+} from "@/src/framework/graphql/compare/mutations/addToCompareList";
 
 export function useAddToCompare(productId: number, productName: string) {
   const dispatch = useAppDispatch();

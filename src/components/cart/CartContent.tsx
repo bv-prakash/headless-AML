@@ -10,23 +10,26 @@ import { selectCartPageProps } from "@/src/store/selectors";
 import { setCart, clearCart } from "@/src/store/slices/cartSlice";
 import { formatPrice } from "@/src/utils/format";
 import { isStaleCartError } from "@/src/utils/errors";
-import QuantitySelector from "@/src/components/common/QuantitySelector";
-import ConfigurableItemOptions from "@/src/components/cart/ConfigurableItemOptions";
-import BundleItemOptions from "@/src/components/cart/BundleItemOptions";
-import DownloadableItemOptions from "@/src/components/cart/DownloadableItemOptions";
+import QuantitySelector from "@/src/components/common/controls/QuantitySelector";
+import ConfigurableItemOptions from "@/src/components/cart/item-options/ConfigurableItemOptions";
+import BundleItemOptions from "@/src/components/cart/item-options/BundleItemOptions";
+import DownloadableItemOptions from "@/src/components/cart/item-options/DownloadableItemOptions";
 import {
   CART_QUERY,
-  REMOVE_CART_ITEM_MUTATION,
-  UPDATE_CART_ITEM_MUTATION,
-  type CartItem,
   type CartQueryResponse,
   type CartQueryVariables,
+} from "@/src/framework/graphql/cart/queries/getCart";
+import {
+  REMOVE_CART_ITEM_MUTATION,
   type RemoveCartItemResponse,
   type RemoveCartItemVariables,
+} from "@/src/framework/graphql/cart/mutations/removeCartItem";
+import {
+  UPDATE_CART_ITEM_MUTATION,
   type UpdateCartItemResponse,
   type UpdateCartItemVariables,
-  type CartData,
-} from "@/src/framework/graphql/mutations/cartMutations";
+} from "@/src/framework/graphql/cart/mutations/updateCartItem";
+import type { CartItem, CartData } from "@/src/framework/graphql/cart/types";
 import { buildProductEditHref } from "@/src/utils/params";
 import { writeCartQueryToCache } from "@/src/framework/graphql/writeCartQueryCache";
 
