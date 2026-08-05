@@ -21,7 +21,7 @@ import {
 } from "@/src/framework/graphql/auth/mutations/generateCustomerToken";
 import { safeRedirectPath } from "@/src/utils/safeRedirectPath";
 import {
-  STORE_VIEW_OPTIONS,
+  getHydratedStoreViewOptions,
 } from "@/src/config/storeViews";
 import { selectStoreViewCode } from "@/src/store/selectors";
 
@@ -59,9 +59,10 @@ export default function LoginForm() {
 
   const storeViewCode = useAppSelector(selectStoreViewCode);
   const activeStore = useMemo(
-    () =>
-      STORE_VIEW_OPTIONS.find((o) => o.code === storeViewCode) ??
-      STORE_VIEW_OPTIONS[0],
+    () => {
+      const options = getHydratedStoreViewOptions();
+      return options.find((o) => o.code === storeViewCode) ?? options[0];
+    },
     [storeViewCode],
   );
   const activeStoreGroup = activeStore?.group ?? "this store";

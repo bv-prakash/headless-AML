@@ -7,7 +7,7 @@ import {
   getLanguageCodeForStoreView,
   getStoreViewOptionsForToggle,
   hydrateStoreViewOptionsFromMagento,
-  STORE_VIEW_OPTIONS,
+  getHydratedStoreViewOptions,
   getWebsiteCodeForStoreView,
   type StoreViewOption,
 } from "@/src/config/storeViews";
@@ -53,7 +53,10 @@ export default function StoreViewToggle() {
 
 
   const current = useMemo(
-    () => STORE_VIEW_OPTIONS.find((o) => o.code === code) ?? STORE_VIEW_OPTIONS[0],
+    () => {
+      const options = getHydratedStoreViewOptions();
+      return options.find((o) => o.code === code) ?? options[0];
+    },
     [code, storeViewsRevision],
   );
   const toggleOptions = useMemo(
@@ -104,10 +107,9 @@ export default function StoreViewToggle() {
     (nextCode: string) => {
       if (nextCode === code) return;
 
-      const next =
-        STORE_VIEW_OPTIONS.find((o) => o.code === nextCode) ?? STORE_VIEW_OPTIONS[0];
-      const prev =
-        STORE_VIEW_OPTIONS.find((o) => o.code === code) ?? STORE_VIEW_OPTIONS[0];
+      const options = getHydratedStoreViewOptions();
+      const next = options.find((o) => o.code === nextCode) ?? options[0];
+      const prev = options.find((o) => o.code === code) ?? options[0];
       if (!next || !prev) return;
       const websiteChanged =
         getWebsiteCodeForStoreView(next.code) !==

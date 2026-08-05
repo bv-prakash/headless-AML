@@ -12,7 +12,7 @@ import CartIcon from "@/src/components/cart/CartIcon";
 import { getServerStoreViewCode } from "@/src/framework/store/getActiveStoreCode";
 import { isStoreComponentEnabled } from "@/src/theme/store-view";
 import { ShowOnDesktop, ShowOnMobile } from "../common/Responsive";
-const globalImage ="../globe.svg";
+const globalImage ="/globe.svg";
 
 const Minicart = dynamic(() => import("@/src/components/cart/minicart/Minicart"));
 

@@ -12,7 +12,6 @@ export default function CheckoutPage() {
     <div className="container relative mb-[25px] mt-5 lg-custom:mb-7.5! lg-custom:mt-7.5!">
       <Breadcrumbs
         items={[
-          { label: "Cart", href: "/cart" },
           { label: "Checkout" },
         ]}
       />

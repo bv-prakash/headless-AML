@@ -1,5 +1,6 @@
 import config from "@/src/config/config";
 import type { LanguageCode } from "@/src/i18n/commonLabels";
+import { getGraphqlEndpoint } from "@/src/framework/graphql/getGraphqlEndpoint";
 
 /** Cookie name — must match server reads in `getServerStoreViewCode`. */
 export const STORE_VIEW_COOKIE_NAME = "magento_store_view";
@@ -35,6 +36,30 @@ export type StoreViewOption = {
    */
   readonly categoryNavRootId?: string;
 };
+
+/**
+ * Raw Magento store from GraphQL `stores` query.
+ * Only minimal fields needed — `code` and `is_active`.
+ */
+type RawMagentoStore = {
+  readonly code?: string | null;
+  readonly name?: string | null;
+  readonly is_active?: boolean | null;
+};
+
+/**
+ * GraphQL query to fetch active Magento stores.
+ * Filters for `is_active = true` to avoid disabled stores.
+ */
+const STORES_QUERY = `
+  query {
+    stores {
+      code
+      name
+      is_active
+    }
+  }
+`;
 
 /**
  * Store views aligned with Magento admin (Website → Store → Store View codes).
@@ -106,24 +131,45 @@ export const STORE_VIEW_OPTIONS: readonly StoreViewOption[] = [
 
 export const DEFAULT_WEBSITE_CODE = STORE_VIEW_OPTIONS[0].websiteCode;
 
-const ALLOWED = new Set(STORE_VIEW_OPTIONS.map((o) => o.code));
 const STORE_VIEW_CODE_ALIASES: Readonly<Record<string, string>> = {
   // Backward-compatibility for previously shipped typo.
   tinsllighting_store_view: "tinsl_lighting_store_view",
 };
 
+/**
+ * Metadata lookup map: store view code → metadata from STORE_VIEW_OPTIONS.
+ * Used to merge Magento store data with frontend metadata (theme, language, etc).
+ */
+const METADATA_MAP = new Map(STORE_VIEW_OPTIONS.map((o) => [o.code, o]));
+
+/** Dynamic cache: initially populated with static options, updated by hydration. */
+let HYDRATED_STORE_OPTIONS: readonly StoreViewOption[] = STORE_VIEW_OPTIONS;
+
+/** Cache timestamp for detecting stale hydration. */
+let hydrationCacheTimestamp = 0;
+
+/** Cache TTL: 5 minutes. */
+const HYDRATION_CACHE_TTL_MS = 5 * 60 * 1000;
+
+/** Promise deduplication: ongoing hydration request (if any). */
+let hydrationPromise: Promise<readonly StoreViewOption[]> | null = null;
+
+/** Dynamically built from active Magento stores; cached and updated during hydration. */
+let allowedStoreCodeSet = new Set(STORE_VIEW_OPTIONS.map((o) => o.code));
+
 export function getDefaultStoreViewCodeFromEnv(): string {
   const fromEnv = config.commerce.storeCode?.trim();
   const normalizedFromEnv = fromEnv ? (STORE_VIEW_CODE_ALIASES[fromEnv] ?? fromEnv) : undefined;
-  if (normalizedFromEnv && ALLOWED.has(normalizedFromEnv)) return normalizedFromEnv;
-  return STORE_VIEW_OPTIONS[0]?.code ?? "default_en";
+  if (normalizedFromEnv && allowedStoreCodeSet.has(normalizedFromEnv))
+    return normalizedFromEnv;
+  return HYDRATED_STORE_OPTIONS[0]?.code ?? "default";
 }
 
 export function normalizeStoreViewCode(raw: string | null | undefined): string | null {
   const t = raw?.trim();
   if (!t) return null;
   const normalized = STORE_VIEW_CODE_ALIASES[t] ?? t;
-  return ALLOWED.has(normalized) ? normalized : null;
+  return allowedStoreCodeSet.has(normalized) ? normalized : null;
 }
 
 /**
@@ -175,7 +221,7 @@ export function resolveStoreViewCodeForRequest(
 export function getCategoryNavRootIdOverride(
   storeViewCode: string,
 ): string | undefined {
-  const id = STORE_VIEW_OPTIONS.find((o) => o.code === storeViewCode)
+  const id = HYDRATED_STORE_OPTIONS.find((o) => o.code === storeViewCode)
     ?.categoryNavRootId?.trim();
   return id || undefined;
 }
@@ -186,14 +232,14 @@ export function getCategoryNavRootIdOverride(
  */
 export function getWebsiteCodeForStoreView(storeViewCode: string): string {
   return (
-    STORE_VIEW_OPTIONS.find((o) => o.code === storeViewCode)?.websiteCode ??
+    HYDRATED_STORE_OPTIONS.find((o) => o.code === storeViewCode)?.websiteCode ??
     DEFAULT_WEBSITE_CODE
   );
 }
 
 /** Value for `<html data-home-theme>` — use in CSS as `html[data-home-theme="proluxe"]`. */
 export function getHomeThemeId(storeViewCode: string): HomeThemeId {
-  const raw = STORE_VIEW_OPTIONS.find((o) => o.code === storeViewCode)
+  const raw = HYDRATED_STORE_OPTIONS.find((o) => o.code === storeViewCode)
     ?.homeThemeId;
   if (raw && HOME_THEME_IDS.some((id) => id === raw)) return raw;
   return "default";
@@ -214,19 +260,19 @@ export function getLanguageOptionsForStoreView(
   currentStoreViewCode: string,
 ): readonly StoreLanguageOption[] {
   const current =
-    STORE_VIEW_OPTIONS.find((o) => o.code === currentStoreViewCode) ??
-    STORE_VIEW_OPTIONS[0];
+    HYDRATED_STORE_OPTIONS.find((o) => o.code === currentStoreViewCode) ??
+    HYDRATED_STORE_OPTIONS[0];
 
   // Primary grouping: same Magento store (same store code), which can have multiple
   // store views (e.g. en/ar). Fallback to website when storeCode is absent/misconfigured.
   const currentStoreCode = current.storeCode?.trim();
   const sameStore = currentStoreCode
-    ? STORE_VIEW_OPTIONS.filter((o) => o.storeCode?.trim() === currentStoreCode)
+    ? HYDRATED_STORE_OPTIONS.filter((o) => o.storeCode?.trim() === currentStoreCode)
     : [];
   const scoped =
     sameStore.length > 0
       ? sameStore
-      : STORE_VIEW_OPTIONS.filter((o) => o.websiteCode === current.websiteCode);
+      : HYDRATED_STORE_OPTIONS.filter((o) => o.websiteCode === current.websiteCode);
 
   const byStoreViewCode = new Map<string, StoreLanguageOption>();
   scoped.forEach((o) => {
@@ -249,7 +295,7 @@ export function getLanguageCodeForStoreView(
   storeViewCode: string,
 ): LanguageCode {
   return (
-    STORE_VIEW_OPTIONS.find((o) => o.code === storeViewCode)?.languageCode ?? "en"
+    HYDRATED_STORE_OPTIONS.find((o) => o.code === storeViewCode)?.languageCode ?? "en"
   );
 }
 
@@ -260,17 +306,17 @@ export function getLanguageCodeForStoreView(
  */
 export function getFallbackStoreViewCode(currentStoreViewCode: string): string {
   const current =
-    STORE_VIEW_OPTIONS.find((o) => o.code === currentStoreViewCode) ??
-    STORE_VIEW_OPTIONS[0];
+    HYDRATED_STORE_OPTIONS.find((o) => o.code === currentStoreViewCode) ??
+    HYDRATED_STORE_OPTIONS[0];
 
   const currentStoreCode = current.storeCode?.trim();
   const sameStore = currentStoreCode
-    ? STORE_VIEW_OPTIONS.filter((o) => o.storeCode?.trim() === currentStoreCode)
+    ? HYDRATED_STORE_OPTIONS.filter((o) => o.storeCode?.trim() === currentStoreCode)
     : [];
   const scoped =
     sameStore.length > 0
       ? sameStore
-      : STORE_VIEW_OPTIONS.filter((o) => o.websiteCode === current.websiteCode);
+      : HYDRATED_STORE_OPTIONS.filter((o) => o.websiteCode === current.websiteCode);
 
   const english = scoped.find((o) => o.languageCode === "en")?.code;
   if (english) return english;
@@ -283,11 +329,11 @@ export function getStoreViewOptionsForToggle(
   preferredLanguageCode?: LanguageCode,
 ): readonly StoreViewOption[] {
   const current =
-    STORE_VIEW_OPTIONS.find((o) => o.code === currentStoreViewCode) ??
-    STORE_VIEW_OPTIONS[0];
+    HYDRATED_STORE_OPTIONS.find((o) => o.code === currentStoreViewCode) ??
+    HYDRATED_STORE_OPTIONS[0];
 
   const byScope = new Map<string, StoreViewOption[]>();
-  STORE_VIEW_OPTIONS.forEach((option) => {
+  HYDRATED_STORE_OPTIONS.forEach((option) => {
     const key = getStoreScopeKey(option);
     const list = byScope.get(key) ?? [];
     list.push(option);
@@ -307,11 +353,120 @@ export function getStoreViewOptionsForToggle(
 }
 
 /**
- * Compatibility shim for callers that previously hydrated store views from Magento.
- * Current setup uses static store view config, so this resolves immediately.
+ * Fetch and merge Magento stores with frontend metadata.
+ * - Fetches active stores from Magento GraphQL
+ * - Normalizes store codes using STORE_VIEW_CODE_ALIASES
+ * - Merges with metadata from STORE_VIEW_OPTIONS
+ * - Updates internal cache and allowed store code set
+ * - Returns the merged options
+ *
+ * Uses browser `/api/graphql-proxy` or server-side `getGraphqlEndpoint()`.
+ * Caches result for HYDRATION_CACHE_TTL_MS; deduplicates concurrent requests.
  */
 export async function hydrateStoreViewOptionsFromMagento(): Promise<
   readonly StoreViewOption[]
 > {
-  return STORE_VIEW_OPTIONS;
+  const isFresh =
+    Date.now() - hydrationCacheTimestamp < HYDRATION_CACHE_TTL_MS;
+  if (isFresh && HYDRATED_STORE_OPTIONS.length > 0) {
+    return HYDRATED_STORE_OPTIONS;
+  }
+
+  if (hydrationPromise) {
+    return hydrationPromise;
+  }
+
+  hydrationPromise = (async () => {
+    const endpoint =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/api/graphql-proxy`
+        : getGraphqlEndpoint();
+
+    if (!endpoint) {
+      return HYDRATED_STORE_OPTIONS;
+    }
+
+    try {
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      const defaultStoreViewCode = config.commerce.storeCode?.trim();
+      if (defaultStoreViewCode && typeof window === "undefined") {
+        headers.Store = defaultStoreViewCode;
+      }
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ query: STORES_QUERY }),
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        throw new Error(`GraphQL ${res.status} ${res.statusText}`);
+      }
+
+      const payload = (await res.json()) as { stores?: readonly RawMagentoStore[] };
+      const stores = payload.stores ?? [];
+
+      // Filter active stores and normalize codes
+      const activeNormalized = stores
+        .filter(
+          (store): store is RawMagentoStore =>
+            !!store && (store.is_active ?? true),
+        )
+        .map((store) => {
+          const rawCode = store.code?.trim();
+          if (!rawCode) return null;
+          return (STORE_VIEW_CODE_ALIASES[rawCode] ?? rawCode);
+        })
+        .filter((code): code is string => !!code);
+
+      // Update allowed store code set
+      const newAllowedSet = new Set(activeNormalized);
+      allowedStoreCodeSet = newAllowedSet;
+
+      // Merge Magento stores with frontend metadata
+      const merged: StoreViewOption[] = [];
+      const seenCodes = new Set<string>();
+
+      activeNormalized.forEach((code) => {
+        if (seenCodes.has(code)) return;
+        seenCodes.add(code);
+
+        const metadata = METADATA_MAP.get(code);
+        if (metadata) {
+          merged.push(metadata);
+        }
+      });
+
+      if (merged.length > 0) {
+        HYDRATED_STORE_OPTIONS = merged;
+        hydrationCacheTimestamp = Date.now();
+      } else {
+        // Fallback to static if no active stores returned
+        HYDRATED_STORE_OPTIONS = STORE_VIEW_OPTIONS;
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV !== "production") {
+        console.warn(
+          "Failed to hydrate store view options from Magento GraphQL.",
+          error,
+        );
+      }
+      // Keep previous/default options on error
+    }
+
+    hydrationPromise = null;
+    return HYDRATED_STORE_OPTIONS;
+  })();
+
+  return hydrationPromise;
+}
+
+/**
+ * Get currently hydrated store view options (includes active stores merged with metadata).
+ * Before hydration completes, returns static STORE_VIEW_OPTIONS.
+ * Safe to call before or after `hydrateStoreViewOptionsFromMagento()`.
+ */
+export function getHydratedStoreViewOptions(): readonly StoreViewOption[] {
+  return HYDRATED_STORE_OPTIONS;
 }
